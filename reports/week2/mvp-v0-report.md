@@ -11,12 +11,14 @@ MVP v0 is the runnable technical foundation of **Voice Games** - a browser-based
 - Sanitized public demonstration (< 2 minutes): https://disk.yandex.ru/i/3aCIJDDw9Tat4Q
 
 ## Relationship to the prototype and proposed MVP v1 stories
-MVP v0 already realizes parts of the proposed MVP v1 core loop:
+The proposed MVP v1 scope (Must Have only) is US-01, US-02, US-04, US-07, and US-08. MVP v0 already realizes most of this core loop:
 - **US-01** (start a game) - the HUB screen, where each game card has a PLAY button.
 - **US-02** (choose a game / content) - choosing between Voice Racer and Voice Bubble Popper on the HUB, plus the TASK BOOK word-category selector and custom word lists.
 - **US-04** (pronounce a word to trigger the action) - in Voice Racer, speaking a lane's word steers the car into that lane (core Web Speech loop); in Voice Bubble Popper, speaking a bubble's word pops it.
-- **US-06** (immediate feedback) - the word-match flash and the voice-status panel showing what was heard.
 - **US-07** (results) - the game-over / victory state with score and high scores.
+- **US-08** (retry a word until it is recognized) - speech recognition runs in continuous mode and the listening loop auto-restarts while playing, so the child can keep pronouncing a word until it is matched rather than failing on a single mis-hear.
+
+US-06 (immediate feedback) was downgraded to Should Have at the customer review and is not part of the MVP v1 slice; v0 still shows lightweight feedback (the word-match flash and the voice-status panel showing what was heard).
 
 The interactive prototype refines how these are presented as the proposed MVP v1 user experience (Home -> game selection -> main game with microphone interaction -> results).
 
