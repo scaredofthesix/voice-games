@@ -3,16 +3,15 @@
 This report describes how AI/LLM tools were used during Assignment 2.
 
 ## Tools used
-- **Claude Code (Anthropic)** - used to plan Assignment 2, scaffold the repository structure, and draft the Week 2 report documents (user stories, report skeletons).
+- **Claude Code (Anthropic)** - used to help the team refine deliverables, not to produce the work in place of the team.
 
 ## How they were used
-- Generated the Assignment 2 phased action plan and current-state assessment.
-- Scaffolded the product repository: `LICENSE` (MIT), `.gitignore`, root `README.md`, and the `reports/week2/` document set.
-- Drafted the initial set of user stories, MoSCoW priorities, and the proposed MVP v1 scope for the team to review and refine.
-- Helped clean and format the customer-meeting transcript (sanitization, consistent dashes, readability) from the team's recording.
-- Incorporated the customer's review feedback into `user-stories.md` (priority changes, new stories US-15/US-16/US-17), and drafted `customer-meeting-summary.md` and `analysis.md` (learning points, validated assumptions, planned response) from the transcript content.
+- **Refining user stories:** the team wrote the user stories; Claude helped polish the wording, check the consistency of the stable IDs and MoSCoW priorities, and restructure them after the customer review.
+- **Interview transcript:** Claude assisted with transcription from the team's recording (speech recognition), grammar and readability fixes, and sanitization (removing PII), while keeping the meaning and the back-and-forth of the real conversation.
+- **Prototype UI design:** Claude helped with layout and UI design ideas for the Figma prototype screens (home, game selection, microphone permission, gameplay, feedback, results).
+- **Git workflow:** Claude helped draft clear pull-request descriptions and document the branch/PR workflow so the team could collaborate in an organized way.
 
 ## Human oversight
 - All AI-generated content is reviewed, edited, and approved by the team before submission.
-- Customer-facing decisions (story approval, priorities, MVP v1 scope) are made by the team and the customer, not the LLM.
-- The transcript content reflects the real meeting; the LLM only cleaned, sanitized, and reformatted it - it did not invent statements or approvals.
+- Product decisions and customer approvals (user stories, priorities, MVP v1 scope) are made by the team and the customer, not the LLM.
+- The transcript content reflects the real meeting; the LLM only transcribed, cleaned, sanitized, and reformatted it - it did not invent statements or approvals.
