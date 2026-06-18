@@ -90,15 +90,6 @@ export default function App() {
       record: bubbleHighScore,
       unlocked: true,
     },
-    {
-      id: "colleague-slot-1",
-      title: "VOICE PLACEHOLDER TEMPLATE",
-      description: "Icon: 👤 | Description: Put next voice game details here. Gray indicators assist co-workers adding new speech games.",
-      icon: "👤",
-      accent: "bg-slate-300",
-      record: 0,
-      unlocked: false,
-    }
   ];
 
   const totalRecordSum = games.reduce((acc, g) => acc + g.record, 0);
