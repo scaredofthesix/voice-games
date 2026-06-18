@@ -1,0 +1,60 @@
+name: Bug Report
+description: Report a defect in the product.
+title: "bug: <short summary>"
+labels: ["bug"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem description
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser/version, OS, device, deployment (local / VM / hosted).
+      placeholder: Chrome 126, Windows 11, local dev
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria for the fix
+      value: |
+        - [ ] …
+        - [ ] …
+    validations:
+      required: true
+  - type: input
+    id: implementer
+    attributes:
+      label: Implementer
+      placeholder: "@username"
+  - type: input
+    id: reviewer
+    attributes:
+      label: Reviewer (different from implementer)
+      placeholder: "@username"
