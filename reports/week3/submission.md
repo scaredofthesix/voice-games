@@ -2,18 +2,19 @@
 
 > This sheet is the source for the Moodle PDF. Export to PDF for upload. Replace the
 > "Full name" cells with each member's real name before final submission. The permalinks
-> below are pinned to commit `d0f049b6c9e68ac705ddddb27bae3566851924c3` (the `v0.1.0`
-> release on the protected default branch).
+> below are pinned to commit `5e9ec9060898cecdc7d967bc1153f30d8cb35663` on the protected
+> default branch `main` (the full Assignment 3 state, including all Week 3 reports). The
+> `v0.1.0` release page is linked separately under Live links.
 
 ## Team identity
 
-| Role | Full name | GitHub |
+| Scrum role | Full name | GitHub |
 |---|---|---|
-| Owner / lead | (add) | [@scaredofthesix](https://github.com/scaredofthesix) |
-| Developer | (add) | [@flikspy](https://github.com/flikspy) |
-| Developer | (add) | [@MMavInno](https://github.com/MMavInno) |
-| Developer | (add) | [@Kotumbaa](https://github.com/Kotumbaa) |
-| Developer | (add) | [@TeraloToxin](https://github.com/TeraloToxin) |
+| Scrum Master | (add in the Moodle PDF) | [@scaredofthesix](https://github.com/scaredofthesix) |
+| Product Owner | (add in the Moodle PDF) | [@MMavInno](https://github.com/MMavInno) |
+| Developer | (add in the Moodle PDF) | [@Kotumbaa](https://github.com/Kotumbaa) |
+| Developer | (add in the Moodle PDF) | [@TeraloToxin](https://github.com/TeraloToxin) |
+| Developer | (add in the Moodle PDF) | [@flikspy](https://github.com/flikspy) |
 
 ## Contribution summary (Part 2: each member commits, opens an issue-linked PR, reviews another)
 
@@ -34,14 +35,14 @@ different member's approval (no self-approval).
 - **Release v0.1.0 (MVP v1):** https://github.com/scaredofthesix/voice-games/releases/tag/v0.1.0
 - **Product Backlog (issues):** https://github.com/scaredofthesix/voice-games/issues
 - **Sprint 1 milestone (Sprint Backlog + goal):** https://github.com/scaredofthesix/voice-games/milestone/1
-- **GitHub Project board (Backlog + Sprint views):** _add the project URL once the board is created_
-- **Public demo video (under 2 minutes):** _add the public video URL_
+- **GitHub Project board (Product Backlog + Sprint Backlog views):** https://github.com/users/scaredofthesix/projects/1
+- **Public demo video (under 2 minutes):** https://disk.yandex.ru/d/ug2Evs6iNoQ3eg
 - **Week 3 report index:** [reports/week3/README.md](./README.md)
 
 ## Permalinks on the protected default branch
 
-- **README:** `https://github.com/scaredofthesix/voice-games/blob/d0f049b6c9e68ac705ddddb27bae3566851924c3/README.md`
-- **Repository tree:** `https://github.com/scaredofthesix/voice-games/tree/d0f049b6c9e68ac705ddddb27bae3566851924c3`
+- **README:** `https://github.com/scaredofthesix/voice-games/blob/5e9ec9060898cecdc7d967bc1153f30d8cb35663/README.md`
+- **Repository tree:** `https://github.com/scaredofthesix/voice-games/tree/5e9ec9060898cecdc7d967bc1153f30d8cb35663`
 
 ## Access instructions
 
