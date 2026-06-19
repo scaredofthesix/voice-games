@@ -2,8 +2,9 @@
 
 > This sheet is the source for the Moodle PDF. Export to PDF for upload. Replace the
 > "Full name" cells with each member's real name before final submission. The permalinks
-> below are pinned to commit `d0f049b6c9e68ac705ddddb27bae3566851924c3` (the `v0.1.0`
-> release on the protected default branch).
+> below are pinned to commit `5e9ec9060898cecdc7d967bc1153f30d8cb35663` on the protected
+> default branch `main` (the full Assignment 3 state, including all Week 3 reports). The
+> `v0.1.0` release page is linked separately under Live links.
 
 ## Team identity
 
@@ -40,8 +41,8 @@ different member's approval (no self-approval).
 
 ## Permalinks on the protected default branch
 
-- **README:** `https://github.com/scaredofthesix/voice-games/blob/d0f049b6c9e68ac705ddddb27bae3566851924c3/README.md`
-- **Repository tree:** `https://github.com/scaredofthesix/voice-games/tree/d0f049b6c9e68ac705ddddb27bae3566851924c3`
+- **README:** `https://github.com/scaredofthesix/voice-games/blob/5e9ec9060898cecdc7d967bc1153f30d8cb35663/README.md`
+- **Repository tree:** `https://github.com/scaredofthesix/voice-games/tree/5e9ec9060898cecdc7d967bc1153f30d8cb35663`
 
 ## Access instructions
 
