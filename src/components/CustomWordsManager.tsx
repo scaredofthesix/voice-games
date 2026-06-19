@@ -33,7 +33,7 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
     }
 
     if (!trimmedTranslation) {
-      setError('Please add a fun clue or hint!');
+      setError('Please add the Russian translation!');
       return;
     }
 
@@ -68,11 +68,11 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
           </div>
           <div>
             <label className="block text-[11px] font-black text-rose-500 uppercase tracking-widest mb-1.5 ml-1">
-              Fun Clue:
+              Russian Translation:
             </label>
             <input
               type="text"
-              placeholder="e.g. Fluffy hopper"
+              placeholder="e.g. Кролик"
               value={newTranslation}
               onChange={(e) => setNewTranslation(e.target.value)}
               className="w-full bg-white border-4 border-slate-900 text-slate-800 text-xs px-4 py-3 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-200 placeholder:text-slate-400 transition-all font-bold"
@@ -117,7 +117,7 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
 
         {customWords.length === 0 ? (
           <div className="bg-amber-100/50 border-4 border-dashed border-amber-300 rounded-2xl p-5 text-center">
-            <p className="text-xs text-amber-800 font-black">Your driving dictionary is empty. Put a word and a fun clue above!</p>
+            <p className="text-xs text-amber-800 font-black">Your driving dictionary is empty. Put a word and its Russian translation above!</p>
           </div>
         ) : (
           <div className="max-h-48 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-purple-200 scrollbar-track-transparent">
