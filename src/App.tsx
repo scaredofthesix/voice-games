@@ -300,7 +300,7 @@ export default function App() {
       const target = activeWords[lane];
       if (!target) continue;
 
-      if (matchesWord(spokenText, target)) {
+      if (matchesWord(spokenText, target, true)) {
         const matchedLane = lane;
         
         performLaneShift(matchedLane);

@@ -248,7 +248,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       const bubble = s.bubbles[i];
       if (bubble.bursting) continue;
 
-      if (matchesWord(speechText, bubble.word)) {
+      if (matchesWord(speechText, bubble.word, true)) {
         matchedIndex = i;
         break;
       }

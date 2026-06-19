@@ -79,7 +79,19 @@ export function matchesWord(spoken: string, target: string, easeMode: boolean = 
   const sTarget = target.toLowerCase().trim();
   
   if (!sSpoken || !sTarget) return false;
-  
+
+  // 0. Multi-word transcript: test each spoken token individually (robust recognition #35)
+  // Web Speech often returns padding like "i think cat" or "the apple please";
+  // matching per token catches the intended word even with surrounding chatter.
+  if (sSpoken.includes(' ')) {
+    const tokens = sSpoken.split(/\s+/).filter(Boolean);
+    for (const token of tokens) {
+      if (token !== sSpoken && matchesWord(token, sTarget, easeMode)) {
+        return true;
+      }
+    }
+  }
+
   // 1. Direct Match
   if (sSpoken === sTarget) return true;
   
