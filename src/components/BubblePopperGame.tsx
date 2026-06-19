@@ -891,7 +891,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 
       // 3. Spawning interval calculations
       const elapsed = now - s.lastSpawnTime;
-      const spawnFrequencyDelay = Math.max(1500, 3600 - s.level * 450); // scales difficulty
+      const spawnFrequencyDelay = Math.max(2000, 4200 - s.level * 450); // scales difficulty
       if (elapsed >= spawnFrequencyDelay) {
         const vocab = s.vocabList;
         if (vocab && vocab.length > 0) {
@@ -906,7 +906,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 
           // Customize size & speed
           const bubbleRadius = Math.max(34, 45 - wordObj.word.length * 1.5);
-          const upwardSpeed = (0.75 + s.level * 0.32) + Math.random() * 0.45;
+          const upwardSpeed = (0.45 + s.level * 0.18) + Math.random() * 0.3;
 
           const newBubble: Bubble = {
             id: Math.random().toString(),
