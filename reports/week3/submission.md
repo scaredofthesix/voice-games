@@ -1,8 +1,9 @@
 # Assignment 3 - Submission Sheet (Team 40)
 
 > This sheet is the source for the Moodle PDF. Export to PDF for upload. Replace the
-> "Full name" cells with each member's real name before final submission, and pin the
-> `<MAIN_COMMIT>` permalinks to the latest commit on the protected default branch.
+> "Full name" cells with each member's real name before final submission. The permalinks
+> below are pinned to commit `d0f049b6c9e68ac705ddddb27bae3566851924c3` (the `v0.1.0`
+> release on the protected default branch).
 
 ## Team identity
 
@@ -39,8 +40,8 @@ different member's approval (no self-approval).
 
 ## Permalinks on the protected default branch
 
-- **README:** https://github.com/scaredofthesix/voice-games/blob/<MAIN_COMMIT>/README.md
-- **Repository tree:** https://github.com/scaredofthesix/voice-games/tree/<MAIN_COMMIT>
+- **README:** `https://github.com/scaredofthesix/voice-games/blob/d0f049b6c9e68ac705ddddb27bae3566851924c3/README.md`
+- **Repository tree:** `https://github.com/scaredofthesix/voice-games/tree/d0f049b6c9e68ac705ddddb27bae3566851924c3`
 
 ## Access instructions
 
