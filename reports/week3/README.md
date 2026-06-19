@@ -47,12 +47,21 @@ children (games: *Voice Racer*, *Voice Bubble Popper*).
 
 ## Screenshots (from ./images/)
 
-_Add the screenshots listed below into `reports/week3/images/` before the final submission._
+**Product Backlog board/view**
 
-- `backlog-board.png` - the Product Backlog board/view.
-- `sprint-board.png` - the Sprint Backlog board/view with the Sprint 1 milestone items.
-- `release.png` - the v0.1.0 release page.
-- `live-mvp.png` - the public GitHub Pages MVP.
+![Product Backlog board](./images/product-board.png)
+
+**Sprint Backlog board/view (Sprint 1 milestone items)**
+
+![Sprint Backlog board](./images/sprint-board.png)
+
+**Release v0.1.0 (MVP v1)**
+
+![v0.1.0 release page](./images/release.png)
+
+**Delivered MVP v1 (public GitHub Pages)**
+
+![Live MVP](./images/live-mvp.png)
 
 ## Coverage
 
