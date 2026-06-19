@@ -2,12 +2,21 @@
 
 A browser-based **voice-controlled English learning portal for children**. The child speaks the target word to trigger in-game actions - **voice is the only controller**. Features two games: Voice Racer (lane racing) and Voice Bubble Popper, with more planned.
 
-- **Live MVP v0:** https://10.93.26.180:8085/ (hosted on the Innopolis VM; reachable from the Innopolis network/VPN, accept the self-signed certificate). See the [MVP v0 report](./reports/week2/mvp-v0-report.md) for the smoke check and access notes.
-- **License:** [MIT](./LICENSE) (see *Attribution* below)
+- **Live MVP v1 (public, HTTPS):** https://scaredofthesix.github.io/voice-games/ - works in Google Chrome; allow microphone access when prompted.
+- **Release:** [v0.1.0 - MVP v1 (Sprint 1)](https://github.com/scaredofthesix/voice-games/releases/tag/v0.1.0) · [CHANGELOG](./CHANGELOG.md)
+- **Assignment 3 submission index:** [reports/week3/README.md](./reports/week3/README.md)
 - **Assignment 2 submission index:** [reports/week2/README.md](./reports/week2/README.md)
-- **MVP v0 report:** [reports/week2/mvp-v0-report.md](./reports/week2/mvp-v0-report.md)
+- **License:** [MIT](./LICENSE)
+- Earlier internal MVP v0 (Innopolis network/VPN only): https://10.93.26.180:8085/ - see the [MVP v0 report](./reports/week2/mvp-v0-report.md).
 
 > **Browser support:** voice recognition uses the Web Speech API and works only in **Google Chrome**; other browsers are not supported.
+
+## Product backlog and process
+
+- **Product Backlog (issues):** https://github.com/scaredofthesix/voice-games/issues
+- **User stories (SP + MVP + status):** [docs/user-stories.md](./docs/user-stories.md)
+- **Roadmap:** [docs/roadmap.md](./docs/roadmap.md) · **Definition of Done:** [docs/definition-of-done.md](./docs/definition-of-done.md)
+- **Sprint 1 milestone:** https://github.com/scaredofthesix/voice-games/milestone/1
 
 ## Tech stack
 
@@ -38,7 +47,24 @@ npm run preview
 
 ```
 
-### 2. Production Deployment via Docker
+### 2. Public deployment (GitHub Pages)
+
+The public MVP is served from the `gh-pages` branch over HTTPS (so the microphone works):
+
+```bash
+# Build with the project-pages base path
+MSYS_NO_PATHCONV=1 npx vite build --base=/voice-games/
+
+# SPA fallback + disable Jekyll
+cp dist/index.html dist/404.html
+touch dist/.nojekyll
+
+# Publish to the gh-pages branch
+npx -y gh-pages -d dist -b gh-pages
+
+```
+
+### 3. Production Deployment via Docker (internal VM)
 
 To bypass container network package-download bottlenecks on the VM, the project uses a hybrid multistage workflow: static assets are built on the host machine and served via a lightweight internal Python HTTP server container running in host-networking mode.
 
@@ -61,7 +87,7 @@ docker run -d --name voice-app --network host --restart unless-stopped voice-gam
 * **Status Check:** `docker ps`
 * **Logs:** `docker logs voice-app`
 
-### 3. Microphone Access on Remote VM (SSH Port Forwarding)
+### 4. Microphone Access on Remote VM (SSH Port Forwarding)
 
 Since the Web Speech API requires a secure context, modern browsers **block microphone access** on remote HTTP IP addresses. To test the deployed build on a remote VM, bind the server port to your local computer's `localhost`:
 
@@ -84,16 +110,18 @@ Since the Web Speech API requires a secure context, modern browsers **block micr
 .
 ├── LICENSE                 # MIT (repository), see Attribution
 ├── README.md               # this file
+├── CHANGELOG.md            # Keep a Changelog / SemVer
 ├── index.html              # Vite entry -> src/main.tsx
 ├── package.json
 ├── vite.config.ts
+├── docs/                   # user stories, roadmap, definition of done
 ├── src/
 │   ├── App.tsx             # app shell, view routing (HUB / VOICE_RACER / BUBBLE_POPPER)
 │   ├── data.ts             # built-in word categories
 │   ├── types.ts            # shared TypeScript types
 │   ├── utils.ts            # speech synthesis, word matching helpers
 │   └── components/         # GameCanvas, BubblePopperGame, AudioVisualizer, CustomWordsManager
-└── reports/week2/          # Assignment 2 deliverables (see index)
+└── reports/                # Assignment deliverables (week2, week3)
 
 ```
 
