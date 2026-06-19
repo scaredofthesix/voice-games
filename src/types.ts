@@ -3,6 +3,7 @@ export type GameState = 'START_SCREEN' | 'PLAYING' | 'COLLIDED' | 'GAME_OVER';
 export interface WordData {
   word: string;
   translation: string;
+  translationRu?: string;
   speakCount: number;
   struggleCount: number;
 }

@@ -1,24 +1,25 @@
 /**
  * Text-to-Speech vocalizer. Pronounces the given English word or phrase.
  */
-export function speakWord(word: string) {
+export function speakWord(word: string, lang: 'en' | 'ru' = 'en') {
   if ('speechSynthesis' in window) {
     // Cancel any ongoing speech so it speaks immediately on click
     window.speechSynthesis.cancel();
-    
+
+    const bcp47 = lang === 'ru' ? 'ru-RU' : 'en-US';
     const utterance = new SpeechSynthesisUtterance(word);
-    utterance.lang = 'en-US';
+    utterance.lang = bcp47;
     // Friendly, playful pitch & speed suited for kids
-    utterance.rate = 0.85; 
+    utterance.rate = 0.85;
     utterance.pitch = 1.15;
-    
-    // Find an English voice if available (optional enhancement)
+
+    // Pick a voice matching the requested language if available
     const voices = window.speechSynthesis.getVoices();
-    const enVoice = voices.find(v => v.lang.startsWith('en-'));
-    if (enVoice) {
-      utterance.voice = enVoice;
+    const match = voices.find(v => v.lang.startsWith(lang === 'ru' ? 'ru' : 'en-'));
+    if (match) {
+      utterance.voice = match;
     }
-    
+
     window.speechSynthesis.speak(utterance);
   }
 }
