@@ -1,9 +1,10 @@
 # Voice Games - Team 40
 
-A browser-based **voice-controlled English learning portal for children**. The child speaks the target word to trigger in-game actions - **voice is the only controller**. Features two games: Voice Racer (lane racing) and Voice Bubble Popper, with more planned.
+A browser-based **voice-controlled English learning portal for children**. The child speaks the target word to trigger in-game actions - **voice is the only controller**. Features four games: Voice Racer (lane racing), Voice Bubble Popper, Boss Fight, and Word Ladder (rocket climb), with more planned.
 
-- **Live MVP v1 (public, HTTPS):** https://scaredofthesix.github.io/voice-games/ - works in Google Chrome; allow microphone access when prompted.
+- **Live (public, HTTPS):** https://scaredofthesix.github.io/voice-games/ - works in Google Chrome; allow microphone access when prompted.
 - **Release:** [v0.1.0 - MVP v1 (Sprint 1)](https://github.com/scaredofthesix/voice-games/releases/tag/v0.1.0) · [CHANGELOG](./CHANGELOG.md)
+- **Assignment 4 submission index:** [reports/week4/README.md](./reports/week4/README.md)
 - **Assignment 3 submission index:** [reports/week3/README.md](./reports/week3/README.md)
 - **Assignment 2 submission index:** [reports/week2/README.md](./reports/week2/README.md)
 - **License:** [MIT](./LICENSE)
@@ -16,6 +17,7 @@ A browser-based **voice-controlled English learning portal for children**. The c
 - **Product Backlog (issues):** https://github.com/scaredofthesix/voice-games/issues
 - **User stories (SP + MVP + status):** [docs/user-stories.md](./docs/user-stories.md)
 - **Roadmap:** [docs/roadmap.md](./docs/roadmap.md) · **Definition of Done:** [docs/definition-of-done.md](./docs/definition-of-done.md)
+- **Quality:** [quality requirements](./docs/quality-requirements.md) · [quality requirement tests](./docs/quality-requirement-tests.md) · [testing strategy](./docs/testing.md) · [user acceptance tests](./docs/user-acceptance-tests.md)
 - **Sprint 1 milestone:** https://github.com/scaredofthesix/voice-games/milestone/1
 
 ## Tech stack
@@ -41,11 +43,17 @@ npm run dev
 # Type-check / lint
 npm run lint
 
+# Run the automated tests (and coverage)
+npm test
+npm run test:coverage
+
 # Production build / preview
 npm run build
 npm run preview
 
 ```
+
+Continuous integration (type check, tests with coverage, build, and a Lighthouse accessibility audit) runs on every pull request and on `main` via [`.github/workflows/ci.yml`](./.github/workflows/ci.yml). See [docs/testing.md](./docs/testing.md).
 
 ### 2. Public deployment (GitHub Pages)
 
@@ -114,14 +122,18 @@ Since the Web Speech API requires a secure context, modern browsers **block micr
 ├── index.html              # Vite entry -> src/main.tsx
 ├── package.json
 ├── vite.config.ts
-├── docs/                   # user stories, roadmap, definition of done
+├── docs/                   # user stories, roadmap, DoD, quality requirements, QRTs, testing, UAT
+├── vitest.config.ts        # test runner + coverage thresholds
+├── lighthouserc.json       # accessibility audit config (additional QA check)
 ├── src/
-│   ├── App.tsx             # app shell, view routing (HUB / VOICE_RACER / BUBBLE_POPPER)
+│   ├── App.tsx             # app shell, view routing (HUB / VOICE_RACER / BUBBLE_POPPER / BOSS_FIGHT / WORD_LADDER)
 │   ├── data.ts             # built-in word categories
 │   ├── types.ts            # shared TypeScript types
 │   ├── utils.ts            # speech synthesis, word matching helpers
-│   └── components/         # GameCanvas, BubblePopperGame, AudioVisualizer, CustomWordsManager
-└── reports/                # Assignment deliverables (week2, week3)
+│   ├── gameLogic.ts        # pure game rules (Boss Fight, Word Ladder) + tests
+│   ├── useSpeechRecognition.ts  # shared Web Speech API hook
+│   └── components/         # GameCanvas, BubblePopperGame, BossFightGame, WordLadderGame, AudioVisualizer, CustomWordsManager
+└── reports/                # Assignment deliverables (week2, week3, week4)
 
 ```
 
