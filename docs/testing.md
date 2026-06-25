@@ -72,6 +72,10 @@ and the existing Lychee link-checking job.
   on assistive technology, so an inaccessible page reduces real usability.
 - **Where it runs:** the `accessibility` job in `.github/workflows/ci.yml`,
   against the built `dist` served locally during the run.
+- **Threshold:** the job asserts a Lighthouse accessibility score of at least
+  0.85, the current measured baseline (the legacy hub palette has some contrast
+  findings). This is a ratchet: the gate fails on any regression below the
+  baseline, and the team will raise it as contrast issues are fixed.
 - **Limitations:** automated audits cover only a subset of accessibility; they
   do not replace manual screen-reader testing, which remains a follow-up.
 
