@@ -24,10 +24,12 @@ import { GameCanvas } from './components/GameCanvas';
 import { AudioVisualizer } from './components/AudioVisualizer';
 import { CustomWordsManager } from './components/CustomWordsManager';
 import { BubblePopperGame } from './components/BubblePopperGame';
+import { BossFightGame } from './components/BossFightGame';
+import { WordLadderGame } from './components/WordLadderGame';
 import { speakWord, speakSound, matchesWord } from './utils';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER'>('HUB');
+  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER'>('HUB');
 
   // Game states
   const [gameState, setGameState] = useState<GameState>('START_SCREEN');
@@ -71,6 +73,34 @@ export default function App() {
     localStorage.setItem('bubble_popper_highscore', newScore.toString());
   };
 
+  const [bossFightHighScore, setBossFightHighScore] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('boss_fight_highscore');
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const handleUpdateBossFightHighScore = (newScore: number) => {
+    setBossFightHighScore(newScore);
+    localStorage.setItem('boss_fight_highscore', newScore.toString());
+  };
+
+  const [wordLadderHighScore, setWordLadderHighScore] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('word_ladder_highscore');
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const handleUpdateWordLadderHighScore = (newScore: number) => {
+    setWordLadderHighScore(newScore);
+    localStorage.setItem('word_ladder_highscore', newScore.toString());
+  };
+
   const games = [
     {
       id: "voice-racer",
@@ -88,6 +118,24 @@ export default function App() {
       icon: "🫧",
       accent: "bg-sky-450",
       record: bubbleHighScore,
+      unlocked: true,
+    },
+    {
+      id: "boss-fight",
+      title: "BOSS FIGHT",
+      description: "Say each English word to strike the boss! Beat the boss before it beats you, but watch the timer on every word.",
+      icon: "⚔️",
+      accent: "bg-rose-400",
+      record: bossFightHighScore,
+      unlocked: true,
+    },
+    {
+      id: "word-ladder",
+      title: "WORD LADDER",
+      description: "Pronounce words to fly your rocket one step higher. Reach the top of the ladder to win the launch!",
+      icon: "🚀",
+      accent: "bg-indigo-400",
+      record: wordLadderHighScore,
       unlocked: true,
     },
   ];
@@ -462,7 +510,8 @@ export default function App() {
       <div className="absolute top-28 right-[10%] w-32 h-12 bg-white rounded-full opacity-60 blur-[1px] pointer-events-none animate-pulse" />
       <div className="absolute bottom-20 left-[4%] w-28 h-10 bg-white rounded-full opacity-40 blur-[1px] pointer-events-none" />
 
-      {/* HEADER BAR */}
+      {/* HEADER BAR - hidden for the self-contained Sprint 2 games (Boss Fight, Word Ladder) */}
+      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && (
       <header className="bg-yellow-400 border-b-8 border-slate-900 py-3.5 px-6 md:px-12 sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
         {currentView === 'HUB' ? (
           <>
@@ -549,6 +598,7 @@ export default function App() {
           </>
         )}
       </header>
+      )}
 
       {/* CORE DISPLAY WINDOW */}
       <main className="flex-grow p-4 md:p-8 max-w-4xl w-full mx-auto relative z-10">
@@ -649,6 +699,10 @@ export default function App() {
                               setGameState('START_SCREEN');
                             } else if (g.id === 'bubble-popper') {
                               setCurrentView('BUBBLE_POPPER');
+                            } else if (g.id === 'boss-fight') {
+                              setCurrentView('BOSS_FIGHT');
+                            } else if (g.id === 'word-ladder') {
+                              setCurrentView('WORD_LADDER');
                             }
                           }}
                           className="w-full sm:w-32 py-2 bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-0.5 uppercase tracking-wider transition-all select-none hover:scale-103 shadow-sm"
@@ -1164,7 +1218,7 @@ export default function App() {
         )}
 
           </>
-        ) : (
+        ) : currentView === 'BUBBLE_POPPER' ? (
           <BubblePopperGame
             onBackToHub={() => setCurrentView('HUB')}
             onUpdateHighScore={handleUpdateBubbleHighScore}
@@ -1175,6 +1229,20 @@ export default function App() {
             onClearCustomWords={handleClearCustomWords}
             onScoreChange={setBubbleScore}
             onLevelChange={setBubbleLevel}
+          />
+        ) : currentView === 'BOSS_FIGHT' ? (
+          <BossFightGame
+            onBackToHub={() => setCurrentView('HUB')}
+            customWords={customWords}
+            highScore={bossFightHighScore}
+            onUpdateHighScore={handleUpdateBossFightHighScore}
+          />
+        ) : (
+          <WordLadderGame
+            onBackToHub={() => setCurrentView('HUB')}
+            customWords={customWords}
+            highScore={wordLadderHighScore}
+            onUpdateHighScore={handleUpdateWordLadderHighScore}
           />
         )}
       </main>
