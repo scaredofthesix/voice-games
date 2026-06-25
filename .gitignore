@@ -8,6 +8,9 @@ dist/
 build/
 .vite/
 
+# Test coverage reports (generated)
+coverage/
+
 # Environment / secrets - never commit real credentials
 .env
 .env.local
