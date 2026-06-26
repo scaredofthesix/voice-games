@@ -26,6 +26,7 @@ interface Bubble {
   id: string;
   word: string;
   translation: string;
+  translationRu?: string;
   x: number; // percentage X (0 to 100)
   y: number; // Y position in pixels
   radius: number;
@@ -130,7 +131,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
     canvasHeight: 520,
     theme: 'sky' as BubbleTheme,
     vocabIndex: 0,
-    vocabList: [] as { word: string; translation: string }[]
+    vocabList: [] as { word: string; translation: string; translationRu?: string }[]
   });
 
   // Sync state transitions on variables triggered from React buttons and options
@@ -912,6 +913,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
             id: Math.random().toString(),
             word: wordObj.word,
             translation: wordObj.translation,
+            translationRu: (wordObj as any).translationRu,
             x: rx,
             y: h + 45, // start just below physical canvas
             radius: bubbleRadius,
@@ -997,17 +999,34 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
         ctx.fillStyle = '#0F172A'; // deep slate text color
         ctx.strokeStyle = 'rgba(255, 255, 255, 1)'; // stark layout contrast
         ctx.lineWidth = 4;
-        ctx.font = '900 15px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        ctx.strokeText(b.word.toUpperCase(), cx, b.y - 7);
-        ctx.fillText(b.word.toUpperCase(), cx, b.y - 7);
+        const trans = b.translationRu || b.translation;
+        if (trans) {
+          ctx.font = '900 13px sans-serif';
+          ctx.strokeText(b.word.toUpperCase(), cx, b.y - 10);
+          ctx.fillText(b.word.toUpperCase(), cx, b.y - 10);
 
-        // Sound icon replace translation per request: intuition friendly sound symbols
-        ctx.fillStyle = `hsla(${b.hue}, 100%, 30%, 1)`;
-        ctx.font = '14px Arial, sans-serif';
-        ctx.fillText('🔊', cx, b.y + 11);
+          ctx.fillStyle = '#475569'; // slate-600/700
+          ctx.font = 'bold 9px sans-serif';
+          ctx.strokeText(trans, cx, b.y + 2);
+          ctx.fillText(trans, cx, b.y + 2);
+
+          // Sound icon
+          ctx.fillStyle = `hsla(${b.hue}, 100%, 30%, 1)`;
+          ctx.font = '11px Arial, sans-serif';
+          ctx.fillText('🔊', cx, b.y + 14);
+        } else {
+          ctx.font = '900 15px sans-serif';
+          ctx.strokeText(b.word.toUpperCase(), cx, b.y - 6);
+          ctx.fillText(b.word.toUpperCase(), cx, b.y - 6);
+
+          // Sound icon
+          ctx.fillStyle = `hsla(${b.hue}, 100%, 30%, 1)`;
+          ctx.font = '14px Arial, sans-serif';
+          ctx.fillText('🔊', cx, b.y + 10);
+        }
 
         // 5. Warning Red-Zone limits evaluation when crossing alertY boundary
         if (b.y - b.radius * 0.5 <= alertY) {
@@ -1226,6 +1245,14 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                             <span className="truncate">{item.word}</span>
                             <Volume2 className="w-4 h-4 text-slate-600 group-hover:text-purple-600 shrink-0" />
                           </span>
+                          {(() => {
+                            const translation = item.translationRu || item.translation;
+                            return translation ? (
+                              <span className="text-[10px] text-purple-700 font-bold truncate mt-0.5">
+                                {translation}
+                              </span>
+                            ) : null;
+                          })()}
                         </button>
                       ))}
                     </div>

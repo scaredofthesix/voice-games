@@ -869,7 +869,7 @@ export default function App() {
                               <Volume2 className="w-4 h-4 text-slate-600 group-hover:text-purple-600 shrink-0" />
                             </span>
                             <span className="text-[10px] text-purple-700 font-bold truncate mt-0.5">
-                              {item.translation}
+                              {item.translationRu || item.translation}
                             </span>
                           </button>
                         ))}
@@ -1036,7 +1036,10 @@ export default function App() {
                               {targetWord}
                             </span>
                             <span className="text-[10px] text-slate-700 font-extrabold mt-0.5 truncate max-w-full">
-                              {getSelectedVocabularyList().find(v => v.word === targetWord)?.translation || ''}
+                              {(() => {
+                                const found = getSelectedVocabularyList().find(v => v.word.toLowerCase() === targetWord.toLowerCase());
+                                return found?.translationRu || found?.translation || '';
+                              })()}
                             </span>
                           </div>
                         ) : (

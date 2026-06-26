@@ -242,19 +242,29 @@ export function WordLadderGame({
             </button>
             {isWarmupOpen && (
               <div className="bg-white border-4 border-t-0 border-slate-900 rounded-b-2xl p-3 grid grid-cols-2 gap-2 max-h-44 overflow-y-auto">
-                {list.map((item, i) => (
-                  <button
-                    key={`${item.word}-${i}`}
-                    onClick={() => speakWord(item.word)}
-                    className="bg-yellow-50 hover:bg-yellow-100 border-2 border-slate-900 text-left p-2 rounded-xl flex items-center justify-between gap-1"
-                    aria-label={`Hear the word ${item.word}`}
-                  >
-                    <span className="text-slate-900 font-extrabold text-xs truncate">
-                      {item.word}
-                    </span>
-                    <Volume2 className="w-4 h-4 text-slate-600 shrink-0" />
-                  </button>
-                ))}
+                {list.map((item, i) => {
+                  const translation = item.translationRu || item.translation;
+                  return (
+                    <button
+                      key={`${item.word}-${i}`}
+                      onClick={() => speakWord(item.word)}
+                      className="bg-yellow-50 hover:bg-yellow-100 border-2 border-slate-900 text-left p-2 rounded-xl flex items-center justify-between gap-2"
+                      aria-label={`Hear the word ${item.word}`}
+                    >
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-slate-900 font-extrabold text-xs truncate">
+                          {item.word}
+                        </span>
+                        {translation && (
+                          <span className="text-[10px] text-slate-500 font-medium truncate mt-0.5">
+                            {translation}
+                          </span>
+                        )}
+                      </div>
+                      <Volume2 className="w-4 h-4 text-slate-600 shrink-0" />
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -380,6 +390,18 @@ export function WordLadderGame({
               >
                 {target}
               </p>
+              {(() => {
+                const currentWordItem = list.find(
+                  (item) => item.word.toLowerCase() === target.toLowerCase(),
+                );
+                const translation =
+                  currentWordItem?.translationRu || currentWordItem?.translation;
+                return translation ? (
+                  <p className="text-sm font-extrabold text-purple-600 mt-0.5">
+                    {translation}
+                  </p>
+                ) : null;
+              })()}
               <button
                 onClick={() => speakWord(target)}
                 className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900"
