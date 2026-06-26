@@ -16,12 +16,27 @@ https://scaredofthesix.github.io/voice-games/
 - US-08 Reliable, multi-attempt speech recognition - issue #35.
 - Bubble speed tuned for younger players - issue #34; placeholder slot removed - issue #33.
 
-## Next - MVP v2 (post-review scope)
+## Done - Sprint 2 (MVP v2 start, Assignment 4)
+
+Quality-and-automation sprint. Delivered increment plus the quality gates that now govern
+all later work.
+
+- **Two new games** answering the customer "more games" request (issue #54):
+  Boss Fight and Word Ladder (rocket climb).
+- **Automated testing** added with Vitest: unit, integration, and a performance test;
+  critical modules kept above the coverage floor (see `docs/testing.md`).
+- **Quality requirements** defined against ISO/IEC 25010 with automated quality requirement
+  tests (`docs/quality-requirements.md`, `docs/quality-requirement-tests.md`).
+- **CI quality gates** added: type check, tests with coverage, build, and a Lighthouse
+  accessibility audit. These gates and tests are maintained assets and continue to apply to
+  every later sprint per the updated Definition of Done.
+
+## Next - MVP v2 (remaining post-review scope)
 
 Confirmed with the customer at the Sprint 1 review.
 
-- **More games:** about four more games (we ship two today), prototyped early and polished
-  weekly - idea collection in issue #54. First candidate: a boss-fight word game.
+- **More games:** the customer asked for about four more games; two shipped in Sprint 2,
+  more to follow - idea collection in issue #54.
 - US-15 / US-09 Bilingual support: Russian translation shown and read aloud (understanding),
   English word clickable for pronunciation (imitation) - issues #36, #37.
 - US-17 Localized (Russian) interface with a language toggle.
