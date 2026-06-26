@@ -413,7 +413,7 @@ export function WordLadderGame({
                       </button>
                       {currentWordItem?.translationRu && (
                         <button
-                          onClick={() => speakWord(currentWordItem.translationRu, 'ru')}
+                          onClick={() => currentWordItem?.translationRu && speakWord(currentWordItem.translationRu, 'ru')}
                           className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-blue-600 hover:text-blue-800"
                           aria-label="Listen in Russian"
                         >

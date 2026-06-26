@@ -1252,7 +1252,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                             {item.translationRu && (
                               <button
                                 type="button"
-                                onClick={() => speakWord(item.translationRu, 'ru')}
+                                onClick={() => item.translationRu && speakWord(item.translationRu, 'ru')}
                                 className="text-blue-600 hover:text-blue-800 text-[10px] font-black uppercase flex items-center gap-0.5 cursor-pointer shrink-0"
                                 aria-label="Listen in Russian"
                               >
@@ -1481,7 +1481,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                             );
                             return matchedObj?.translationRu ? (
                               <button
-                                onClick={() => speakWord(matchedObj.translationRu, 'ru')}
+                                onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
                                 className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
                                 aria-label="Listen in Russian"
                               >
