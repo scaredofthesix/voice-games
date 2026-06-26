@@ -1235,16 +1235,31 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                   ) : (
                     <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
                       {vocabularyList.map((item, index) => (
-                        <button
+                        <div
                           key={index}
-                          type="button"
-                          onClick={() => speakWord(item.word)}
-                          className="bg-yellow-50 hover:bg-yellow-105 border-2 border-slate-900 text-left p-2 rounded-xl transition-all cursor-pointer flex flex-col justify-between group active:scale-95"
+                          className="bg-yellow-50 border-2 border-slate-900 text-left p-2 rounded-xl flex flex-col justify-between"
                         >
-                          <span className="text-slate-900 font-extrabold text-xs flex items-center justify-between w-full">
-                            <span className="truncate">{item.word}</span>
-                            <Volume2 className="w-4 h-4 text-slate-600 group-hover:text-purple-600 shrink-0" />
-                          </span>
+                          <div className="flex items-center justify-between gap-1 w-full">
+                            <button
+                              type="button"
+                              onClick={() => speakWord(item.word)}
+                              className="text-slate-900 font-extrabold text-xs flex items-center gap-1 cursor-pointer hover:text-purple-600 truncate flex-1"
+                              aria-label={`Hear the word ${item.word}`}
+                            >
+                              <span className="truncate">{item.word}</span>
+                              <Volume2 className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                            </button>
+                            {item.translationRu && (
+                              <button
+                                type="button"
+                                onClick={() => item.translationRu && speakWord(item.translationRu, 'ru')}
+                                className="text-blue-600 hover:text-blue-800 text-[10px] font-black uppercase flex items-center gap-0.5 cursor-pointer shrink-0"
+                                aria-label="Listen in Russian"
+                              >
+                                <Volume2 className="w-3 h-3 shrink-0" /> RU
+                              </button>
+                            )}
+                          </div>
                           {(() => {
                             const translation = item.translationRu || item.translation;
                             return translation ? (
@@ -1253,7 +1268,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                               </span>
                             ) : null;
                           })()}
-                        </button>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -1456,9 +1471,24 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                           <button
                             onClick={() => speakWord(word)}
                             className="p-1 bg-yellow-105 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg cursor-pointer"
+                            aria-label={`Hear the word ${word}`}
                           >
                             <Volume2 className="w-3.5 h-3.5 text-slate-900" />
                           </button>
+                          {(() => {
+                            const matchedObj = vocabularyList.find(
+                              (item) => item.word.toLowerCase() === word.toLowerCase()
+                            );
+                            return matchedObj?.translationRu ? (
+                              <button
+                                onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
+                                className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
+                                aria-label="Listen in Russian"
+                              >
+                                RU
+                              </button>
+                            ) : null;
+                          })()}
                         </div>
                       </div>
                     );
