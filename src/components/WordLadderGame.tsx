@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Mic, Play, Rocket, RotateCcw, Volume2 } from 'lucide-react';
+import { ArrowLeft, Mic, Pause, Play, Rocket, RotateCcw, Volume2 } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
@@ -58,6 +58,7 @@ export function WordLadderGame({
   );
   const [ladder, setLadder] = useState<WordLadderState>(() => createLadder());
   const [phase, setPhase] = useState<'START' | 'PLAYING'>('START');
+  const [paused, setPaused] = useState(false);
   const [target, setTarget] = useState('');
   const [boostNonce, setBoostNonce] = useState(0);
   const [isWarmupOpen, setIsWarmupOpen] = useState(false);
@@ -66,6 +67,7 @@ export function WordLadderGame({
   const phaseRef = useRef(phase);
   const targetRef = useRef(target);
   const ladderRef = useRef(ladder);
+  const pausedRef = useRef(paused);
   const wordIndexRef = useRef(-1);
 
   useEffect(() => {
@@ -77,6 +79,9 @@ export function WordLadderGame({
   useEffect(() => {
     ladderRef.current = ladder;
   }, [ladder]);
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
   const wordList = useCallback((): WordData[] => {
     if (activeCategory.id === 'custom') {
@@ -110,6 +115,7 @@ export function WordLadderGame({
   const handleTranscript = useCallback(
     (text: string) => {
       if (phaseRef.current !== 'PLAYING') return;
+      if (pausedRef.current) return;
       const prev = ladderRef.current;
       if (prev.status !== 'playing') return;
       const current = targetRef.current;
@@ -138,6 +144,8 @@ export function WordLadderGame({
     const fresh = createLadder(DEFAULT_LADDER_STEPS);
     ladderRef.current = fresh;
     setLadder(fresh);
+    setPaused(false);
+    pausedRef.current = false;
     setPhase('PLAYING');
     wordIndexRef.current = -1;
     nextWord();
@@ -147,6 +155,18 @@ export function WordLadderGame({
   const restart = useCallback(() => {
     beginClimb();
   }, [beginClimb]);
+
+  // Pause/resume: the climb is self-paced (no timer), so pausing just stops
+  // listening until the player resumes.
+  const togglePause = useCallback(() => {
+    setPaused((p) => {
+      const next = !p;
+      pausedRef.current = next;
+      if (next) stop();
+      else start();
+      return next;
+    });
+  }, [start, stop]);
 
   useEffect(() => {
     if (ladder.status === 'won') stop();
@@ -325,14 +345,49 @@ export function WordLadderGame({
       ) : (
         <div className="space-y-3" id="word-ladder-play">
           {/* Animated rocket scene */}
-          <div className="border-4 border-slate-900 rounded-2xl overflow-hidden bg-slate-900">
+          <div className="relative border-4 border-slate-900 rounded-2xl overflow-hidden bg-slate-900">
             <RocketClimb
               progress={ladderProgress(ladder)}
               zone={zone}
               boostNonce={boostNonce}
               won={isWon}
             />
+            {paused && !isWon && (
+              <div
+                className="absolute inset-0 bg-slate-900/75 flex flex-col items-center justify-center gap-1"
+                role="status"
+              >
+                <span className="text-4xl" aria-hidden="true">⏸️</span>
+                <span className="text-lg font-black uppercase tracking-widest text-white">
+                  Paused
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* Prominent pause / resume control */}
+          {!isWon && (
+            <button
+              onClick={togglePause}
+              aria-pressed={paused}
+              aria-label={paused ? 'Resume the climb' : 'Pause the climb'}
+              className={`w-full py-3 border-4 border-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 ${
+                paused
+                  ? 'bg-emerald-400 hover:bg-emerald-500 text-slate-900'
+                  : 'bg-amber-400 hover:bg-amber-500 text-slate-900'
+              }`}
+            >
+              {paused ? (
+                <>
+                  <Play className="w-5 h-5 fill-current stroke-[3]" /> Resume
+                </>
+              ) : (
+                <>
+                  <Pause className="w-5 h-5 fill-current stroke-[3]" /> Pause
+                </>
+              )}
+            </button>
+          )}
 
           {/* Climb progress (accessible) */}
           <div>

@@ -30,3 +30,19 @@
     box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
   }
 }
+
+/* Scale the whole interface up on desktop. The UI is sized mobile-first, so on
+   a PC screen it looks small. Tailwind sizes are rem-based, so bumping the root
+   font size enlarges text, spacing and the game canvases together. Phones and
+   small tablets (< 1024px) keep the original sizing. */
+@media (min-width: 1024px) {
+  html {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1536px) {
+  html {
+    font-size: 20px;
+  }
+}

@@ -120,13 +120,36 @@ function drawBackground(c: CanvasRenderingContext2D, s: ArenaState): void {
 function drawHero(c: CanvasRenderingContext2D, s: ArenaState): void {
   const bob = Math.sin(s.t * 0.08) * 4;
   const recoil = s.lunge > 0 ? -8 : 0; // step back when the boss attacks
-  const x = s.w * 0.2 + recoil;
-  const y = s.h * 0.72 + bob;
-  const size = Math.min(s.w, s.h) * 0.18;
+  const x = s.w * 0.22 + recoil;
+  // The hero should read as a clear foreground character (the boss is 0.34):
+  // bigger than before, standing on a ground shadow and given a soft halo so it
+  // no longer blends into the dark arena background.
+  const size = Math.min(s.w, s.h) * 0.26;
+  const y = s.h * 0.7 + bob;
+
+  // ground shadow so the hero feels planted in the scene
+  c.save();
+  c.globalAlpha = 0.28;
+  c.fillStyle = '#000000';
+  c.beginPath();
+  c.ellipse(x, s.h * 0.86, size * 0.42, size * 0.14, 0, 0, Math.PI * 2);
+  c.fill();
+  c.restore();
+
+  // Solid hero with a tight dark drop shadow so it reads as a crisp, opaque
+  // foreground character. A soft white glow here made the wizard look
+  // washed-out / transparent, so we use a dark offset shadow instead.
+  c.save();
+  c.globalAlpha = 1;
+  c.shadowColor = 'rgba(0, 0, 0, 0.6)';
+  c.shadowBlur = 6;
+  c.shadowOffsetX = 2;
+  c.shadowOffsetY = 4;
   c.font = `${size}px serif`;
   c.textAlign = 'center';
   c.textBaseline = 'middle';
   c.fillText('🧙', x, y);
+  c.restore();
 }
 
 function drawBoss(c: CanvasRenderingContext2D, s: ArenaState): void {

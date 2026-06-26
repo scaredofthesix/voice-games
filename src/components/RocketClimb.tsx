@@ -128,7 +128,7 @@ function drawRocket(c: CanvasRenderingContext2D, s: ClimbState): void {
   const rocketY = s.h * 0.86 - s.progress * (s.h * 0.72);
   const size = Math.min(s.w, s.h) * 0.16;
 
-  // animated exhaust flame
+  // animated exhaust flame, straight below the rocket
   const flick = 0.7 + Math.random() * 0.6;
   c.fillStyle = pick(FLAME);
   c.beginPath();
@@ -138,10 +138,16 @@ function drawRocket(c: CanvasRenderingContext2D, s: ClimbState): void {
   c.closePath();
   c.fill();
 
+  // The 🚀 glyph points up-and-to-the-right; rotate it -45 degrees around its
+  // centre so the nose points straight up and it reads as flying vertically.
+  c.save();
+  c.translate(cx, rocketY);
+  c.rotate(-Math.PI / 4);
   c.font = `${size}px serif`;
   c.textAlign = 'center';
   c.textBaseline = 'middle';
-  c.fillText('🚀', cx, rocketY);
+  c.fillText('🚀', 0, 0);
+  c.restore();
 }
 
 function emitExhaust(s: ClimbState): void {

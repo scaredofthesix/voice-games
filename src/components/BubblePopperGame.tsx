@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   Play,
+  Pause,
   RotateCcw,
   Volume2,
   X,
@@ -89,6 +90,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
   const [lives, setLives] = useState(3);
+  const [paused, setPaused] = useState(false);
 
   // Synchronize score and level back to App.tsx
   useEffect(() => {
@@ -133,6 +135,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
     canvasHeight: 520,
     theme: 'sky' as BubbleTheme,
     vocabIndex: 0,
+    paused: false,
     vocabList: [] as { word: string; translation: string; translationRu?: string }[]
   });
 
@@ -140,6 +143,10 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
   useEffect(() => {
     stateRef.current.gameState = gameState;
   }, [gameState]);
+
+  useEffect(() => {
+    stateRef.current.paused = paused;
+  }, [paused]);
 
   useEffect(() => {
     stateRef.current.theme = bubbleTheme;
@@ -204,8 +211,9 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       };
 
       rec.onend = () => {
-        // Automatically regain continuous speech streaming if the gamethread is still live
-        if (stateRef.current.gameState === 'PLAYING') {
+        // Automatically regain continuous speech streaming if the gamethread is
+        // still live and not paused.
+        if (stateRef.current.gameState === 'PLAYING' && !stateRef.current.paused) {
           try {
             rec.start();
           } catch {
@@ -243,7 +251,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
   // Check if spoken word matches any floating bubble
   const evaluateVoiceInput = (speechText: string) => {
     const s = stateRef.current;
-    if (s.gameState !== 'PLAYING') return;
+    if (s.gameState !== 'PLAYING' || s.paused) return;
 
     // Search active unburst bubbles for matches
     let matchedIndex = -1;
@@ -352,18 +360,37 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
     s.bubbles = [];
     s.particles = [];
     s.lastSpawnTime = Date.now();
+    s.paused = false;
 
     // Set aligned React states
     setGameState('PLAYING');
     setScore(0);
     setLevel(1);
     setLives(3);
+    setPaused(false);
     setLastHeardTranscript('');
     setWordStudyStats({});
     setStruggleCounter({});
 
     startVoiceEngine();
     speakSound.playCoin();
+  };
+
+  // Pause/resume: freeze the bubbles and stop listening while paused.
+  const togglePause = () => {
+    const s = stateRef.current;
+    const next = !s.paused;
+    s.paused = next;
+    setPaused(next);
+    if (next) {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    } else {
+      // Reset the spawn clock so the pause does not dump a burst of bubbles.
+      s.lastSpawnTime = Date.now();
+      startVoiceEngine();
+    }
   };
 
   // Clean and exit voice recognition triggers during gameplay failures
@@ -864,6 +891,13 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       const s = stateRef.current;
       if (s.gameState !== 'PLAYING') return;
 
+      // Frozen while paused: keep the last frame and the loop alive, but stop
+      // spawning, floating and the danger-line checks until the player resumes.
+      if (s.paused) {
+        frameId = requestAnimationFrame(frameLoop);
+        return;
+      }
+
       const now = Date.now();
       const w = s.canvasWidth;
       const h = s.canvasHeight;
@@ -1363,6 +1397,24 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
             </button>
           </div>
 
+          {/* Prominent pause / resume control */}
+          <button
+            onClick={togglePause}
+            aria-pressed={paused}
+            aria-label={paused ? 'Resume the game' : 'Pause the game'}
+            className={`w-full py-3 border-4 border-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 ${
+              paused
+                ? 'bg-emerald-400 hover:bg-emerald-500 text-slate-900'
+                : 'bg-amber-400 hover:bg-amber-500 text-slate-900'
+            }`}
+          >
+            {paused ? (
+              <><Play className="w-5 h-5 fill-current stroke-[3]" /> Resume</>
+            ) : (
+              <><Pause className="w-5 h-5 fill-current stroke-[3]" /> Pause</>
+            )}
+          </button>
+
           {/* Gameplay Canvas wrapper */}
           <div className="relative border-8 border-slate-900 rounded-3xl overflow-hidden shadow-2xl bg-indigo-950">
             <canvas
@@ -1378,6 +1430,16 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                 🎙️ {t('bubble.sayAnyWord')}
               </span>
             </div>
+
+            {/* Pause overlay over the bubble canvas */}
+            {paused && (
+              <div className="absolute inset-0 z-50 bg-slate-900/75 flex flex-col items-center justify-center gap-1">
+                <span className="text-5xl" aria-hidden="true">⏸️</span>
+                <span className="text-xl font-black uppercase tracking-widest text-white">
+                  Paused
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Audio speech monitoring overlay */}

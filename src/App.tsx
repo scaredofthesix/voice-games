@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   Play,
+  Pause,
   RotateCcw,
   Volume2,
   X,
@@ -162,6 +163,7 @@ export default function App() {
   // Bullet time states
   const [isBulletTime, setIsBulletTime] = useState(false);
   const [bulletTimeProgress, setBulletTimeProgress] = useState(100);
+  const [racerPaused, setRacerPaused] = useState(false);
 
   // Current level words tracking
   const [currentLaneWords, setCurrentLaneWords] = useState<Record<Lane, string>>({
@@ -176,6 +178,7 @@ export default function App() {
   const currentLaneWordsRef = useRef(currentLaneWords);
   const isBulletTimeRef = useRef(isBulletTime);
   const vocabIndexRef = useRef(vocabIndex);
+  const racerPausedRef = useRef(racerPaused);
 
   useEffect(() => {
     gameStateRef.current = gameState;
@@ -196,6 +199,10 @@ export default function App() {
   useEffect(() => {
     vocabIndexRef.current = vocabIndex;
   }, [vocabIndex]);
+
+  useEffect(() => {
+    racerPausedRef.current = racerPaused;
+  }, [racerPaused]);
 
   // Speech Recognition hook
   const recognitionRef = useRef<any>(null);
@@ -293,8 +300,9 @@ export default function App() {
       };
 
       rec.onend = () => {
-        // Automatically restart speech loop to keep continuous practice active
-        if (gameStateRef.current === 'PLAYING') {
+        // Automatically restart speech loop to keep continuous practice active,
+        // unless the race is paused (then we keep the mic off until resume).
+        if (gameStateRef.current === 'PLAYING' && !racerPausedRef.current) {
           try {
             rec.start();
           } catch {
@@ -332,6 +340,7 @@ export default function App() {
   // Evaluate if spoken transcript matches target adjacent lane words
   const evaluateVoiceTrigger = (spokenText: string) => {
     if (gameStateRef.current !== 'PLAYING') return;
+    if (racerPausedRef.current) return;
     if (!isBulletTimeRef.current) return;
 
     const activeWords = currentLaneWordsRef.current;
@@ -416,8 +425,25 @@ export default function App() {
     setVocabIndex(0);
     setLastHeardTranscript('');
     setWordStudyStats({});
+    setRacerPaused(false);
+    racerPausedRef.current = false;
     startVoiceEngine();
     speakSound.playCoin();
+  };
+
+  // Pause/resume the race: freeze the canvas + swerve timer and stop listening.
+  const toggleRacerPause = () => {
+    const next = !racerPausedRef.current;
+    racerPausedRef.current = next;
+    setRacerPaused(next);
+    if (next) {
+      // Stop the mic; onend will not auto-restart while paused.
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    } else {
+      startVoiceEngine();
+    }
   };
 
   // Bullet-time countdown timer loop
@@ -426,6 +452,7 @@ export default function App() {
       setBulletTimeProgress(100);
       return;
     }
+    if (racerPaused) return; // freeze the swerve countdown while paused
 
     const maxInputTime = Math.max(2200, 5500 - level * 750);
     const startTimeStamp = Date.now();
@@ -442,7 +469,7 @@ export default function App() {
     }, 25);
 
     return () => clearInterval(interval);
-  }, [isBulletTime, level]);
+  }, [isBulletTime, level, racerPaused]);
 
   // Collision damage event triggered by physical canvas detection or timeout
   const handleCarCollision = () => {
@@ -977,6 +1004,25 @@ export default function App() {
                 Topic: {activeCategory.name}
               </div>
 
+              {/* Pause / Resume */}
+              <button
+                onClick={toggleRacerPause}
+                aria-pressed={racerPaused}
+                aria-label={racerPaused ? 'Resume the race' : 'Pause the race'}
+                className={`border-2 border-slate-900 px-3 py-1 rounded-xl font-black text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-sm uppercase ${
+                  racerPaused
+                    ? 'bg-emerald-400 hover:bg-emerald-500 text-slate-900'
+                    : 'bg-amber-400 hover:bg-amber-500 text-slate-900'
+                }`}
+                id="btn-pause-playing-state"
+              >
+                {racerPaused ? (
+                  <><Play className="w-3.5 h-3.5 fill-current stroke-[3]" /> RESUME</>
+                ) : (
+                  <><Pause className="w-3.5 h-3.5 fill-current stroke-[3]" /> PAUSE</>
+                )}
+              </button>
+
               {/* Exit out button */}
               <button
                 onClick={() => {
@@ -1002,6 +1048,7 @@ export default function App() {
                 onAvoidObstacle={handleAvoidObstacle}
                 lives={lives}
                 isBulletTime={isBulletTime}
+                paused={racerPaused}
                 onApproach={handleApproachObstacle}
                 score={score}
                 level={level}
@@ -1118,6 +1165,16 @@ export default function App() {
                       </div>
                     );
                   })}
+                </div>
+              )}
+
+              {/* Pause overlay over the racing canvas */}
+              {racerPaused && (
+                <div className="absolute inset-0 z-50 bg-slate-900/75 flex flex-col items-center justify-center gap-1">
+                  <span className="text-5xl" aria-hidden="true">⏸️</span>
+                  <span className="text-xl font-black uppercase tracking-widest text-white">
+                    Paused
+                  </span>
                 </div>
               )}
             </div>

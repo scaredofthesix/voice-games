@@ -31,7 +31,7 @@ describe('BossFightGame (integration)', () => {
     ).toBeInTheDocument();
   });
 
-  test('speaking each shown word defeats the boss and wins', () => {
+  test('speaking words defeats bosses and the fight continues endlessly', () => {
     cleanup = installMockSpeechRecognition();
     render(<BossFightGame onBackToHub={() => {}} customWords={[]} />);
 
@@ -42,6 +42,9 @@ describe('BossFightGame (integration)', () => {
     const rec = MockSpeechRecognition.latest();
     expect(rec).toBeTruthy();
 
+    // Speak far more correct words than the original 3-boss gauntlet ever
+    // needed (22). In endless mode the fight never ends in victory: a fresh
+    // target word is always shown and no win screen appears.
     for (let i = 0; i < 30; i++) {
       const targetEl = screen.queryByTestId('target-word');
       if (!targetEl) break;
@@ -49,6 +52,7 @@ describe('BossFightGame (integration)', () => {
       act(() => rec.emit(word));
     }
 
-    expect(screen.getByText(/you won/i)).toBeInTheDocument();
+    expect(screen.queryByText(/you won/i)).not.toBeInTheDocument();
+    expect(screen.getByTestId('target-word')).toBeInTheDocument();
   });
 });

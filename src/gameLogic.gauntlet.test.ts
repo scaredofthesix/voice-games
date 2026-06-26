@@ -8,6 +8,8 @@ import {
   climbStep,
   createBossFight,
   createLadder,
+  ENDLESS_HP_RAMP,
+  endlessBossAtLevel,
   isFinalBoss,
   ladderZone,
 } from './gameLogic';
@@ -36,6 +38,33 @@ describe('boss roster', () => {
     expect(isFinalBoss(0)).toBe(false);
     expect(isFinalBoss(BOSS_ROSTER.length - 1)).toBe(true);
     expect(isFinalBoss(999)).toBe(true);
+  });
+});
+
+describe('endlessBossAtLevel', () => {
+  test('returns the roster bosses unchanged on the first pass', () => {
+    for (let i = 0; i < BOSS_ROSTER.length; i++) {
+      expect(endlessBossAtLevel(i).name).toBe(BOSS_ROSTER[i].name);
+      expect(endlessBossAtLevel(i).hp).toBe(BOSS_ROSTER[i].hp);
+    }
+  });
+
+  test('loops the roster and ramps HP each full pass', () => {
+    const looped = endlessBossAtLevel(BOSS_ROSTER.length); // first boss again
+    expect(looped.name).toBe(BOSS_ROSTER[0].name);
+    expect(looped.hp).toBe(BOSS_ROSTER[0].hp + ENDLESS_HP_RAMP);
+
+    const twice = endlessBossAtLevel(BOSS_ROSTER.length * 2);
+    expect(twice.name).toBe(BOSS_ROSTER[0].name);
+    expect(twice.hp).toBe(BOSS_ROSTER[0].hp + ENDLESS_HP_RAMP * 2);
+  });
+
+  test('never runs out of bosses and keeps HP positive', () => {
+    for (const level of [0, 7, 50, 999]) {
+      const boss = endlessBossAtLevel(level);
+      expect(boss.emoji.length).toBeGreaterThan(0);
+      expect(boss.hp).toBeGreaterThan(0);
+    }
   });
 });
 

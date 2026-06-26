@@ -55,7 +55,7 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       },
       bossFight: {
         title: 'BOSS FIGHT',
-        description: 'Say each English word to strike the boss! Beat the boss before it beats you, but watch the timer on every word.',
+        description: 'Say each English word to strike the boss! Beat one boss and a tougher one appears - survive as long as you can, and watch the timer on every word.',
       },
       wordLadder: {
         title: 'WORD LADDER',
@@ -143,7 +143,7 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       },
       bossFight: {
         title: 'БОЙ С БОССОМ',
-        description: 'Произноси каждое английское слово, чтобы ударить босса! Победи до того, как он победит тебя, и следи за таймером.',
+        description: 'Произноси каждое английское слово, чтобы бить босса! Победишь одного - приходит посильнее. Держись как можно дольше и следи за таймером.',
       },
       wordLadder: {
         title: 'ЛЕСТНИЦА СЛОВ',
