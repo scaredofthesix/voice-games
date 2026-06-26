@@ -27,8 +27,10 @@ import { BubblePopperGame } from './components/BubblePopperGame';
 import { BossFightGame } from './components/BossFightGame';
 import { WordLadderGame } from './components/WordLadderGame';
 import { speakWord, speakSound, matchesWord } from './utils';
+import { useUiLanguage } from './uiLanguage';
 
 export default function App() {
+  const { language, setLanguage, t } = useUiLanguage();
   const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER'>('HUB');
 
   // Game states
@@ -104,8 +106,8 @@ export default function App() {
   const games = [
     {
       id: "voice-racer",
-      title: "VOICE LANE RACER",
-      description: "Pronounce words right to avoid car crashing! Correct pronunciation swerves your car to dodge roadblocks.",
+      title: t('games.voiceRacer.title'),
+      description: t('games.voiceRacer.description'),
       icon: "🚗",
       accent: "bg-emerald-400",
       record: highScore,
@@ -113,8 +115,8 @@ export default function App() {
     },
     {
       id: "bubble-popper",
-      title: "VOICE BUBBLE POPPER",
-      description: "Pronounce words on translucent floating bubbles to pop them before they cross the red danger zone!",
+      title: t('games.bubblePopper.title'),
+      description: t('games.bubblePopper.description'),
       icon: "🫧",
       accent: "bg-sky-450",
       record: bubbleHighScore,
@@ -122,8 +124,8 @@ export default function App() {
     },
     {
       id: "boss-fight",
-      title: "BOSS FIGHT",
-      description: "Say each English word to strike the boss! Beat the boss before it beats you, but watch the timer on every word.",
+      title: t('games.bossFight.title'),
+      description: t('games.bossFight.description'),
       icon: "⚔️",
       accent: "bg-rose-400",
       record: bossFightHighScore,
@@ -131,8 +133,8 @@ export default function App() {
     },
     {
       id: "word-ladder",
-      title: "WORD LADDER",
-      description: "Pronounce words to fly your rocket one step higher. Reach the top of the ladder to win the launch!",
+      title: t('games.wordLadder.title'),
+      description: t('games.wordLadder.description'),
       icon: "🚀",
       accent: "bg-indigo-400",
       record: wordLadderHighScore,
@@ -521,19 +523,29 @@ export default function App() {
               </div>
               <div className="text-center sm:text-left">
                 <h1 className="text-xl md:text-2xl font-black tracking-wider text-slate-900 uppercase drop-shadow-[0_2px_0_rgba(255,255,255,1)]">
-                  VOICE WORD GAMES
+                  {t('header.title')}
                 </h1>
                 <p className="text-[10px] text-purple-900 tracking-widest font-black uppercase bg-white/70 border-2 border-slate-900 px-2 py-0.5 rounded-full inline-block mt-0.5">
-                  ⭐ KIDS LEARNING HUB
+                  {t('header.subtitle')}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="bg-pink-100 border-4 border-slate-900 text-slate-900 px-4 py-1.5 rounded-2xl flex items-center gap-2 shadow-md hover:scale-105 transition-transform">
-                <Trophy className="w-5 h-5 text-yellow-600 fill-yellow-400 stroke-[2.5]" />
-                <span className="text-xs font-black">TOTAL RECORD:</span>
-                <span className="font-black text-sm text-yellow-700 font-mono tracking-tight">{totalRecordSum}</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLanguage(language === 'en' ? 'ru' : 'en')}
+                  aria-label={language === 'en' ? t('header.switchLabel') : t('header.switchLabel')}
+                  className="bg-white border-4 border-slate-900 px-3 py-1.5 rounded-2xl text-slate-900 font-black text-xs uppercase tracking-wider shadow-md"
+                >
+                  {language === 'en' ? 'RU' : 'EN'}
+                </button>
+                <div className="bg-pink-100 border-4 border-slate-900 text-slate-900 px-4 py-1.5 rounded-2xl flex items-center gap-2 shadow-md hover:scale-105 transition-transform">
+                  <Trophy className="w-5 h-5 text-yellow-600 fill-yellow-400 stroke-[2.5]" />
+                  <span className="text-xs font-black">{t('header.totalRecord')}</span>
+                  <span className="font-black text-sm text-yellow-700 font-mono tracking-tight">{totalRecordSum}</span>
+                </div>
               </div>
             </div>
           </>
@@ -552,7 +564,7 @@ export default function App() {
                 className="bg-white hover:bg-slate-50 border-4 border-slate-900 px-3.5 py-1.5 rounded-2xl text-slate-900 font-black text-xs flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5 shadow-md uppercase tracking-wider animate-pulse"
                 id="btn-back-to-hub-header"
               >
-                ← HUB
+                ← {t('header.backToHub')}
               </button>
               <div className="w-10 h-10 rounded-xl bg-pink-500 border-4 border-slate-900 flex items-center justify-center shadow-md animate-bounce">
                 <span className="text-xl" role="img" aria-label="game-icon">
@@ -561,18 +573,26 @@ export default function App() {
               </div>
               <div className="text-left">
                 <h1 className="text-xs sm:text-sm md:text-base font-black tracking-wider text-slate-900 uppercase drop-shadow-[0_1px_0_rgba(255,255,255,1)] leading-none">
-                  {currentView === 'VOICE_RACER' ? 'VOICE LANE RACER' : 'VOICE BUBBLE POPPER'}
+                  {currentView === 'VOICE_RACER' ? t('games.voiceRacer.title') : t('games.bubblePopper.title')}
                 </h1>
                 <p className="text-[9px] text-purple-900 tracking-wider font-extrabold uppercase bg-white/70 border-2 border-slate-900 px-1.5 py-0.5 rounded-full inline-block mt-0.5">
-                  {currentView === 'VOICE_RACER' ? `Level ${level}` : `Level ${bubbleLevel}`}
+                  {currentView === 'VOICE_RACER' ? `${t('header.level')} ${level}` : `${t('header.level')} ${bubbleLevel}`}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center flex-wrap justify-center sm:justify-end gap-2">
               {/* CURRENT GAME SCORE */}
+              <button
+                type="button"
+                onClick={() => setLanguage(language === 'en' ? 'ru' : 'en')}
+                aria-label={language === 'en' ? t('header.switchLabel') : t('header.switchLabel')}
+                className="bg-white border-4 border-slate-900 text-slate-900 px-2.5 py-1 rounded-2xl text-[10px] font-black uppercase tracking-wider shadow-sm"
+              >
+                {language === 'en' ? 'RU' : 'EN'}
+              </button>
               <div className="bg-pink-100 border-4 border-slate-900 text-slate-900 px-2.5 py-1 rounded-2xl flex items-center gap-1 border-dashed shadow-sm">
-                <span className="text-[10px] font-black uppercase text-slate-600">SCORE:</span>
+                <span className="text-[10px] font-black uppercase text-slate-600">{t('header.score')}</span>
                 <span className="font-black text-xs text-pink-600 font-mono tracking-tight">
                   {currentView === 'VOICE_RACER' ? score : bubbleScore}
                 </span>
@@ -581,7 +601,7 @@ export default function App() {
               {/* HIGH SCORE FOR THE GAME */}
               <div className="bg-amber-100 border-4 border-slate-900 text-slate-900 px-2.5 py-1 rounded-2xl flex items-center gap-1 shadow-sm">
                 <Trophy className="w-3.5 h-3.5 text-yellow-600 fill-yellow-400 stroke-[2.5]" />
-                <span className="text-[10px] font-black uppercase text-slate-600">BEST:</span>
+                <span className="text-[10px] font-black uppercase text-slate-600">{t('header.best')}</span>
                 <span className="font-black text-xs text-yellow-700 font-mono tracking-tight">
                   {currentView === 'VOICE_RACER' ? highScore : bubbleHighScore}
                 </span>
@@ -589,7 +609,7 @@ export default function App() {
               
               {/* SUM OF ALL HIGH SCORES */}
               <div className="bg-purple-100 border-4 border-slate-900 text-slate-900 px-2.5 py-1 rounded-2xl flex items-center gap-1 shadow-md">
-                <span className="text-[10px] font-black uppercase text-slate-600">TOTAL:</span>
+                <span className="text-[10px] font-black uppercase text-slate-600">{t('header.total')}</span>
                 <span className="font-black text-xs text-purple-700 font-mono tracking-tight">
                   {totalRecordSum}
                 </span>
@@ -618,10 +638,10 @@ export default function App() {
                 </div>
               </div>
               <h1 className="text-3xl md:text-4xl font-black tracking-wider text-slate-900 uppercase drop-shadow-[0_3px_0_rgba(255,255,255,1)]">
-                VOICE GAMES!
+                {t('hub.title')}
               </h1>
               <p className="text-xs text-slate-700 font-extrabold max-w-md mx-auto leading-relaxed">
-                Play English games with your voice! Match words, pop balloons, and win trophies!
+                {t('hub.subtitle')}
               </p>
             </div>
 
@@ -661,11 +681,11 @@ export default function App() {
                           </h3>
                           {g.unlocked ? (
                             <span className="bg-emerald-400 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border-2 border-slate-900">
-                              PLAY 🟢
+                              {t('hub.playBadge')} 🟢
                             </span>
                           ) : (
                             <span className="bg-slate-300 text-slate-600 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border-2 border-slate-300">
-                              TEMPLATE 🔒
+                              {t('hub.lockedBadge')} 🔒
                             </span>
                           )}
                         </div>
@@ -685,7 +705,7 @@ export default function App() {
                           ? 'bg-slate-200 border-slate-300 text-slate-500'
                           : 'bg-amber-100 border-slate-900 text-amber-900'
                       }`}>
-                        <span>🏆 RECORD:</span>
+                        <span>🏆 {t('hub.record')}</span>
                         <span className="font-mono text-sm tracking-tight">{g.record}</span>
                       </div>
 
@@ -708,7 +728,7 @@ export default function App() {
                           className="w-full sm:w-32 py-2 bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-0.5 uppercase tracking-wider transition-all select-none hover:scale-103 shadow-sm"
                           id={`btn-play-${g.id}`}
                         >
-                          <Play className="w-3 h-3 fill-current stroke-[3.5]" /> PLAY 🚀
+                          <Play className="w-3 h-3 fill-current stroke-[3.5]" /> {t('hub.playButton')} 🚀
                         </button>
                       ) : (
                         <button
@@ -749,7 +769,7 @@ export default function App() {
                 className="w-full py-5 bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 border-4 border-slate-900 text-white font-black text-xl rounded-2xl flex items-center justify-center gap-3 cursor-pointer transition-all hover:scale-102 active:translate-y-1.5 active:shadow-none bubble-shadow-green uppercase tracking-wide"
                 id="btn-play-game-start"
               >
-                <Play className="w-6 h-6 fill-current stroke-[3.5] animate-bounce" /> START HIGHWAY RACE!
+                <Play className="w-6 h-6 fill-current stroke-[3.5] animate-bounce" /> {t('shared.startHighwayRace')}
               </button>
 
               <div className="border-b-4 border-dashed border-slate-300 my-1" />
@@ -757,7 +777,7 @@ export default function App() {
               {/* Highway Theme Selection Mode */}
               <div className="space-y-2 text-left">
                 <label className="block text-xs font-black text-rose-500 uppercase tracking-widest ml-1">
-                  CHOOSE ROAD ENVIROMENT:
+                  {t('shared.chooseRoadEnvironment')}
                 </label>
                 <div className="grid grid-cols-2 gap-2.5">
                   {(['forest', 'night', 'desert', 'city'] as TrackStyle[]).map((style) => (
@@ -791,7 +811,7 @@ export default function App() {
                   className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer font-black text-xs text-slate-800"
                 >
                   <span className="flex items-center gap-2">
-                    TASK BOOK: <span className="text-purple-600 font-black uppercase text-xs">[{activeCategory.name}]</span>
+                    {t('shared.taskBook')} <span className="text-purple-600 font-black uppercase text-xs">[{activeCategory.name}]</span>
                   </span>
                   <span className="text-xs text-slate-800 bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">{isCategorySelectorExpanded ? '▲' : '▼'}</span>
                 </button>
@@ -818,7 +838,7 @@ export default function App() {
 
                     <button
                       onClick={() => {
-                        setActiveCategory({ id: 'custom', name: 'My Words', description: '', icon: 'edit', words: customWords });
+                        setActiveCategory({ id: 'custom', name: t('shared.myWords'), description: '', icon: 'edit', words: customWords });
                         setIsCategorySelectorExpanded(false);
                       }}
                       className={`w-full text-left px-3 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-between border-2 ${
@@ -845,7 +865,7 @@ export default function App() {
                   className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer font-black text-xs text-slate-800"
                 >
                   <span className="flex items-center gap-2">
-                    LISTEN & LEARN PRACTICE ({getSelectedVocabularyList().length} Words)
+                    {t('shared.listenAndLearnPractice')} ({getSelectedVocabularyList().length} {t('shared.wordsLabel')})
                   </span>
                   <span className="text-xs text-slate-800 bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">{isWarmupExpanded ? '▲' : '▼'}</span>
                 </button>
@@ -854,7 +874,7 @@ export default function App() {
                   <div className="bg-white border-4 border-slate-900 rounded-2xl p-3">
                     {activeCategory.id === 'custom' && customWords.length === 0 ? (
                       <div className="text-center py-4 bg-amber-50 rounded-xl border-2 border-dashed border-amber-300">
-                        <p className="text-xs text-amber-800 font-black">Your custom dictionary list is currently empty!</p>
+                        <p className="text-xs text-amber-800 font-black">{t('shared.emptyCustomList')}</p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
