@@ -9,15 +9,26 @@ import {
   createLadder,
   DEFAULT_LADDER_STEPS,
   ladderProgress,
+  ladderZone,
   pickNextIndex,
 } from '../gameLogic';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
+import { RocketClimb } from './RocketClimb';
+import { CustomWordsManager } from './CustomWordsManager';
 
 // Word Ladder (rocket climb): each correctly pronounced word lifts the rocket
-// one step higher. Reaching the top step wins the round. Rules live in
-// gameLogic.ts; this component is the UI, voice wiring and word picker around
-// them. Added in Sprint 2 (Assignment 4).
+// one step higher through altitude zones (ground -> clouds -> sky -> space).
+// Reaching the top step wins. Rules live in gameLogic.ts; the animated scene
+// lives in RocketClimb.tsx; this component is the start screen, word picker and
+// voice wiring around them. Reworked in Sprint 2 (Assignment 4).
+
+const ZONE_LABEL: Record<string, string> = {
+  ground: 'Ground',
+  clouds: 'Clouds',
+  sky: 'Sky',
+  space: 'Space',
+};
 
 interface WordLadderGameProps {
   onBackToHub: () => void;
@@ -25,6 +36,9 @@ interface WordLadderGameProps {
   highScore?: number;
   onUpdateHighScore?: (score: number) => void;
   onScoreChange?: (score: number) => void;
+  onAddCustomWord?: (word: string, translation: string) => void;
+  onDeleteCustomWord?: (index: number) => void;
+  onClearCustomWords?: () => void;
 }
 
 export function WordLadderGame({
@@ -33,15 +47,23 @@ export function WordLadderGame({
   highScore = 0,
   onUpdateHighScore,
   onScoreChange,
+  onAddCustomWord,
+  onDeleteCustomWord,
+  onClearCustomWords,
 }: WordLadderGameProps) {
-  const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
+  const [activeCategory, setActiveCategory] = useState<WordCategory>(
+    BUILTIN_CATEGORIES[0],
+  );
   const [ladder, setLadder] = useState<WordLadderState>(() => createLadder());
   const [phase, setPhase] = useState<'START' | 'PLAYING'>('START');
   const [target, setTarget] = useState('');
-  const [climbFlash, setClimbFlash] = useState(false);
+  const [boostNonce, setBoostNonce] = useState(0);
+  const [isWarmupOpen, setIsWarmupOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
   const phaseRef = useRef(phase);
   const targetRef = useRef(target);
+  const ladderRef = useRef(ladder);
   const wordIndexRef = useRef(-1);
 
   useEffect(() => {
@@ -50,6 +72,9 @@ export function WordLadderGame({
   useEffect(() => {
     targetRef.current = target;
   }, [target]);
+  useEffect(() => {
+    ladderRef.current = ladder;
+  }, [ladder]);
 
   const wordList = useCallback((): WordData[] => {
     if (activeCategory.id === 'custom') {
@@ -83,17 +108,20 @@ export function WordLadderGame({
   const handleTranscript = useCallback(
     (text: string) => {
       if (phaseRef.current !== 'PLAYING') return;
+      const prev = ladderRef.current;
+      if (prev.status !== 'playing') return;
       const current = targetRef.current;
       if (!current) return;
-      if (matchesWord(text, current, true)) {
-        setLadder((prev) => {
-          const updated = climbStep(prev);
-          if (updated.status === 'won') speakSound.playSuccess();
-          else speakSound.playCoin();
-          return updated;
-        });
-        setClimbFlash(true);
-        setTimeout(() => setClimbFlash(false), 400);
+      if (!matchesWord(text, current, true)) return;
+
+      const updated = climbStep(prev);
+      ladderRef.current = updated;
+      setLadder(updated);
+      setBoostNonce((n) => n + 1);
+      if (updated.status === 'won') {
+        speakSound.playSuccess();
+      } else {
+        speakSound.playCoin();
         nextWord();
       }
     },
@@ -105,7 +133,9 @@ export function WordLadderGame({
 
   const beginClimb = useCallback(() => {
     speakSound.playCoin();
-    setLadder(createLadder(DEFAULT_LADDER_STEPS));
+    const fresh = createLadder(DEFAULT_LADDER_STEPS);
+    ladderRef.current = fresh;
+    setLadder(fresh);
     setPhase('PLAYING');
     wordIndexRef.current = -1;
     nextWord();
@@ -113,19 +143,17 @@ export function WordLadderGame({
   }, [nextWord, start]);
 
   const restart = useCallback(() => {
-    setLadder(createLadder(DEFAULT_LADDER_STEPS));
-    wordIndexRef.current = -1;
-    nextWord();
-    setPhase('PLAYING');
-    start();
-  }, [nextWord, start]);
+    beginClimb();
+  }, [beginClimb]);
 
   useEffect(() => {
     if (ladder.status === 'won') stop();
   }, [ladder.status, stop]);
 
   const isWon = ladder.status === 'won';
+  const zone = ladderZone(ladder);
   const progressPct = Math.round(ladderProgress(ladder) * 100);
+  const list = wordList();
 
   return (
     <section className="max-w-md mx-auto py-4 px-2" aria-label="Word Ladder rocket game">
@@ -141,8 +169,8 @@ export function WordLadderGame({
       </button>
 
       {phase === 'START' ? (
-        <div className="text-center space-y-5" id="word-ladder-start">
-          <div className="flex flex-col items-center gap-2">
+        <div className="space-y-4" id="word-ladder-start">
+          <div className="flex flex-col items-center gap-2 text-center">
             <div className="w-16 h-16 rounded-3xl bg-indigo-500 border-4 border-slate-900 flex items-center justify-center">
               <Rocket className="w-9 h-9 text-white stroke-[3]" />
             </div>
@@ -150,13 +178,14 @@ export function WordLadderGame({
               Word Ladder
             </h1>
             <p className="text-xs font-bold text-slate-600 max-w-xs leading-relaxed">
-              Say each English word to fly your rocket one step higher. Reach the
-              top in {DEFAULT_LADDER_STEPS} words to win!
+              Say each English word to fly your rocket one step higher, from the
+              ground up into space. Reach the top in {DEFAULT_LADDER_STEPS} words
+              to win the launch!
             </p>
           </div>
 
-          <fieldset className="text-left">
-            <legend className="text-xs font-black uppercase tracking-wider text-slate-700 mb-2">
+          <fieldset className="text-left bg-slate-50 border-4 border-slate-900 rounded-2xl p-3">
+            <legend className="text-xs font-black uppercase tracking-wider text-slate-700 px-1">
               Choose a word set
             </legend>
             <div className="flex flex-wrap gap-2">
@@ -174,8 +203,90 @@ export function WordLadderGame({
                   {cat.name}
                 </button>
               ))}
+              <button
+                onClick={() =>
+                  setActiveCategory({
+                    id: 'custom',
+                    name: 'My Words',
+                    description: '',
+                    icon: 'edit',
+                    words: customWords,
+                  })
+                }
+                aria-pressed={activeCategory.id === 'custom'}
+                className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide ${
+                  activeCategory.id === 'custom'
+                    ? 'bg-pink-400 border-slate-900 text-white'
+                    : 'bg-white border-slate-300 text-slate-600'
+                }`}
+              >
+                My Words ({customWords.length})
+              </button>
             </div>
           </fieldset>
+
+          {/* Listen and learn warmup */}
+          <div className="text-left">
+            <button
+              onClick={() => {
+                setIsWarmupOpen((v) => !v);
+                setIsAddOpen(false);
+              }}
+              className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl font-black text-xs text-slate-800"
+              aria-expanded={isWarmupOpen}
+            >
+              <span>Listen and learn ({list.length} words)</span>
+              <span className="bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">
+                {isWarmupOpen ? '▲' : '▼'}
+              </span>
+            </button>
+            {isWarmupOpen && (
+              <div className="bg-white border-4 border-t-0 border-slate-900 rounded-b-2xl p-3 grid grid-cols-2 gap-2 max-h-44 overflow-y-auto">
+                {list.map((item, i) => (
+                  <button
+                    key={`${item.word}-${i}`}
+                    onClick={() => speakWord(item.word)}
+                    className="bg-yellow-50 hover:bg-yellow-100 border-2 border-slate-900 text-left p-2 rounded-xl flex items-center justify-between gap-1"
+                    aria-label={`Hear the word ${item.word}`}
+                  >
+                    <span className="text-slate-900 font-extrabold text-xs truncate">
+                      {item.word}
+                    </span>
+                    <Volume2 className="w-4 h-4 text-slate-600 shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Add my own words */}
+          {onAddCustomWord && onDeleteCustomWord && onClearCustomWords && (
+            <div className="text-left">
+              <button
+                onClick={() => {
+                  setIsAddOpen((v) => !v);
+                  setIsWarmupOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl font-black text-xs text-slate-800"
+                aria-expanded={isAddOpen}
+              >
+                <span>Add my own words ({customWords.length})</span>
+                <span className="bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">
+                  {isAddOpen ? '▲' : '▼'}
+                </span>
+              </button>
+              {isAddOpen && (
+                <div className="bg-white border-4 border-t-0 border-slate-900 rounded-b-2xl p-4">
+                  <CustomWordsManager
+                    customWords={customWords}
+                    onAddWord={onAddCustomWord}
+                    onDeleteWord={onDeleteCustomWord}
+                    onClearAll={onClearCustomWords}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {!isSupported && (
             <p className="text-xs font-bold text-rose-600" role="alert">
@@ -192,12 +303,22 @@ export function WordLadderGame({
           </button>
         </div>
       ) : (
-        <div className={`space-y-4 ${climbFlash ? 'animate-pulse' : ''}`} id="word-ladder-play">
-          {/* Climb progress */}
+        <div className="space-y-3" id="word-ladder-play">
+          {/* Animated rocket scene */}
+          <div className="border-4 border-slate-900 rounded-2xl overflow-hidden bg-slate-900">
+            <RocketClimb
+              progress={ladderProgress(ladder)}
+              zone={zone}
+              boostNonce={boostNonce}
+              won={isWon}
+            />
+          </div>
+
+          {/* Climb progress (accessible) */}
           <div>
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-black uppercase tracking-wider text-indigo-700 inline-flex items-center gap-1">
-                <Rocket className="w-4 h-4 stroke-[3]" /> Height
+                <Rocket className="w-4 h-4 stroke-[3]" /> {ZONE_LABEL[zone]}
               </span>
               <span
                 className="text-xs font-mono font-bold text-indigo-700"
@@ -226,7 +347,7 @@ export function WordLadderGame({
                 Top reached! 🚀
               </h2>
               <p className="text-sm font-bold text-slate-600">
-                You climbed all {ladder.totalSteps} steps.
+                You climbed all {ladder.totalSteps} steps into space.
               </p>
               <div className="flex gap-2">
                 <button
@@ -248,7 +369,7 @@ export function WordLadderGame({
               </div>
             </div>
           ) : (
-            <div className="text-center space-y-3 py-2">
+            <div className="text-center space-y-3 py-1">
               <p className="text-xs font-black uppercase tracking-wider text-slate-500">
                 Say this word to climb
               </p>

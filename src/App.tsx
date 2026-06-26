@@ -1236,6 +1236,9 @@ export default function App() {
             customWords={customWords}
             highScore={bossFightHighScore}
             onUpdateHighScore={handleUpdateBossFightHighScore}
+            onAddCustomWord={handleAddNewWord}
+            onDeleteCustomWord={handleDeleteWord}
+            onClearCustomWords={handleClearCustomWords}
           />
         ) : (
           <WordLadderGame
@@ -1243,6 +1246,9 @@ export default function App() {
             customWords={customWords}
             highScore={wordLadderHighScore}
             onUpdateHighScore={handleUpdateWordLadderHighScore}
+            onAddCustomWord={handleAddNewWord}
+            onDeleteCustomWord={handleDeleteWord}
+            onClearCustomWords={handleClearCustomWords}
           />
         )}
       </main>
