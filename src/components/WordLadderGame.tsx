@@ -396,19 +396,34 @@ export function WordLadderGame({
                 );
                 const translation =
                   currentWordItem?.translationRu || currentWordItem?.translation;
-                return translation ? (
-                  <p className="text-sm font-extrabold text-purple-600 mt-0.5">
-                    {translation}
-                  </p>
-                ) : null;
+                return (
+                  <>
+                    {translation ? (
+                      <p className="text-sm font-extrabold text-purple-600 mt-0.5">
+                        {translation}
+                      </p>
+                    ) : null}
+                    <div className="flex items-center justify-center gap-4 mt-2">
+                      <button
+                        onClick={() => speakWord(target)}
+                        className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900"
+                        aria-label={`Hear the word ${target}`}
+                      >
+                        <Volume2 className="w-4 h-4 stroke-[3]" /> Hear it
+                      </button>
+                      {currentWordItem?.translationRu && (
+                        <button
+                          onClick={() => speakWord(currentWordItem.translationRu, 'ru')}
+                          className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-blue-600 hover:text-blue-800"
+                          aria-label="Listen in Russian"
+                        >
+                          <Volume2 className="w-4 h-4 stroke-[3]" /> Слушать по-русски
+                        </button>
+                      )}
+                    </div>
+                  </>
+                );
               })()}
-              <button
-                onClick={() => speakWord(target)}
-                className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900"
-                aria-label={`Hear the word ${target}`}
-              >
-                <Volume2 className="w-4 h-4 stroke-[3]" /> Hear it
-              </button>
               <p className="text-[11px] font-bold text-slate-500 inline-flex items-center gap-1 justify-center">
                 <Mic className="w-3.5 h-3.5 stroke-[3]" /> {status.message}
               </p>

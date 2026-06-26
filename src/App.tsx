@@ -859,19 +859,35 @@ export default function App() {
                     ) : (
                       <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
                         {getSelectedVocabularyList().map((item, index) => (
-                          <button
+                          <div
                             key={index}
-                            onClick={() => speakWord(item.word)}
-                            className="bg-yellow-50 hover:bg-yellow-100 border-2 border-slate-900 text-left p-2 rounded-xl transition-all cursor-pointer flex flex-col justify-between group active:scale-95"
+                            className="bg-yellow-50 border-2 border-slate-900 text-left p-2 rounded-xl flex flex-col justify-between"
                           >
-                            <span className="text-slate-900 font-extrabold text-xs flex items-center justify-between w-full">
-                              <span className="truncate">{item.word}</span>
-                              <Volume2 className="w-4 h-4 text-slate-600 group-hover:text-purple-600 shrink-0" />
-                            </span>
+                            <div className="flex items-center justify-between gap-1 w-full">
+                              <button
+                                type="button"
+                                onClick={() => speakWord(item.word)}
+                                className="text-slate-900 font-extrabold text-xs flex items-center gap-1 cursor-pointer hover:text-purple-600 truncate flex-1 animate-none"
+                                aria-label={`Hear the word ${item.word}`}
+                              >
+                                <span className="truncate">{item.word}</span>
+                                <Volume2 className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                              </button>
+                              {item.translationRu && (
+                                <button
+                                  type="button"
+                                  onClick={() => speakWord(item.translationRu, 'ru')}
+                                  className="text-blue-600 hover:text-blue-800 text-[10px] font-black uppercase flex items-center gap-0.5 cursor-pointer shrink-0 animate-none"
+                                  aria-label="Listen in Russian"
+                                >
+                                  <Volume2 className="w-3 h-3 shrink-0" /> RU
+                                </button>
+                              )}
+                            </div>
                             <span className="text-[10px] text-purple-700 font-bold truncate mt-0.5">
                               {item.translationRu || item.translation}
                             </span>
-                          </button>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -1047,17 +1063,35 @@ export default function App() {
                         )}
 
                         {targetWord && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              triggerTTSHelp(targetWord);
-                            }}
-                            className="text-[9px] text-slate-900 font-black hover:bg-yellow-300 bg-white border-2 border-slate-900 px-3 py-1 rounded-xl cursor-not-allowed mx-auto flex items-center gap-1 shadow-sm active:translate-y-0.5 duration-100"
-                            title="Hint"
-                          >
-                            💡 HELP
-                          </button>
+                          <div className="flex gap-1 justify-center w-full mt-1">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                triggerTTSHelp(targetWord);
+                              }}
+                              className="text-[9px] text-slate-900 font-black hover:bg-yellow-300 bg-white border-2 border-slate-900 px-2 py-1 rounded-xl cursor-pointer flex items-center gap-0.5 shadow-sm active:translate-y-0.5 duration-100 shrink-0 animate-none"
+                              aria-label={`Hear the word ${targetWord}`}
+                            >
+                              💡 HELP
+                            </button>
+                            {(() => {
+                              const found = getSelectedVocabularyList().find(v => v.word.toLowerCase() === targetWord.toLowerCase());
+                              return found?.translationRu ? (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    speakWord(found.translationRu, 'ru');
+                                  }}
+                                  className="text-[9px] text-blue-800 font-black hover:bg-blue-100 bg-white border-2 border-slate-900 px-2 py-1 rounded-xl cursor-pointer flex items-center gap-0.5 shadow-sm active:translate-y-0.5 duration-100 shrink-0 animate-none"
+                                  aria-label="Listen in Russian"
+                                >
+                                  🔊 RU
+                                </button>
+                              ) : null;
+                            })()}
+                          </div>
                         )}
                       </div>
                     );
@@ -1173,10 +1207,23 @@ export default function App() {
                             <button
                               onClick={() => speakWord(word)}
                               className="p-1 bg-yellow-100 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg cursor-pointer"
+                              aria-label={`Hear the word ${word}`}
                               title="Listen"
                             >
                               <Volume2 className="w-3.5 h-3.5 text-slate-900" />
                             </button>
+                            {(() => {
+                              const found = getSelectedVocabularyList().find(v => v.word.toLowerCase() === word.toLowerCase());
+                              return found?.translationRu ? (
+                                <button
+                                  onClick={() => speakWord(found.translationRu, 'ru')}
+                                  className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-850 text-[10px] font-bold shrink-0 animate-none"
+                                  aria-label="Listen in Russian"
+                                >
+                                  RU
+                                </button>
+                              ) : null;
+                            })()}
                           </div>
                         </div>
                       );
