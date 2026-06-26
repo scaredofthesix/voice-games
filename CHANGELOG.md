@@ -6,6 +6,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Two new voice games requested by the customer: Boss Fight (pronounce words to
+  damage the boss before it beats you) and Word Ladder (pronounce words to fly a
+  rocket up the ladder to the top).
+- Automated test suite with Vitest: unit tests for the recognition matcher and
+  game logic, word-list integrity tests, and integration tests that drive the
+  new games through a fake speech recognizer.
+- Quality requirements (ISO/IEC 25010) and automated quality requirement tests:
+  `docs/quality-requirements.md`, `docs/quality-requirement-tests.md`.
+- Testing strategy documentation: `docs/testing.md`.
+- Continuous integration: type check, tests with coverage, build, and a
+  Lighthouse accessibility audit (`.github/workflows/ci.yml`).
+
+### Changed
+
+- Definition of Done now requires passing CI, automated tests, quality
+  requirement tests, and minimum coverage on critical modules.
+
+### Notes
+
+- These changes target the MVP v2 / Sprint 2 increment for Assignment 4.
+
 ## [0.1.0] - 2026-06-21
 
 ### Added
