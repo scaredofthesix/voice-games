@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Heart,
   Mic,
+  Pause,
   Play,
   RotateCcw,
   Shield,
@@ -14,13 +15,12 @@ import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import {
   BossFightState,
-  bossAtLevel,
   bossHitByWord,
   bossPhase,
   BOSS_ROSTER,
   createBossFight,
   DEFAULT_PLAYER_HP,
-  isFinalBoss,
+  endlessBossAtLevel,
   pickNextIndex,
   playerHitByTimeout,
 } from '../gameLogic';
@@ -66,9 +66,10 @@ export function BossFightGame({
   );
   const [bossLevel, setBossLevel] = useState(0);
   const [fight, setFight] = useState<BossFightState>(() =>
-    createBossFight(bossAtLevel(0).hp, DEFAULT_PLAYER_HP),
+    createBossFight(endlessBossAtLevel(0).hp, DEFAULT_PLAYER_HP),
   );
   const [phase, setPhase] = useState<'START' | 'PLAYING'>('START');
+  const [paused, setPaused] = useState(false);
   const [target, setTarget] = useState('');
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(WORD_TIME_SECONDS);
@@ -82,6 +83,7 @@ export function BossFightGame({
   const targetRef = useRef(target);
   const fightRef = useRef(fight);
   const bossLevelRef = useRef(bossLevel);
+  const pausedRef = useRef(paused);
   const wordIndexRef = useRef(-1);
 
   useEffect(() => {
@@ -96,8 +98,11 @@ export function BossFightGame({
   useEffect(() => {
     bossLevelRef.current = bossLevel;
   }, [bossLevel]);
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
 
-  const boss = bossAtLevel(bossLevel);
+  const boss = endlessBossAtLevel(bossLevel);
 
   const wordList = useCallback((): WordData[] => {
     if (activeCategory.id === 'custom') {
@@ -124,7 +129,9 @@ export function BossFightGame({
   }, [score, onScoreChange]);
 
   useEffect(() => {
-    if (fight.status === 'won' && score > highScore) {
+    // Endless mode never reaches 'won'; record the best run when the player
+    // finally loses all lives.
+    if (fight.status === 'lost' && score > highScore) {
       onUpdateHighScore?.(score);
     }
   }, [fight.status, score, highScore, onUpdateHighScore]);
@@ -132,6 +139,7 @@ export function BossFightGame({
   const handleTranscript = useCallback(
     (text: string) => {
       if (phaseRef.current !== 'PLAYING') return;
+      if (pausedRef.current) return;
       const prev = fightRef.current;
       if (prev.status !== 'playing') return;
       const current = targetRef.current;
@@ -143,17 +151,13 @@ export function BossFightGame({
       setHitNonce((n) => n + 1);
 
       if (hit.status === 'won') {
+        // Endless mode: a defeated boss is immediately replaced by the next,
+        // tougher one, so there is no victory screen. The player keeps fighting
+        // until they run out of lives. Player HP carries across bosses.
         setKillNonce((n) => n + 1);
         speakSound.playSuccess();
-        if (isFinalBoss(bossLevelRef.current)) {
-          // Whole gauntlet cleared.
-          fightRef.current = hit;
-          setFight(hit);
-          return;
-        }
-        // Advance to the next, tougher boss; carry player HP and max HP.
         const nextLevel = bossLevelRef.current + 1;
-        const nextBoss = bossAtLevel(nextLevel);
+        const nextBoss = endlessBossAtLevel(nextLevel);
         const fresh: BossFightState = {
           bossMaxHp: nextBoss.hp,
           bossHp: nextBoss.hp,
@@ -183,12 +187,14 @@ export function BossFightGame({
 
   const beginFight = useCallback(() => {
     speakSound.playCoin();
-    const fresh = createBossFight(bossAtLevel(0).hp, DEFAULT_PLAYER_HP);
+    const fresh = createBossFight(endlessBossAtLevel(0).hp, DEFAULT_PLAYER_HP);
     bossLevelRef.current = 0;
     setBossLevel(0);
     fightRef.current = fresh;
     setFight(fresh);
     setScore(0);
+    setPaused(false);
+    pausedRef.current = false;
     setPhase('PLAYING');
     wordIndexRef.current = -1;
     nextWord();
@@ -199,14 +205,26 @@ export function BossFightGame({
     beginFight();
   }, [beginFight]);
 
+  // Pause/resume: freeze the per-word timer and stop listening while paused.
+  const togglePause = useCallback(() => {
+    setPaused((p) => {
+      const next = !p;
+      pausedRef.current = next;
+      if (next) stop();
+      else start();
+      return next;
+    });
+  }, [start, stop]);
+
   // Stop listening once the round ends (win or lose).
   useEffect(() => {
     if (fight.status !== 'playing') stop();
   }, [fight.status, stop]);
 
-  // Per-word countdown: when it runs out, the boss hits the player.
+  // Per-word countdown: when it runs out, the boss hits the player. Frozen
+  // while the game is paused.
   useEffect(() => {
-    if (phase !== 'PLAYING' || fight.status !== 'playing') return;
+    if (phase !== 'PLAYING' || fight.status !== 'playing' || paused) return;
     if (timeLeft <= 0) {
       const hurt = playerHitByTimeout(fightRef.current);
       fightRef.current = hurt;
@@ -218,10 +236,9 @@ export function BossFightGame({
     }
     const id = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearTimeout(id);
-  }, [phase, fight.status, timeLeft, nextWord]);
+  }, [phase, fight.status, timeLeft, nextWord, paused]);
 
   const isOver = fight.status !== 'playing';
-  const won = fight.status === 'won';
   const list = wordList();
 
   return (
@@ -404,7 +421,7 @@ export function BossFightGame({
       ) : (
         <div className="space-y-3" id="boss-fight-play">
           {/* Animated arena */}
-          <div className="border-4 border-slate-900 rounded-2xl overflow-hidden bg-slate-900">
+          <div className="relative border-4 border-slate-900 rounded-2xl overflow-hidden bg-slate-900">
             <BossArena
               bossEmoji={boss.emoji}
               bossColor={boss.color}
@@ -413,10 +430,45 @@ export function BossFightGame({
               hitNonce={hitNonce}
               attackNonce={attackNonce}
               killNonce={killNonce}
-              defeated={won}
-              victory={won}
+              defeated={false}
+              victory={false}
             />
+            {paused && !isOver && (
+              <div
+                className="absolute inset-0 bg-slate-900/75 flex flex-col items-center justify-center gap-1"
+                role="status"
+              >
+                <span className="text-4xl" aria-hidden="true">⏸️</span>
+                <span className="text-lg font-black uppercase tracking-widest text-white">
+                  Paused
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* Prominent pause / resume control */}
+          {!isOver && (
+            <button
+              onClick={togglePause}
+              aria-pressed={paused}
+              aria-label={paused ? 'Resume the fight' : 'Pause the fight'}
+              className={`w-full py-3 border-4 border-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 ${
+                paused
+                  ? 'bg-emerald-400 hover:bg-emerald-500 text-slate-900'
+                  : 'bg-amber-400 hover:bg-amber-500 text-slate-900'
+              }`}
+            >
+              {paused ? (
+                <>
+                  <Play className="w-5 h-5 fill-current stroke-[3]" /> Resume
+                </>
+              ) : (
+                <>
+                  <Pause className="w-5 h-5 fill-current stroke-[3]" /> Pause
+                </>
+              )}
+            </button>
+          )}
 
           {/* Boss name + level */}
           <div className="flex items-center justify-between">
@@ -424,8 +476,7 @@ export function BossFightGame({
               <Swords className="w-4 h-4 stroke-[3]" /> {boss.emoji} {boss.name}
             </span>
             <span className="text-[10px] font-black uppercase text-slate-500">
-              Boss {Math.min(bossLevel + 1, BOSS_ROSTER.length)}/
-              {BOSS_ROSTER.length}
+              ♾️ Boss #{bossLevel + 1} · {score} hits
             </span>
           </div>
 
@@ -461,11 +512,11 @@ export function BossFightGame({
           {isOver ? (
             <div className="text-center space-y-4 py-4" role="status">
               <h2 className="text-3xl font-black uppercase tracking-wider text-slate-900">
-                {won ? 'You won! 🏆' : 'Game over'}
+                Game over
               </h2>
               <p className="text-sm font-bold text-slate-600">
-                Words defeated: {score}
-                {won ? ' • all bosses beaten!' : ''}
+                You defeated {score} words across {bossLevel + 1}{' '}
+                {bossLevel + 1 === 1 ? 'boss' : 'bosses'}!
               </p>
               <div className="flex gap-2">
                 <button

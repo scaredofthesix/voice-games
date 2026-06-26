@@ -94,6 +94,22 @@ export function isFinalBoss(level: number): boolean {
   return Math.floor(level) >= BOSS_ROSTER.length - 1;
 }
 
+/** Extra HP added to a looped boss for every full pass through the roster. */
+export const ENDLESS_HP_RAMP = 3;
+
+/**
+ * Endless Boss Fight: instead of stopping after the last roster boss, the
+ * bosses loop forever and get tougher each full pass. Levels 0..n-1 are the
+ * roster as-is; after that the roster repeats with ENDLESS_HP_RAMP more HP per
+ * completed loop. Keeps the fight going until the player runs out of lives.
+ */
+export function endlessBossAtLevel(level: number): BossKind {
+  const safe = Math.max(0, Math.floor(level));
+  const base = BOSS_ROSTER[safe % BOSS_ROSTER.length];
+  const loop = Math.floor(safe / BOSS_ROSTER.length);
+  return { ...base, hp: base.hp + loop * ENDLESS_HP_RAMP };
+}
+
 export type BossPhase = 'calm' | 'angry' | 'enraged';
 
 /** Visual phase of the current boss, by its remaining HP fraction. */

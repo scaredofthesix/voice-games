@@ -9,6 +9,7 @@ interface GameCanvasProps {
   onAvoidObstacle: (obstacleId: string) => void;
   lives: number;
   isBulletTime: boolean;
+  paused: boolean;
   onApproach: (currentLane: Lane) => void;
   score: number;
   level: number;
@@ -23,6 +24,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   onAvoidObstacle,
   lives,
   isBulletTime,
+  paused,
   onApproach,
   score,
   level,
@@ -37,6 +39,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     gameState,
     gameSpeed,
     isBulletTime,
+    paused,
     obstacles: [] as Obstacle[],
     particles: [] as Sparkle[],
     canvasWidth: 400,
@@ -56,6 +59,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   useEffect(() => {
     stateRef.current.isBulletTime = isBulletTime;
   }, [isBulletTime]);
+
+  useEffect(() => {
+    stateRef.current.paused = paused;
+  }, [paused]);
 
   // Keep state refs in sync
   useEffect(() => {
@@ -150,8 +157,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
     // The main engine rendering loop
     const frame = () => {
-      const now = Date.now();
       const s = stateRef.current;
+      // Frozen while paused: keep the last rendered frame on screen and stop
+      // all physics (movement, spawning, bullet-time approach and collisions).
+      if (s.paused) {
+        animationFrameId.current = requestAnimationFrame(frame);
+        return;
+      }
+      const now = Date.now();
       const ctx = context;
       const w = s.canvasWidth;
       const h = s.canvasHeight;

@@ -19,15 +19,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Testing strategy documentation: `docs/testing.md`.
 - Continuous integration: type check, tests with coverage, build, and a
   Lighthouse accessibility audit (`.github/workflows/ci.yml`).
+- Pause and resume in every game (US-16): a prominent Pause/Resume control and a
+  "Paused" overlay that freezes gameplay and turns the microphone off until you
+  resume.
+- Russian support: translations for every built-in word set, an in-game RU/EN
+  interface toggle, the word translation shown during play, and a "Listen in
+  Russian" button.
 
 ### Changed
 
-- Boss Fight and Word Ladder reworked into full canvas games. Boss Fight is now a
-  three-boss gauntlet (Goblin, Ogre, Dragon) with an animated arena, boss phases
-  by remaining health, and a per-word timer; Word Ladder flies an animated rocket
-  through ground, cloud, sky and space zones. Both now open with a setup screen
+- Boss Fight and Word Ladder reworked into full canvas games. Boss Fight is an
+  endless boss gauntlet (Goblin, Ogre, Dragon and beyond) that keeps sending
+  tougher bosses until you run out of lives, with an animated arena and a
+  per-word timer; Word Ladder flies an animated rocket (now pointing straight up)
+  through ground, cloud, sky and space zones. Both open with a setup screen
   (word-set choice, a listen-and-learn warmup, and add-your-own-words) like the
   first two games.
+- The interface now scales up on desktop screens, and the Boss Fight hero reads
+  more clearly against the arena background.
 - Definition of Done now requires passing CI, automated tests, quality
   requirement tests, and minimum coverage on critical modules.
 
