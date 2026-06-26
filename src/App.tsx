@@ -876,7 +876,7 @@ export default function App() {
                               {item.translationRu && (
                                 <button
                                   type="button"
-                                  onClick={() => speakWord(item.translationRu, 'ru')}
+                                  onClick={() => item.translationRu && speakWord(item.translationRu, 'ru')}
                                   className="text-blue-600 hover:text-blue-800 text-[10px] font-black uppercase flex items-center gap-0.5 cursor-pointer shrink-0 animate-none"
                                   aria-label="Listen in Russian"
                                 >
@@ -1082,7 +1082,9 @@ export default function App() {
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    speakWord(found.translationRu, 'ru');
+                                    if (found?.translationRu) {
+                                      speakWord(found.translationRu, 'ru');
+                                    }
                                   }}
                                   className="text-[9px] text-blue-800 font-black hover:bg-blue-100 bg-white border-2 border-slate-900 px-2 py-1 rounded-xl cursor-pointer flex items-center gap-0.5 shadow-sm active:translate-y-0.5 duration-100 shrink-0 animate-none"
                                   aria-label="Listen in Russian"
@@ -1216,7 +1218,7 @@ export default function App() {
                               const found = getSelectedVocabularyList().find(v => v.word.toLowerCase() === word.toLowerCase());
                               return found?.translationRu ? (
                                 <button
-                                  onClick={() => speakWord(found.translationRu, 'ru')}
+                                  onClick={() => found?.translationRu && speakWord(found.translationRu, 'ru')}
                                   className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-850 text-[10px] font-bold shrink-0 animate-none"
                                   aria-label="Listen in Russian"
                                 >
