@@ -42,6 +42,14 @@ describe('BUILTIN_CATEGORIES', () => {
     }
   });
 
+  test('every built-in word has a Russian translation', () => {
+    for (const category of BUILTIN_CATEGORIES) {
+      for (const entry of category.words) {
+        expect(entry.translationRu?.trim().length).toBeGreaterThan(0);
+      }
+    }
+  });
+
   test('the Animals category carries Russian translations for bilingual play', () => {
     const animals = BUILTIN_CATEGORIES.find((c) => c.id === 'animals');
     expect(animals).toBeDefined();
