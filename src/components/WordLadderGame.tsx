@@ -16,6 +16,7 @@ import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { RocketClimb } from './RocketClimb';
 import { CustomWordsManager } from './CustomWordsManager';
+import { useUiLanguage } from '../uiLanguage';
 
 // Word Ladder (rocket climb): each correctly pronounced word lifts the rocket
 // one step higher through altitude zones (ground -> clouds -> sky -> space).
@@ -51,6 +52,7 @@ export function WordLadderGame({
   onDeleteCustomWord,
   onClearCustomWords,
 }: WordLadderGameProps) {
+  const { t, language, setLanguage } = useUiLanguage();
   const [activeCategory, setActiveCategory] = useState<WordCategory>(
     BUILTIN_CATEGORIES[0],
   );
@@ -165,7 +167,7 @@ export function WordLadderGame({
         className="mb-3 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900"
         aria-label="Back to the game hub"
       >
-        <ArrowLeft className="w-4 h-4 stroke-[3]" /> Hub
+        <ArrowLeft className="w-4 h-4 stroke-[3]" /> {t('shared.backToHub')}
       </button>
 
       {phase === 'START' ? (
@@ -174,19 +176,27 @@ export function WordLadderGame({
             <div className="w-16 h-16 rounded-3xl bg-indigo-500 border-4 border-slate-900 flex items-center justify-center">
               <Rocket className="w-9 h-9 text-white stroke-[3]" />
             </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setLanguage(language === 'en' ? 'ru' : 'en')}
+                aria-label={language === 'en' ? t('header.switchLabel') : t('header.switchLabel')}
+                className="bg-white border-4 border-slate-900 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider"
+              >
+                {language === 'en' ? 'RU' : 'EN'}
+              </button>
+            </div>
             <h1 className="text-3xl font-black uppercase tracking-wider text-slate-900">
-              Word Ladder
+              {t('games.wordLadder.title')}
             </h1>
             <p className="text-xs font-bold text-slate-600 max-w-xs leading-relaxed">
-              Say each English word to fly your rocket one step higher, from the
-              ground up into space. Reach the top in {DEFAULT_LADDER_STEPS} words
-              to win the launch!
+              {t('games.wordLadder.description')}
             </p>
           </div>
 
           <fieldset className="text-left bg-slate-50 border-4 border-slate-900 rounded-2xl p-3">
             <legend className="text-xs font-black uppercase tracking-wider text-slate-700 px-1">
-              Choose a word set
+              {t('shared.chooseWordSet')}
             </legend>
             <div className="flex flex-wrap gap-2">
               {BUILTIN_CATEGORIES.map((cat) => (
@@ -207,7 +217,7 @@ export function WordLadderGame({
                 onClick={() =>
                   setActiveCategory({
                     id: 'custom',
-                    name: 'My Words',
+                    name: t('shared.myWords'),
                     description: '',
                     icon: 'edit',
                     words: customWords,
@@ -220,7 +230,7 @@ export function WordLadderGame({
                     : 'bg-white border-slate-300 text-slate-600'
                 }`}
               >
-                My Words ({customWords.length})
+                {t('shared.myWords')} ({customWords.length})
               </button>
             </div>
           </fieldset>
@@ -235,7 +245,7 @@ export function WordLadderGame({
               className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl font-black text-xs text-slate-800"
               aria-expanded={isWarmupOpen}
             >
-              <span>Listen and learn ({list.length} words)</span>
+              <span>{t('shared.listenAndLearn')} ({list.length} {t('shared.wordsLabel')})</span>
               <span className="bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">
                 {isWarmupOpen ? '▲' : '▼'}
               </span>
@@ -309,7 +319,7 @@ export function WordLadderGame({
             className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 border-4 border-slate-900 text-white font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2"
             aria-label="Start the rocket climb"
           >
-            <Play className="w-4 h-4 fill-current stroke-[3]" /> Start Climb
+            <Play className="w-4 h-4 fill-current stroke-[3]" /> {t('shared.startClimb')}
           </button>
         </div>
       ) : (
@@ -374,7 +384,7 @@ export function WordLadderGame({
                   }}
                   className="flex-1 py-3 bg-white hover:bg-slate-50 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl"
                 >
-                  Hub
+                  {t('shared.backToHub')}
                 </button>
               </div>
             </div>

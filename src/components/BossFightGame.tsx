@@ -28,6 +28,7 @@ import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { BossArena } from './BossArena';
 import { CustomWordsManager } from './CustomWordsManager';
+import { useUiLanguage } from '../uiLanguage';
 
 // Boss Fight: a hero fights a short gauntlet of bosses (Goblin -> Ogre ->
 // Dragon) by pronouncing words. Each correct word removes 1 boss HP; failing to
@@ -59,6 +60,7 @@ export function BossFightGame({
   onDeleteCustomWord,
   onClearCustomWords,
 }: BossFightGameProps) {
+  const { t, language, setLanguage } = useUiLanguage();
   const [activeCategory, setActiveCategory] = useState<WordCategory>(
     BUILTIN_CATEGORIES[0],
   );
@@ -232,7 +234,7 @@ export function BossFightGame({
         className="mb-3 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900"
         aria-label="Back to the game hub"
       >
-        <ArrowLeft className="w-4 h-4 stroke-[3]" /> Hub
+        <ArrowLeft className="w-4 h-4 stroke-[3]" /> {t('shared.backToHub')}
       </button>
 
       {phase === 'START' ? (
@@ -241,13 +243,21 @@ export function BossFightGame({
             <div className="w-16 h-16 rounded-3xl bg-rose-500 border-4 border-slate-900 flex items-center justify-center">
               <Swords className="w-9 h-9 text-white stroke-[3]" />
             </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setLanguage(language === 'en' ? 'ru' : 'en')}
+                aria-label={language === 'en' ? t('header.switchLabel') : t('header.switchLabel')}
+                className="bg-white border-4 border-slate-900 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider"
+              >
+                {language === 'en' ? 'RU' : 'EN'}
+              </button>
+            </div>
             <h1 className="text-3xl font-black uppercase tracking-wider text-slate-900">
-              Boss Fight
+              {t('games.bossFight.title')}
             </h1>
             <p className="text-xs font-bold text-slate-600 max-w-xs leading-relaxed">
-              Beat {BOSS_ROSTER.length} bosses by saying each English word out
-              loud. Say it before the timer runs out, or the boss hits back! You
-              have {WORD_TIME_SECONDS} seconds per word.
+              {t('games.bossFight.description')}
             </p>
           </div>
 
@@ -265,7 +275,7 @@ export function BossFightGame({
 
           <fieldset className="text-left bg-slate-50 border-4 border-slate-900 rounded-2xl p-3">
             <legend className="text-xs font-black uppercase tracking-wider text-slate-700 px-1">
-              Choose a word set
+              {t('shared.chooseWordSet')}
             </legend>
             <div className="flex flex-wrap gap-2">
               {BUILTIN_CATEGORIES.map((cat) => (
@@ -286,7 +296,7 @@ export function BossFightGame({
                 onClick={() =>
                   setActiveCategory({
                     id: 'custom',
-                    name: 'My Words',
+                    name: t('shared.myWords'),
                     description: '',
                     icon: 'edit',
                     words: customWords,
@@ -299,7 +309,7 @@ export function BossFightGame({
                     : 'bg-white border-slate-300 text-slate-600'
                 }`}
               >
-                My Words ({customWords.length})
+                {t('shared.myWords')} ({customWords.length})
               </button>
             </div>
           </fieldset>
@@ -314,7 +324,7 @@ export function BossFightGame({
               className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl font-black text-xs text-slate-800"
               aria-expanded={isWarmupOpen}
             >
-              <span>Listen and learn ({list.length} words)</span>
+              <span>{t('shared.listenAndLearn')} ({list.length} {t('shared.wordsLabel')})</span>
               <span className="bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">
                 {isWarmupOpen ? '▲' : '▼'}
               </span>
@@ -388,7 +398,7 @@ export function BossFightGame({
             className="w-full py-3 bg-rose-500 hover:bg-rose-600 border-4 border-slate-900 text-white font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2"
             aria-label="Start the boss fight"
           >
-            <Play className="w-4 h-4 fill-current stroke-[3]" /> Start Fight
+            <Play className="w-4 h-4 fill-current stroke-[3]" /> {t('shared.startFight')}
           </button>
         </div>
       ) : (
@@ -472,7 +482,7 @@ export function BossFightGame({
                   }}
                   className="flex-1 py-3 bg-white hover:bg-slate-50 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl"
                 >
-                  Hub
+                  {t('shared.backToHub')}
                 </button>
               </div>
             </div>
