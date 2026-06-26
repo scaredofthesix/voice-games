@@ -22,6 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Boss Fight and Word Ladder reworked into full canvas games. Boss Fight is now a
+  three-boss gauntlet (Goblin, Ogre, Dragon) with an animated arena, boss phases
+  by remaining health, and a per-word timer; Word Ladder flies an animated rocket
+  through ground, cloud, sky and space zones. Both now open with a setup screen
+  (word-set choice, a listen-and-learn warmup, and add-your-own-words) like the
+  first two games.
 - Definition of Done now requires passing CI, automated tests, quality
   requirement tests, and minimum coverage on critical modules.
 

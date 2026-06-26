@@ -1,24 +1,40 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Heart, Mic, Play, RotateCcw, Shield, Swords, Volume2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Heart,
+  Mic,
+  Play,
+  RotateCcw,
+  Shield,
+  Swords,
+  Volume2,
+} from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import {
   BossFightState,
+  bossAtLevel,
   bossHitByWord,
+  bossPhase,
+  BOSS_ROSTER,
   createBossFight,
-  DEFAULT_BOSS_HP,
   DEFAULT_PLAYER_HP,
+  isFinalBoss,
   pickNextIndex,
   playerHitByTimeout,
 } from '../gameLogic';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
+import { BossArena } from './BossArena';
+import { CustomWordsManager } from './CustomWordsManager';
 
-// Boss Fight: a prince fights a boss by pronouncing words. Each correct word
-// removes 1 boss HP; if the child cannot pronounce the word in time, the boss
-// deals 1 damage. The game rules live in gameLogic.ts; this component is the UI
-// shell, voice wiring and timer around them. Added in Sprint 2 (Assignment 4).
+// Boss Fight: a hero fights a short gauntlet of bosses (Goblin -> Ogre ->
+// Dragon) by pronouncing words. Each correct word removes 1 boss HP; failing to
+// pronounce a word in time lets the boss hit the player. Player HP carries
+// across bosses. The rules live in gameLogic.ts; the animated arena lives in
+// BossArena.tsx; this component is the start screen, word picker, voice wiring
+// and the per-word timer around them. Reworked in Sprint 2 (Assignment 4).
 
 const WORD_TIME_SECONDS = 10;
 
@@ -28,6 +44,9 @@ interface BossFightGameProps {
   highScore?: number;
   onUpdateHighScore?: (score: number) => void;
   onScoreChange?: (score: number) => void;
+  onAddCustomWord?: (word: string, translation: string) => void;
+  onDeleteCustomWord?: (index: number) => void;
+  onClearCustomWords?: () => void;
 }
 
 export function BossFightGame({
@@ -36,17 +55,31 @@ export function BossFightGame({
   highScore = 0,
   onUpdateHighScore,
   onScoreChange,
+  onAddCustomWord,
+  onDeleteCustomWord,
+  onClearCustomWords,
 }: BossFightGameProps) {
-  const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
-  const [fight, setFight] = useState<BossFightState>(() => createBossFight());
+  const [activeCategory, setActiveCategory] = useState<WordCategory>(
+    BUILTIN_CATEGORIES[0],
+  );
+  const [bossLevel, setBossLevel] = useState(0);
+  const [fight, setFight] = useState<BossFightState>(() =>
+    createBossFight(bossAtLevel(0).hp, DEFAULT_PLAYER_HP),
+  );
   const [phase, setPhase] = useState<'START' | 'PLAYING'>('START');
   const [target, setTarget] = useState('');
+  const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(WORD_TIME_SECONDS);
-  const [hitFlash, setHitFlash] = useState(false);
+  const [hitNonce, setHitNonce] = useState(0);
+  const [attackNonce, setAttackNonce] = useState(0);
+  const [killNonce, setKillNonce] = useState(0);
+  const [isWarmupOpen, setIsWarmupOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
-  // Refs keep the recognition thread reading current values (no stale closures).
   const phaseRef = useRef(phase);
   const targetRef = useRef(target);
+  const fightRef = useRef(fight);
+  const bossLevelRef = useRef(bossLevel);
   const wordIndexRef = useRef(-1);
 
   useEffect(() => {
@@ -55,6 +88,14 @@ export function BossFightGame({
   useEffect(() => {
     targetRef.current = target;
   }, [target]);
+  useEffect(() => {
+    fightRef.current = fight;
+  }, [fight]);
+  useEffect(() => {
+    bossLevelRef.current = bossLevel;
+  }, [bossLevel]);
+
+  const boss = bossAtLevel(bossLevel);
 
   const wordList = useCallback((): WordData[] => {
     if (activeCategory.id === 'custom') {
@@ -76,34 +117,61 @@ export function BossFightGame({
     speakWord(word);
   }, [wordList]);
 
-  // Sync the score (words defeated) up to the parent for the hub record card.
   useEffect(() => {
-    onScoreChange?.(fight.wordsDefeated);
-  }, [fight.wordsDefeated, onScoreChange]);
+    onScoreChange?.(score);
+  }, [score, onScoreChange]);
 
-  // Persist a new record when the boss is beaten.
   useEffect(() => {
-    if (fight.status === 'won' && fight.wordsDefeated > highScore) {
-      onUpdateHighScore?.(fight.wordsDefeated);
+    if (fight.status === 'won' && score > highScore) {
+      onUpdateHighScore?.(score);
     }
-  }, [fight.status, fight.wordsDefeated, highScore, onUpdateHighScore]);
+  }, [fight.status, score, highScore, onUpdateHighScore]);
 
   const handleTranscript = useCallback(
     (text: string) => {
       if (phaseRef.current !== 'PLAYING') return;
+      const prev = fightRef.current;
+      if (prev.status !== 'playing') return;
       const current = targetRef.current;
       if (!current) return;
-      if (matchesWord(text, current, true)) {
-        setFight((prev) => {
-          const updated = bossHitByWord(prev);
-          if (updated.status === 'won') speakSound.playSuccess();
-          else speakSound.playCoin();
-          return updated;
-        });
-        setHitFlash(true);
-        setTimeout(() => setHitFlash(false), 500);
+      if (!matchesWord(text, current, true)) return;
+
+      const hit = bossHitByWord(prev);
+      setScore((s) => s + 1);
+      setHitNonce((n) => n + 1);
+
+      if (hit.status === 'won') {
+        setKillNonce((n) => n + 1);
+        speakSound.playSuccess();
+        if (isFinalBoss(bossLevelRef.current)) {
+          // Whole gauntlet cleared.
+          fightRef.current = hit;
+          setFight(hit);
+          return;
+        }
+        // Advance to the next, tougher boss; carry player HP and max HP.
+        const nextLevel = bossLevelRef.current + 1;
+        const nextBoss = bossAtLevel(nextLevel);
+        const fresh: BossFightState = {
+          bossMaxHp: nextBoss.hp,
+          bossHp: nextBoss.hp,
+          playerMaxHp: prev.playerMaxHp,
+          playerHp: prev.playerHp,
+          wordsDefeated: 0,
+          status: 'playing',
+        };
+        bossLevelRef.current = nextLevel;
+        setBossLevel(nextLevel);
+        fightRef.current = fresh;
+        setFight(fresh);
         nextWord();
+        return;
       }
+
+      speakSound.playCoin();
+      fightRef.current = hit;
+      setFight(hit);
+      nextWord();
     },
     [nextWord],
   );
@@ -113,7 +181,12 @@ export function BossFightGame({
 
   const beginFight = useCallback(() => {
     speakSound.playCoin();
-    setFight(createBossFight(DEFAULT_BOSS_HP, DEFAULT_PLAYER_HP));
+    const fresh = createBossFight(bossAtLevel(0).hp, DEFAULT_PLAYER_HP);
+    bossLevelRef.current = 0;
+    setBossLevel(0);
+    fightRef.current = fresh;
+    setFight(fresh);
+    setScore(0);
     setPhase('PLAYING');
     wordIndexRef.current = -1;
     nextWord();
@@ -121,13 +194,10 @@ export function BossFightGame({
   }, [nextWord, start]);
 
   const restart = useCallback(() => {
-    setFight(createBossFight(DEFAULT_BOSS_HP, DEFAULT_PLAYER_HP));
-    wordIndexRef.current = -1;
-    nextWord();
-    setPhase('PLAYING');
-  }, [nextWord]);
+    beginFight();
+  }, [beginFight]);
 
-  // Stop listening once the round ends.
+  // Stop listening once the round ends (win or lose).
   useEffect(() => {
     if (fight.status !== 'playing') stop();
   }, [fight.status, stop]);
@@ -136,9 +206,12 @@ export function BossFightGame({
   useEffect(() => {
     if (phase !== 'PLAYING' || fight.status !== 'playing') return;
     if (timeLeft <= 0) {
-      setFight((prev) => playerHitByTimeout(prev));
+      const hurt = playerHitByTimeout(fightRef.current);
+      fightRef.current = hurt;
+      setFight(hurt);
+      setAttackNonce((n) => n + 1);
       speakSound.playMiss();
-      nextWord();
+      if (hurt.status === 'playing') nextWord();
       return;
     }
     const id = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
@@ -146,12 +219,11 @@ export function BossFightGame({
   }, [phase, fight.status, timeLeft, nextWord]);
 
   const isOver = fight.status !== 'playing';
+  const won = fight.status === 'won';
+  const list = wordList();
 
   return (
-    <section
-      className="max-w-md mx-auto py-4 px-2"
-      aria-label="Boss Fight game"
-    >
+    <section className="max-w-md mx-auto py-4 px-2" aria-label="Boss Fight game">
       <button
         onClick={() => {
           stop();
@@ -164,8 +236,8 @@ export function BossFightGame({
       </button>
 
       {phase === 'START' ? (
-        <div className="text-center space-y-5" id="boss-fight-start">
-          <div className="flex flex-col items-center gap-2">
+        <div className="space-y-4" id="boss-fight-start">
+          <div className="flex flex-col items-center gap-2 text-center">
             <div className="w-16 h-16 rounded-3xl bg-rose-500 border-4 border-slate-900 flex items-center justify-center">
               <Swords className="w-9 h-9 text-white stroke-[3]" />
             </div>
@@ -173,13 +245,26 @@ export function BossFightGame({
               Boss Fight
             </h1>
             <p className="text-xs font-bold text-slate-600 max-w-xs leading-relaxed">
-              Say each English word out loud to hit the boss. Beat the boss
-              before it beats you! You have {WORD_TIME_SECONDS} seconds per word.
+              Beat {BOSS_ROSTER.length} bosses by saying each English word out
+              loud. Say it before the timer runs out, or the boss hits back! You
+              have {WORD_TIME_SECONDS} seconds per word.
             </p>
           </div>
 
-          <fieldset className="text-left">
-            <legend className="text-xs font-black uppercase tracking-wider text-slate-700 mb-2">
+          {/* Boss roster preview */}
+          <div className="flex items-center justify-center gap-3" aria-hidden="true">
+            {BOSS_ROSTER.map((b, i) => (
+              <div key={b.name} className="flex flex-col items-center">
+                <span className="text-3xl">{b.emoji}</span>
+                <span className="text-[9px] font-black uppercase text-slate-500">
+                  {i + 1}. {b.name}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <fieldset className="text-left bg-slate-50 border-4 border-slate-900 rounded-2xl p-3">
+            <legend className="text-xs font-black uppercase tracking-wider text-slate-700 px-1">
               Choose a word set
             </legend>
             <div className="flex flex-wrap gap-2">
@@ -197,8 +282,90 @@ export function BossFightGame({
                   {cat.name}
                 </button>
               ))}
+              <button
+                onClick={() =>
+                  setActiveCategory({
+                    id: 'custom',
+                    name: 'My Words',
+                    description: '',
+                    icon: 'edit',
+                    words: customWords,
+                  })
+                }
+                aria-pressed={activeCategory.id === 'custom'}
+                className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide ${
+                  activeCategory.id === 'custom'
+                    ? 'bg-pink-400 border-slate-900 text-white'
+                    : 'bg-white border-slate-300 text-slate-600'
+                }`}
+              >
+                My Words ({customWords.length})
+              </button>
             </div>
           </fieldset>
+
+          {/* Listen and learn warmup */}
+          <div className="text-left">
+            <button
+              onClick={() => {
+                setIsWarmupOpen((v) => !v);
+                setIsAddOpen(false);
+              }}
+              className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl font-black text-xs text-slate-800"
+              aria-expanded={isWarmupOpen}
+            >
+              <span>Listen and learn ({list.length} words)</span>
+              <span className="bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">
+                {isWarmupOpen ? '▲' : '▼'}
+              </span>
+            </button>
+            {isWarmupOpen && (
+              <div className="bg-white border-4 border-t-0 border-slate-900 rounded-b-2xl p-3 grid grid-cols-2 gap-2 max-h-44 overflow-y-auto">
+                {list.map((item, i) => (
+                  <button
+                    key={`${item.word}-${i}`}
+                    onClick={() => speakWord(item.word)}
+                    className="bg-yellow-50 hover:bg-yellow-100 border-2 border-slate-900 text-left p-2 rounded-xl flex items-center justify-between gap-1"
+                    aria-label={`Hear the word ${item.word}`}
+                  >
+                    <span className="text-slate-900 font-extrabold text-xs truncate">
+                      {item.word}
+                    </span>
+                    <Volume2 className="w-4 h-4 text-slate-600 shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Add my own words */}
+          {onAddCustomWord && onDeleteCustomWord && onClearCustomWords && (
+            <div className="text-left">
+              <button
+                onClick={() => {
+                  setIsAddOpen((v) => !v);
+                  setIsWarmupOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl font-black text-xs text-slate-800"
+                aria-expanded={isAddOpen}
+              >
+                <span>Add my own words ({customWords.length})</span>
+                <span className="bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">
+                  {isAddOpen ? '▲' : '▼'}
+                </span>
+              </button>
+              {isAddOpen && (
+                <div className="bg-white border-4 border-t-0 border-slate-900 rounded-b-2xl p-4">
+                  <CustomWordsManager
+                    customWords={customWords}
+                    onAddWord={onAddCustomWord}
+                    onDeleteWord={onDeleteCustomWord}
+                    onClearAll={onClearCustomWords}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {!isSupported && (
             <p className="text-xs font-bold text-rose-600" role="alert">
@@ -215,26 +382,42 @@ export function BossFightGame({
           </button>
         </div>
       ) : (
-        <div className={`space-y-4 ${hitFlash ? 'animate-pulse' : ''}`} id="boss-fight-play">
-          {/* Boss health */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-black uppercase tracking-wider text-rose-700 inline-flex items-center gap-1">
-                <Swords className="w-4 h-4 stroke-[3]" /> Boss
-              </span>
-              <span
-                className="text-xs font-mono font-bold text-rose-700"
-                aria-label={`Boss health ${fight.bossHp} of ${fight.bossMaxHp}`}
-              >
-                {fight.bossHp}/{fight.bossMaxHp}
-              </span>
-            </div>
-            <div className="h-4 rounded-full bg-rose-100 border-2 border-slate-900 overflow-hidden">
-              <div
-                className="h-full bg-rose-500 transition-all"
-                style={{ width: `${(fight.bossHp / fight.bossMaxHp) * 100}%` }}
-              />
-            </div>
+        <div className="space-y-3" id="boss-fight-play">
+          {/* Animated arena */}
+          <div className="border-4 border-slate-900 rounded-2xl overflow-hidden bg-slate-900">
+            <BossArena
+              bossEmoji={boss.emoji}
+              bossColor={boss.color}
+              bossHpFrac={fight.bossHp / fight.bossMaxHp}
+              phase={bossPhase(fight)}
+              hitNonce={hitNonce}
+              attackNonce={attackNonce}
+              killNonce={killNonce}
+              defeated={won}
+              victory={won}
+            />
+          </div>
+
+          {/* Boss name + level */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black uppercase tracking-wider text-rose-700 inline-flex items-center gap-1">
+              <Swords className="w-4 h-4 stroke-[3]" /> {boss.emoji} {boss.name}
+            </span>
+            <span className="text-[10px] font-black uppercase text-slate-500">
+              Boss {Math.min(bossLevel + 1, BOSS_ROSTER.length)}/
+              {BOSS_ROSTER.length}
+            </span>
+          </div>
+
+          {/* Boss health (accessible) */}
+          <div
+            className="h-4 rounded-full bg-rose-100 border-2 border-slate-900 overflow-hidden"
+            aria-label={`Boss health ${fight.bossHp} of ${fight.bossMaxHp}`}
+          >
+            <div
+              className="h-full bg-rose-500 transition-all"
+              style={{ width: `${(fight.bossHp / fight.bossMaxHp) * 100}%` }}
+            />
           </div>
 
           {/* Player lives */}
@@ -247,7 +430,9 @@ export function BossFightGame({
               <Heart
                 key={i}
                 className={`w-5 h-5 stroke-[3] ${
-                  i < fight.playerHp ? 'text-rose-500 fill-rose-500' : 'text-slate-300'
+                  i < fight.playerHp
+                    ? 'text-rose-500 fill-rose-500'
+                    : 'text-slate-300'
                 }`}
               />
             ))}
@@ -256,10 +441,11 @@ export function BossFightGame({
           {isOver ? (
             <div className="text-center space-y-4 py-4" role="status">
               <h2 className="text-3xl font-black uppercase tracking-wider text-slate-900">
-                {fight.status === 'won' ? 'You won! 🏆' : 'Game over'}
+                {won ? 'You won! 🏆' : 'Game over'}
               </h2>
               <p className="text-sm font-bold text-slate-600">
-                Words defeated: {fight.wordsDefeated}
+                Words defeated: {score}
+                {won ? ' • all bosses beaten!' : ''}
               </p>
               <div className="flex gap-2">
                 <button
@@ -281,7 +467,7 @@ export function BossFightGame({
               </div>
             </div>
           ) : (
-            <div className="text-center space-y-3 py-2">
+            <div className="text-center space-y-3 py-1">
               <p className="text-xs font-black uppercase tracking-wider text-slate-500">
                 Say this word
               </p>

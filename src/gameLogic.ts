@@ -67,6 +67,44 @@ export function playerHitByTimeout(state: BossFightState): BossFightState {
   return { ...state, playerHp, status };
 }
 
+// The fight is a short gauntlet of bosses. The player advances through them in
+// order; player HP carries over, each boss is a little tougher. The emoji is
+// what the canvas draws as the boss; the rules stay here so they stay testable.
+export interface BossKind {
+  name: string;
+  emoji: string;
+  hp: number;
+  color: string; // canvas accent colour
+}
+
+export const BOSS_ROSTER: readonly BossKind[] = [
+  { name: 'Goblin', emoji: '👺', hp: 5, color: '#22c55e' },
+  { name: 'Ogre', emoji: '👹', hp: 7, color: '#f97316' },
+  { name: 'Dragon', emoji: '🐉', hp: 10, color: '#ef4444' },
+];
+
+/** The boss for a (zero-based) gauntlet level, clamped into the roster. */
+export function bossAtLevel(level: number): BossKind {
+  const i = Math.max(0, Math.min(BOSS_ROSTER.length - 1, Math.floor(level)));
+  return BOSS_ROSTER[i];
+}
+
+/** True when the given level is the last boss of the gauntlet. */
+export function isFinalBoss(level: number): boolean {
+  return Math.floor(level) >= BOSS_ROSTER.length - 1;
+}
+
+export type BossPhase = 'calm' | 'angry' | 'enraged';
+
+/** Visual phase of the current boss, by its remaining HP fraction. */
+export function bossPhase(state: BossFightState): BossPhase {
+  if (state.bossMaxHp <= 0) return 'calm';
+  const frac = state.bossHp / state.bossMaxHp;
+  if (frac > 0.66) return 'calm';
+  if (frac > 0.33) return 'angry';
+  return 'enraged';
+}
+
 // ---------------------------------------------------------------------------
 // Word Ladder (rocket climb)
 // Each correctly pronounced word lifts the rocket up one step. Reaching the
@@ -102,6 +140,17 @@ export function climbStep(state: WordLadderState): WordLadderState {
 export function ladderProgress(state: WordLadderState): number {
   if (state.totalSteps <= 0) return 0;
   return state.currentStep / state.totalSteps;
+}
+
+export type LadderZone = 'ground' | 'clouds' | 'sky' | 'space';
+
+/** The altitude band the rocket is in, by climb progress (drives the canvas). */
+export function ladderZone(state: WordLadderState): LadderZone {
+  const p = ladderProgress(state);
+  if (p < 0.25) return 'ground';
+  if (p < 0.55) return 'clouds';
+  if (p < 0.85) return 'sky';
+  return 'space';
 }
 
 // ---------------------------------------------------------------------------
