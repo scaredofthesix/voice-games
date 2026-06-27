@@ -3,8 +3,8 @@
 ## Learning points
 
 - Responding to customer feedback does not have to mean a large feature push.
-  The customer asked for more games, so we shipped two (Boss Fight and Word
-  Ladder) while spending most of the sprint on the quality foundation the
+  The customer asked for more games, so we shipped two (Boss Fight and Voice
+  Rocket Climb) while spending most of the sprint on the quality foundation the
   product had been missing.
 - Defining quality requirements against ISO/IEC 25010 forced us to make vague
   goals measurable: "recognition should be good" became a correctness scenario

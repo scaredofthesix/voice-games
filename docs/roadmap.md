@@ -22,7 +22,8 @@ Quality-and-automation sprint. Delivered increment plus the quality gates that n
 all later work.
 
 - **Two new games** answering the customer "more games" request (issue #54):
-  Boss Fight and Word Ladder (rocket climb).
+  Boss Fight (a 15-boss endless gauntlet) and Voice Rocket Climb (formerly
+  Word Ladder).
 - **Automated testing** added with Vitest: unit, integration, and a performance test;
   critical modules kept above the coverage floor (see `docs/testing.md`).
 - **Quality requirements** defined against ISO/IEC 25010 with automated quality requirement

@@ -20,9 +20,10 @@
 ## Human oversight
 
 - The team chose the sprint scope (two games, quality automation) and the second
-  game (Word Ladder) and the additional QA check direction.
+  game (Voice Rocket Climb, formerly Word Ladder) and the additional QA check
+  direction.
 - Every generated change was reviewed and run locally: the full test suite
-  (43 tests), the type check, and the production build all pass before the work
+  (53 tests), the type check, and the production build all pass before the work
   is opened for team review.
 - All customer-facing decisions, the recorded UAT and Sprint Review, reviewer
   approvals, and the release remain human-owned and are not automated.

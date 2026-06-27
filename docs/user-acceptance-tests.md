@@ -34,16 +34,17 @@ https://scaredofthesix.github.io/voice-games/.
   of time lowers the player's hearts; defeating the boss shows the win screen
   with the number of words defeated.
 
-## UAT-03 Reach the top in Word Ladder
+## UAT-03 Reach orbit in Voice Rocket Climb
 
-- **Goal:** A child can play the new Word Ladder (rocket) game end to end.
+- **Goal:** A child can play the new Voice Rocket Climb game (formerly Word
+  Ladder) end to end.
 - **Preconditions:** App open in Chrome, microphone allowed.
 - **Steps:**
-  1. From the hub, press Play on Word Ladder.
-  2. Press Start Climb.
+  1. From the hub, press Play on Voice Rocket Climb.
+  2. Press Start Launch.
   3. Pronounce each shown word.
 - **Expected result:** Each correct word advances the rocket one step on the
-  progress bar; reaching the top shows the "Top reached" win screen.
+  progress bar; reaching the top shows the "Orbit reached" win screen.
 
 ## UAT-04 Hear how a word should sound
 

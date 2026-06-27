@@ -6,6 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Per-game visual theme pickers: Voice Rocket Climb mission themes (Earth Orbit,
+  Flight to Mars, Alien Nebula), Boss Fight arena themes (Castle Ruins, Lava
+  Dungeon, Magic Forest, Void Abyss), plus theme choices for Voice Racer (with a
+  live highway preview) and Bubble Popper.
+- Two phrase vocabulary sets, Short Phrases and Long Phrases, so children can
+  practise whole greetings and sentences instead of only single words.
+
+### Changed
+
+- Renamed the Word Ladder game to Voice Rocket Climb (RU: Космический старт) and
+  shortened the app title from "Voice Word Games" to "Voice Games".
+- Boss Fight gauntlet expanded from 3 to 15 bosses (Slime through Phoenix) with a
+  steadily rising health curve for a longer endless run.
+- The recognition matcher now grades multi-word phrases by word overlap, and the
+  on-screen target word scales its font down so long phrases stay readable.
+
 ## [0.2.0] - 2026-06-26
 
 ### Added

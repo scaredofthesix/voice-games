@@ -45,7 +45,7 @@ product.
 | Backlog item (issue) | User story served | Reviewed PR | Implementation | Automated test | UAT / smoke |
 |---|---|---|---|---|---|
 | Boss Fight game ([#61](https://github.com/scaredofthesix/voice-games/issues/61)) | "More games" ([#54](https://github.com/scaredofthesix/voice-games/issues/54)); voice recognition US-08 | [#68](https://github.com/scaredofthesix/voice-games/pull/68) | `src/components/BossFightGame.tsx`, `src/gameLogic.ts` | `src/components/BossFightGame.test.tsx`, `src/gameLogic.test.ts` | UAT-02 + Boss Fight smoke |
-| Word Ladder game ([#62](https://github.com/scaredofthesix/voice-games/issues/62)) | "More games" (#54); voice recognition US-08 | [#68](https://github.com/scaredofthesix/voice-games/pull/68) | `src/components/WordLadderGame.tsx`, `src/gameLogic.ts` | `src/components/WordLadderGame.test.tsx`, `src/gameLogic.test.ts` | UAT-03 + Word Ladder smoke |
+| Voice Rocket Climb game, formerly Word Ladder ([#62](https://github.com/scaredofthesix/voice-games/issues/62)) | "More games" (#54); voice recognition US-08 | [#68](https://github.com/scaredofthesix/voice-games/pull/68) | `src/components/WordLadderGame.tsx`, `src/gameLogic.ts` | `src/components/WordLadderGame.test.tsx`, `src/gameLogic.test.ts` | UAT-03 + Voice Rocket Climb smoke |
 | Voice recognition accuracy = QR-1 functional correctness | US-08 robust recognition | [#65](https://github.com/scaredofthesix/voice-games/pull/65), [#68](https://github.com/scaredofthesix/voice-games/pull/68) | `src/utils.ts` (`matchesWord`), `src/useSpeechRecognition.ts` | `src/utils.test.ts` (QRT-1) | UAT-01..03 voice control |
 | Start / response time = QR-2 performance efficiency | time behaviour | [#65](https://github.com/scaredofthesix/voice-games/pull/65) | recognition matcher path in `src/utils.ts` | `src/utils.perf.test.ts` (QRT-2) | smoke timing note |
 | Accessibility / operability = QR-3 usability | usability for children | [#67](https://github.com/scaredofthesix/voice-games/pull/67) | ARIA roles in the game components | a11y assertions in integration tests + Lighthouse job (QRT-3) | UAT manual + Lighthouse |
@@ -57,11 +57,15 @@ product.
 ## Delivered product changes
 
 - **Boss Fight** game: pronounce words to damage the boss; a per-word timer
-  means a missed word costs the player a life. Beat the boss to win.
-- **Word Ladder** game: pronounce words to fly a rocket one step higher; reach
-  the top of the ladder to win.
+  means a missed word costs the player a life. It is an endless gauntlet of 15
+  bosses (Slime through Phoenix) with selectable arena themes.
+- **Voice Rocket Climb** game (formerly Word Ladder): pronounce words to fly a
+  rocket one step higher through selectable mission themes; reach orbit to win.
 - Both games reuse the shared recognition matcher and a new shared speech hook,
   and are wired into the game hub.
+- **Phrase practice:** two new vocabulary sets (Short Phrases, Long Phrases) let
+  children practise whole greetings and sentences; the recognition matcher grades
+  multi-word phrases by word overlap.
 - Automated tests, quality requirements, quality requirement tests, CI quality
   gates, and an accessibility audit (see below).
 
@@ -69,7 +73,7 @@ product.
 
 | Feedback point | Resulting PBI or issue | Status | Response |
 |---|---|---|---|
-| The customer asked for more games (about four more for MVP v2). | [#54](https://github.com/scaredofthesix/voice-games/issues/54) plus _TODO new issues for Boss Fight and Word Ladder_ | Done (2 of the requested games) | Shipped Boss Fight and Word Ladder this sprint; the remaining games are queued for later sprints. |
+| The customer asked for more games (about four more for MVP v2). | [#54](https://github.com/scaredofthesix/voice-games/issues/54) plus _TODO new issues for Boss Fight and Voice Rocket Climb_ | Done (2 of the requested games) | Shipped Boss Fight and Voice Rocket Climb this sprint; the remaining games are queued for later sprints. |
 | _TODO any other feedback from the Sprint 1 review or later._ | _TODO_ | _TODO_ | _TODO_ |
 
 Feedback not addressed this sprint (for example bilingual UI US-17, pause
@@ -90,7 +94,7 @@ quality automation and the two requested games; it remains on the roadmap.
 
 ## Testing status
 
-All automated tests pass locally and in CI (43 tests at the time of writing).
+All automated tests pass locally and in CI (53 tests at the time of writing).
 
 | Critical module | Line coverage | Floor |
 |-----------------|---------------|-------|
@@ -192,8 +196,8 @@ Moodle upload:
 ## Remaining-work checklist (team / customer / Moodle)
 
 1. Create the Assignment 4 Sprint milestone (dates, Sprint Goal, PBIs) and the
-   Sprint Backlog Project view; create issues for Boss Fight and Word Ladder and
-   the quality work, with implementer and a different reviewer each.
+   Sprint Backlog Project view; create issues for Boss Fight and Voice Rocket
+   Climb and the quality work, with implementer and a different reviewer each.
 2. Open issue-linked PRs for this branch's work and have a different team member
    review, approve, and merge each (protected `main`).
 3. After merge, confirm the CI run on `main` is green (including the Lighthouse

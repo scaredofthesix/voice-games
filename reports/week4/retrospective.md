@@ -4,8 +4,8 @@ Public and sanitized. No private personal information.
 
 ## What went well
 
-- We delivered the two customer-requested games (Boss Fight, Word Ladder) and a
-  full automated quality foundation in one sprint.
+- We delivered the two customer-requested games (Boss Fight, Voice Rocket Climb)
+  and a full automated quality foundation in one sprint.
 - Pulling game rules into a pure `gameLogic.ts` module made tests fast and
   reliable and gave us 100 percent coverage on that module.
 - CI now enforces the Definition of Done automatically (type check, tests,
