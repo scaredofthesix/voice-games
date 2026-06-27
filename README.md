@@ -3,6 +3,7 @@
 A browser-based **voice-controlled English learning portal for children**. The child speaks the target word to trigger in-game actions - **voice is the only controller**. Features four games: Voice Racer (lane racing), Voice Bubble Popper, Boss Fight (a 15-boss endless gauntlet), and Voice Rocket Climb (formerly Word Ladder), with more planned.
 
 - **Live (public, HTTPS):** https://scaredofthesix.github.io/voice-games/ - works in Google Chrome; allow microphone access when prompted.
+  > Note: the GitHub Pages link may not open from some networks or regions without a VPN. This is an external GitHub availability restriction outside the team's control; the same build can always be run locally from this repository (see "Local development setup" below).
 - **Release:** [v0.1.0 - MVP v1 (Sprint 1)](https://github.com/scaredofthesix/voice-games/releases/tag/v0.1.0) · [CHANGELOG](./CHANGELOG.md)
 - **Assignment 4 submission index:** [reports/week4/README.md](./reports/week4/README.md)
 - **Assignment 3 submission index:** [reports/week3/README.md](./reports/week3/README.md)

@@ -16,6 +16,9 @@ the target English word out loud (Web Speech API, Chrome only).
 
 - Repository: https://github.com/scaredofthesix/voice-games
 - Deployed product (public, HTTPS): https://scaredofthesix.github.io/voice-games/
+  (the GitHub Pages link may not open from some networks or regions without a VPN;
+  this is an external GitHub availability restriction outside the team's control,
+  and the same build can always be run locally from the repository)
 - Run / access instructions: [root README](../../README.md)
 
 ## Sprint
