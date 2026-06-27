@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Planned (from the Sprint 2 customer review / UAT, 2026-06-27)
+
+Feedback from the recorded review is scheduled for the next release. The
+demonstrated build v0.2.1 is unchanged.
+
+- Fix the speech engine self-triggering from its own spoken hint (audio-loop
+  false positive): mute the microphone while text-to-speech plays and / or drop
+  the auto hint, and recalibrate the matching tolerance (#81).
+- Extract a shared voice-processing module reused by all games (#82).
+- Boss Fight finite difficulty modes (10 / 20 / 30 words) plus an unlockable
+  Infinite Mode, with the design documented (#83).
+- Default the interface to Russian on launch, keeping the RU/EN toggle (#84).
+- Smooth Voice Racer movement physics under live streaming (#85).
+- Later polish: an interactive end-of-climb event in Voice Rocket Climb (#86).
+
 ## [0.2.1] - 2026-06-27
 
 ### Added
