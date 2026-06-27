@@ -27,7 +27,7 @@ describe('WordLadderGame (integration)', () => {
       screen.getByRole('button', { name: /start the rocket climb/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { name: /word ladder/i }),
+      screen.getByRole('heading', { name: /voice rocket climb/i }),
     ).toBeInTheDocument();
   });
 
@@ -51,7 +51,7 @@ describe('WordLadderGame (integration)', () => {
       act(() => rec.emit(word));
     }
 
-    expect(screen.getByText(/top reached/i)).toBeInTheDocument();
+    expect(screen.getByText(/orbit reached/i)).toBeInTheDocument();
   });
 
   test('an unrelated transcript does not advance the climb', () => {
