@@ -4,9 +4,10 @@ Canonical public report and submission index for Assignment 4 (Sprint 2).
 All public evidence is linked from here. Private identity, recordings, and
 credentials live only in the Moodle PDF.
 
-> Items marked _TODO_ depend on a team, customer, or Moodle action that cannot
-> be produced from the codebase alone. See the bottom of this file for the
-> remaining-work checklist.
+> Items marked "Pending team upload" depend on a team or Moodle action (a
+> screenshot, the demo video, the Moodle PDF) that cannot be produced from the
+> codebase alone. Everything else is filled and linked. See the bottom of this
+> file for the short remaining-work checklist.
 
 ## Project
 
@@ -24,9 +25,8 @@ the target English word out loud (Web Speech API, Chrome only).
   two requested games and putting automated quality gates (tests, quality
   requirement tests, coverage, CI, and an accessibility check) in place that
   govern all later work.
-- **Sprint dates:** _TODO start_ to _TODO finish_.
-- **Sprint milestone (authoritative scope):** _TODO link to the Assignment 4
-  Sprint milestone_.
+- **Sprint dates:** 2026-06-22 to 2026-06-28.
+- **Sprint milestone (authoritative scope):** [Assignment 4 - Sprint 2 milestone](https://github.com/scaredofthesix/voice-games/milestone/2).
 - **Product Backlog board:** [GitHub Project - Product Backlog view](https://github.com/users/scaredofthesix/projects/1).
 - **Sprint Backlog board/table:** [GitHub Project - Sprint Backlog view](https://github.com/users/scaredofthesix/projects/1) (filter Sprint = "Sprint 2"; the seven Assignment 4 milestone items).
 - **Total Sprint size (Story Points):** 29 SP across 7 PBIs (Boss Fight 8, Voice Rocket Climb 5, test suite 5, quality reqs 3, CI 3, Pause 3, Week 4 report 2).
@@ -70,16 +70,26 @@ product.
 
 ## Customer feedback response
 
-| Feedback point | Resulting PBI or issue | Status | Response |
-|---|---|---|---|
-| The customer asked for more games (about four more for MVP v2). | [#54](https://github.com/scaredofthesix/voice-games/issues/54) plus _TODO new issues for Boss Fight and Voice Rocket Climb_ | Done (2 of the requested games) | Shipped Boss Fight and Voice Rocket Climb this sprint; the remaining games are queued for later sprints. |
-| _TODO any other feedback from the Sprint 1 review or later._ | _TODO_ | _TODO_ | _TODO_ |
+| Feedback point | Source | Resulting PBI or issue | Status | Response |
+|---|---|---|---|---|
+| The customer asked for more games (about four more for MVP v2). | Sprint 1 review | [#54](https://github.com/scaredofthesix/voice-games/issues/54), Boss Fight [#61](https://github.com/scaredofthesix/voice-games/issues/61), Voice Rocket Climb [#62](https://github.com/scaredofthesix/voice-games/issues/62) | Done (2 of the requested games) | Shipped Boss Fight and Voice Rocket Climb this sprint; the remaining games are queued for later sprints (two per week). |
+| Add a Pause button that also stops the microphone. | earlier review | [#30](https://github.com/scaredofthesix/voice-games/issues/30) (US-16) | Done | Pause / Resume with a "Paused" overlay and microphone off, in every game. |
+| The speech engine self-triggers from its own spoken hint (audio-loop false positive). | Sprint 2 UAT (2026-06-27) | [#81](https://github.com/scaredofthesix/voice-games/issues/81) | Planned (next release) | Will mute the microphone while text-to-speech plays and / or drop the auto hint, and recalibrate the tolerance lowered after v0.1.0. |
+| Move core voice processing into a shared module reused by all games. | Sprint 2 UAT | [#82](https://github.com/scaredofthesix/voice-games/issues/82) | Planned (next release) | Single shared recognition module so the fix applies uniformly across all four games. |
+| Replace Boss Fight's infinite loop with finite difficulty stages (10 / 20 / 30 words) plus an unlockable Infinite Mode; document the design. | Sprint 2 UAT | [#83](https://github.com/scaredofthesix/voice-games/issues/83) | Planned (next release) | Dual-layout Finite + Infinite mode; relates to difficulty levels (#27). |
+| Default the interface to Russian on launch. | Sprint 2 UAT | [#84](https://github.com/scaredofthesix/voice-games/issues/84) | Planned (next release) | Launch in Russian for the target audience; keep the RU/EN toggle (US-17). |
+| Voice Racer movement physics feel random while streaming. | Sprint 2 UAT | [#85](https://github.com/scaredofthesix/voice-games/issues/85) | Planned (next release) | Investigate frame pacing / movement smoothing under load. |
+| Future polish: an interactive end-of-climb event (meet an alien) in Voice Rocket Climb. | Sprint 2 UAT | [#86](https://github.com/scaredofthesix/voice-games/issues/86) | Backlog (later) | Nice-to-have engagement boost at the climb finish. |
 
-Pause (US-16, [#30](https://github.com/scaredofthesix/voice-games/issues/30))
-and the RU/EN bilingual interface toggle (US-17) were additionally delivered
-this sprint. Feedback not addressed this sprint (for example parent progress
-US-10 and difficulty levels US-12) was deferred to keep the sprint focused on
-quality automation and the two requested games; it remains on the roadmap.
+The customer accepted the increment. The demonstrated live build (**v0.2.1**) is
+**not changed** in response to this review; every Sprint 2 UAT item above is
+carried into the next release as backlog (issues #81 to #86), also recorded in
+[docs/roadmap.md](../../docs/roadmap.md) and the `[Unreleased]` section of
+[CHANGELOG.md](../../CHANGELOG.md).
+
+The RU/EN bilingual interface toggle (US-17) was additionally delivered this
+sprint. Feedback not addressed this sprint (for example parent progress US-10 and
+difficulty levels US-12) remains on the roadmap.
 
 ## Quality model and documentation
 
@@ -122,11 +132,12 @@ Global coverage is intentionally lower; rationale in
 
 - CI pipeline: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
   (type check, tests with coverage, build, Lighthouse accessibility audit).
-- Latest protected-branch CI run: _TODO link to the latest green run on `main`_.
-- Branch protection evidence: _TODO screenshot or settings link for `main`
-  (merge-commit only, one required approval, no force-push)_.
-- Additional QA check: Lighthouse accessibility audit (the `accessibility` job).
-  Screenshots / report links: _TODO_.
+- CI runs on `main`: [CI workflow filtered to `main`](https://github.com/scaredofthesix/voice-games/actions/workflows/ci.yml?query=branch%3Amain)
+  (all recent runs green; e.g. [run 28288168347](https://github.com/scaredofthesix/voice-games/actions/runs/28288168347)).
+- Branch protection evidence: Pending team upload - screenshot of the `main`
+  protection settings (merge-commit only, one required approval, no force-push).
+- Additional QA check: Lighthouse accessibility audit (the `accessibility` job),
+  green in the CI runs linked above. Report screenshot: Pending team upload.
 - Link check (separate, not the additional QA check):
   [`.github/workflows/links.yml`](../../.github/workflows/links.yml).
 
@@ -136,19 +147,25 @@ must keep them passing or extend them rather than bypass them.
 
 ## Release
 
-- SemVer release for the Sprint 2 increment: _TODO link to the `v0.2.0` release
-  once tagged on `main`_.
+- SemVer releases for the Sprint 2 increment:
+  [v0.2.0](https://github.com/scaredofthesix/voice-games/releases/tag/v0.2.0)
+  and the current live patch
+  [v0.2.1](https://github.com/scaredofthesix/voice-games/releases/tag/v0.2.1)
+  (the build demonstrated at the review).
 - [CHANGELOG.md](../../CHANGELOG.md)
 
 ## Demo and review evidence
 
-- Public sanitized demo video (under 2 minutes): _TODO link_.
+- Public sanitized demo video (under 2 minutes): Pending team upload - record and
+  link here and in the release.
 - Optional public slides: see `reports/week4/presentation.pdf` if published.
-- Public UAT results summary: _TODO once the customer executes UAT-01..03; see
-  `docs/user-acceptance-tests.md`_.
+- Public UAT results summary: customer executed UAT-01, UAT-02, UAT-03 on
+  2026-06-27; all three passed. Details in
+  [docs/user-acceptance-tests.md](../../docs/user-acceptance-tests.md) and
+  [customer-review-summary.md](./customer-review-summary.md).
 - [Customer review / UAT transcript (per-line timestamps)](./customer-review-transcript.md):
-  publish only if the customer permits; every line carries its own `[mm:ss]`
-  timestamp. If publication is refused, keep it Moodle-only and state that here.
+  published with the customer's permission (recording and transcript approved for
+  the coursework); every line carries its own `[mm:ss]` timestamp.
 - [Customer review summary](./customer-review-summary.md)
 - [Reflection](./reflection.md)
 - [Retrospective](./retrospective.md)
@@ -158,34 +175,58 @@ must keep them passing or extend them rather than bypass them.
 
 - **Current status:** Two new games shipped behind a full automated quality
   gate; recognition, game logic, and the new games are covered by tests and CI.
-- **Next steps:** Tag `v0.2.0`, run the recorded UAT and Sprint Review, fill the
-  live links and screenshots below, then continue MVP v2 (bilingual UI, pause,
-  parent progress) on top of the now-enforced quality gates.
+  Releases v0.2.0 and v0.2.1 are tagged on `main` (v0.2.1 is live), and the
+  recorded Sprint Review + UAT was completed on 2026-06-27 with the increment
+  accepted.
+- **Next steps:** Address the next-release backlog from the review (issues #81 to
+  #86 - audio-loop fix, shared voice module, Boss Fight finite modes, RU default,
+  Racer physics), keep continuing MVP v2 (parent progress, more games) on top of
+  the now-enforced quality gates, and add the team-supplied evidence screenshots
+  and the demo video noted above.
 
 ## Contribution traceability
 
-| Member (GitHub) | Issues | PRs | Reviews | Testing / quality / automation / docs |
+GitHub handles are used here (identity-safe for the public repo); the
+handle-to-name mapping is in the Moodle PDF. Each member authored at least one
+issue-linked PR and reviewed a different member's PR (no self-review).
+
+| Member (GitHub) | Issues authored | PRs authored | PRs reviewed | Testing / quality / automation / docs |
 |---|---|---|---|---|
-| _TODO_ | _TODO_ | _TODO_ | _TODO_ | _TODO_ |
+| @scaredofthesix | #58, #30 | [#65](https://github.com/scaredofthesix/voice-games/pull/65) (test infra), Pause work | [#67](https://github.com/scaredofthesix/voice-games/pull/67) (CI) | Vitest setup, game logic + recognition tests, Pause / mic-off |
+| @flikspy | #60 | [#67](https://github.com/scaredofthesix/voice-games/pull/67) (CI + a11y) | [#69](https://github.com/scaredofthesix/voice-games/pull/69) (quality) | CI pipeline, Lighthouse accessibility QA job |
+| @MMavInno | #59 | [#69](https://github.com/scaredofthesix/voice-games/pull/69) (quality reqs + QRT + DoD) | [#66](https://github.com/scaredofthesix/voice-games/pull/66) (report) | Quality requirements, QRTs, Definition of Done |
+| @Kotumbaa | #61, #62 | [#68](https://github.com/scaredofthesix/voice-games/pull/68) (Boss Fight + Voice Rocket Climb) | [#65](https://github.com/scaredofthesix/voice-games/pull/65) (infra) | The two new games and their integration tests |
+| @TeraloToxin | #64 | [#66](https://github.com/scaredofthesix/voice-games/pull/66) (Week 4 report) | [#68](https://github.com/scaredofthesix/voice-games/pull/68) (games) | reports/week4 content and traceability |
+
+> Team to confirm this attribution matches the GitHub history before the Moodle
+> upload (authorship and reviews are visible on each linked PR).
 
 ## Embedded screenshots (reports/week4/images/)
 
-_TODO add and embed: Sprint milestone, latest protected-branch CI run, branch
-protection, coverage/test report, additional QA check (Lighthouse) result,
-SemVer release, an example reviewed issue-linked PR._
+Pending team upload - add and embed these screenshots into `reports/week4/images/`
+(every item below is already live and linked above; the screenshots are the only
+remaining artifact):
+
+- Assignment 4 - Sprint 2 milestone.
+- Latest green CI run on `main`.
+- Branch protection settings for `main`.
+- Coverage / test report.
+- Additional QA check (Lighthouse accessibility) result.
+- SemVer release (v0.2.1).
+- An example reviewed issue-linked PR.
 
 ## Submission integrity checklist (avoid repeat deductions)
 
 Lessons carried over from earlier assignment feedback. Confirm each before the
 Moodle upload:
 
-- [ ] Scope traceability: the "Sprint scope and traceability" table above maps
+- [x] Scope traceability: the "Sprint scope and traceability" table above maps
   every scope item and its user story (including US-08) to issue, PR, code, and
   test.
-- [ ] Voice-triggered outcome: the smoke evidence shows at least one full
+- [x] Voice-triggered outcome: the smoke evidence shows at least one full
   spoken-word-to-win outcome per new game, not just app open plus microphone on
   (see `docs/testing.md`).
-- [ ] Transcript timestamps: `customer-review-transcript.md` has a per-line
+- [x] Transcript timestamps: `customer-review-transcript.md` has a per-line
   `[mm:ss]` timestamp on every line.
 - [ ] Fresh link check: the Lychee run linked in the submission is the run on the
   final submitted commit of `main`, not an older run. Re-run the Link check
@@ -194,18 +235,21 @@ Moodle upload:
 
 ---
 
-## Remaining-work checklist (team / customer / Moodle)
+Done:
 
-1. Create the Assignment 4 Sprint milestone (dates, Sprint Goal, PBIs) and the
-   Sprint Backlog Project view; create issues for Boss Fight and Voice Rocket
-   Climb and the quality work, with implementer and a different reviewer each.
-2. Open issue-linked PRs for this branch's work and have a different team member
-   review, approve, and merge each (protected `main`).
-3. After merge, confirm the CI run on `main` is green (including the Lighthouse
-   accessibility job; tune `lighthouserc.json` minScore only if the runner
-   reports a genuinely lower achievable score) and tag `v0.2.0`.
-4. Run the recorded UAT + Sprint Review with the customer (>=3 scenarios from
-   `docs/user-acceptance-tests.md`); record results and permissions.
-5. Record the public sanitized demo video (under 2 minutes) and link it here and
-   from the release.
-6. Fill every _TODO_ link and screenshot above; build the Moodle PDF.
+1. Assignment 4 - Sprint 2 milestone, Sprint Backlog Project view, and the
+   issue-linked PRs (implementer and a different reviewer each) are in place.
+2. CI on `main` is green (including the Lighthouse accessibility job); v0.2.0 and
+   v0.2.1 are tagged, v0.2.1 is live.
+3. Recorded Sprint Review + UAT held on 2026-06-27 (3 scenarios), increment
+   accepted; transcript, summary, and UAT execution history filled. Resulting
+   feedback captured as next-release backlog (issues #81 to #86).
+
+Remaining (team / Moodle):
+
+4. Record the public sanitized demo video (under 2 minutes) and link it in the
+   "Demo and review evidence" section and from the release.
+5. Add the evidence screenshots into `reports/week4/images/` (see the list above)
+   and the branch-protection screenshot.
+6. Re-run the Link check workflow on the final `main` commit and link that run;
+   confirm the contribution attribution; build the Moodle PDF.
