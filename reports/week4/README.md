@@ -27,11 +27,9 @@ the target English word out loud (Web Speech API, Chrome only).
 - **Sprint dates:** _TODO start_ to _TODO finish_.
 - **Sprint milestone (authoritative scope):** _TODO link to the Assignment 4
   Sprint milestone_.
-- **Product Backlog board:** _TODO link to the GitHub Project Product Backlog
-  view_.
-- **Sprint Backlog board/table:** _TODO link to the GitHub Project Sprint
-  Backlog view filtered to the Assignment 4 milestone_.
-- **Total Sprint size (Story Points):** _TODO sum once PBIs are estimated_.
+- **Product Backlog board:** [GitHub Project - Product Backlog view](https://github.com/users/scaredofthesix/projects/1).
+- **Sprint Backlog board/table:** [GitHub Project - Sprint Backlog view](https://github.com/users/scaredofthesix/projects/1) (filter Sprint = "Sprint 2"; the seven Assignment 4 milestone items).
+- **Total Sprint size (Story Points):** 29 SP across 7 PBIs (Boss Fight 8, Voice Rocket Climb 5, test suite 5, quality reqs 3, CI 3, Pause 3, Week 4 report 2).
 
 ## Sprint scope and traceability
 
@@ -46,6 +44,7 @@ product.
 |---|---|---|---|---|---|
 | Boss Fight game ([#61](https://github.com/scaredofthesix/voice-games/issues/61)) | "More games" ([#54](https://github.com/scaredofthesix/voice-games/issues/54)); voice recognition US-08 | [#68](https://github.com/scaredofthesix/voice-games/pull/68) | `src/components/BossFightGame.tsx`, `src/gameLogic.ts` | `src/components/BossFightGame.test.tsx`, `src/gameLogic.test.ts` | UAT-02 + Boss Fight smoke |
 | Voice Rocket Climb game, formerly Word Ladder ([#62](https://github.com/scaredofthesix/voice-games/issues/62)) | "More games" (#54); voice recognition US-08 | [#68](https://github.com/scaredofthesix/voice-games/pull/68) | `src/components/WordLadderGame.tsx`, `src/gameLogic.ts` | `src/components/WordLadderGame.test.tsx`, `src/gameLogic.test.ts` | UAT-03 + Voice Rocket Climb smoke |
+| Pause the game ([#30](https://github.com/scaredofthesix/voice-games/issues/30), US-16) | customer review feedback | [#79](https://github.com/scaredofthesix/voice-games/pull/79) | Pause/resume control + microphone off in every game | manual smoke | n/a |
 | Voice recognition accuracy = QR-1 functional correctness | US-08 robust recognition | [#65](https://github.com/scaredofthesix/voice-games/pull/65), [#68](https://github.com/scaredofthesix/voice-games/pull/68) | `src/utils.ts` (`matchesWord`), `src/useSpeechRecognition.ts` | `src/utils.test.ts` (QRT-1) | UAT-01..03 voice control |
 | Start / response time = QR-2 performance efficiency | time behaviour | [#65](https://github.com/scaredofthesix/voice-games/pull/65) | recognition matcher path in `src/utils.ts` | `src/utils.perf.test.ts` (QRT-2) | smoke timing note |
 | Accessibility / operability = QR-3 usability | usability for children | [#67](https://github.com/scaredofthesix/voice-games/pull/67) | ARIA roles in the game components | a11y assertions in integration tests + Lighthouse job (QRT-3) | UAT manual + Lighthouse |
@@ -76,8 +75,10 @@ product.
 | The customer asked for more games (about four more for MVP v2). | [#54](https://github.com/scaredofthesix/voice-games/issues/54) plus _TODO new issues for Boss Fight and Voice Rocket Climb_ | Done (2 of the requested games) | Shipped Boss Fight and Voice Rocket Climb this sprint; the remaining games are queued for later sprints. |
 | _TODO any other feedback from the Sprint 1 review or later._ | _TODO_ | _TODO_ | _TODO_ |
 
-Feedback not addressed this sprint (for example bilingual UI US-17, pause
-US-16, parent progress US-10) was deferred to keep the sprint focused on
+Pause (US-16, [#30](https://github.com/scaredofthesix/voice-games/issues/30))
+and the RU/EN bilingual interface toggle (US-17) were additionally delivered
+this sprint. Feedback not addressed this sprint (for example parent progress
+US-10 and difficulty levels US-12) was deferred to keep the sprint focused on
 quality automation and the two requested games; it remains on the roadmap.
 
 ## Quality model and documentation
