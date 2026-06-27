@@ -12,8 +12,8 @@ recording), then the speaker, then the text. Team speakers are shown as
 marked `[inaudible]` and removed private or confidential content is `[redacted]`.
 
 - Date: 2026-06-27.
-- Session length: about 48 minutes of recording (Sprint Review, a short recess,
-  then the user acceptance testing).
+- Session length: 35 minutes of recording (Sprint Review, a short recess, then
+  the user acceptance testing).
 - Participants: Product Owner (Marat), Scrum Master (Maxim), and the Customer.
   The system text-to-speech voice is shown as "System voice".
 - Recording permission: granted.
@@ -50,34 +50,34 @@ marked `[inaudible]` and removed private or confidential content is `[redacted]`
 [08:08] Product Owner (Marat): Apologies for the tight meeting coordination; we experienced a few unexpected updates regarding our coursework assignment schedule, forcing us to move this session up. Moving forward, we plan to conduct regular review meetings every Friday.
 [08:33] Customer: That schedule works perfectly for me. Thank you for the presentation.
 
-[recess of about 22 minutes before the user acceptance testing]
+[recess of about 9 minutes before the user acceptance testing]
 
 ## Part 2 - User Acceptance Testing (customer-executed)
 
-[30:14] Customer: I am ready to begin the User Acceptance Testing (UAT). I will access the live build via Chrome. Should I share my screen?
-[30:23] Product Owner (Marat): Yes, please. We sent the testing link to the chat. It is enough to test three of the primary story scenarios.
-[33:13] Customer: The site loaded in English by default. For our target audience, it might be more practical to have Russian active by default on launch. Let's start the Voice Race scenario.
-[33:25] Customer: The movement physics feel a bit random when streaming, but the voice control responds. What happens if I mumble or mispronounce a word?
-[34:33] System voice: Lion.
-[34:37] Customer: Panda.
-[34:41] System voice: Lion.
-[34:45] Customer: Interesting. It seems the speech engine occasionally triggers an automatic pass when the game itself speaks. Let's move to the Boss Fight end-to-end test.
-[36:13] Scrum Master (Maxim): We deliberately lowered the voice matching tolerance threshold in this MVP build to ensure mumbled speech from younger children would still be accepted. However, this caused an unintended audio loop bug where the microphone captures the device's own speakers playing the system voice. I will restore a stricter validation model so only clearly pronounced words trigger a success state.
-[36:43] Customer: The underlying issue is that when the game pronounces a hint, the microphone captures that audio output and flags it as a user attempt. Disabling the automatic text-to-speech engine entirely during gameplay or recommending headphones might mitigate this loop.
-[37:23] Product Owner (Marat): We will ensure all four games are brought up to a unified standard. We can implement a mechanical fix to ensure the application does not trigger falsely from its own audio outputs.
-[37:48] Customer: Programmatically muting or blocking microphone inputs while the system text-to-speech voice is actively speaking would resolve the loop cleanly.
-[38:18] Scrum Master (Maxim): Alternatively, we can remove the automated spoken hint at the start of the round so it doesn't trigger an immediate false positive.
-[38:38] Product Owner (Marat): Right now, the high sensitivity is directly tied to the lowered matching criteria we introduced after version 0.1.0. We will calibrate the algorithm to establish a better operational balance.
-[39:23] Customer: This will require some structured code isolation. I recommend moving the core voice processing logic into a shared module reused by all games to ensure uniform accuracy.
-[40:13] Customer: Testing the phrase tracking now. How many total bosses are included in the loop?
-[41:13] Scrum Master (Maxim): There are 15 bosses in total, arranged in an infinite loop.
-[41:29] Customer: An infinite loop can become exhausting for young learners. It might be better to structure the game around a shorter, finite session - for instance, defeating three bosses to win a round.
-[41:55] Product Owner (Marat): We can implement a dual layout containing both a Finite Mode (broken down into distinct difficulty stages of 10, 20, or 30 words) and an unlockable Infinite Mode for advanced practice.
-[43:58] System voice: An apple a day keeps the doctor...
-[44:05] Customer: The speech tracking functions well with long sentences, though pacing can be adjusted. Implementing the step-by-step difficulty layers (10, 20, 30 words) will make this excellent. Please document these game design choices.
-[45:33] Product Owner (Marat): We will finalize these modifications. That covers all current user stories ready for verification.
-[45:51] Customer: Perfect. We will stick to the plan of delivering two games per week. I'll see you at our next review session on Friday. Thank you for the productive session.
-[47:34] Scrum Master (Maxim): Thank you. Goodbye.
+[17:30] Customer: I am ready to begin the User Acceptance Testing (UAT). I will access the live build via Chrome. Should I share my screen?
+[17:39] Product Owner (Marat): Yes, please. We sent the testing link to the chat. It is enough to test three of the primary story scenarios.
+[20:29] Customer: The site loaded in English by default. For our target audience, it might be more practical to have Russian active by default on launch. Let's start the Voice Race scenario.
+[20:41] Customer: The movement physics feel a bit random when streaming, but the voice control responds. What happens if I mumble or mispronounce a word?
+[21:49] System voice: Lion.
+[21:53] Customer: Panda.
+[21:57] System voice: Lion.
+[22:01] Customer: Interesting. It seems the speech engine occasionally triggers an automatic pass when the game itself speaks. Let's move to the Boss Fight end-to-end test.
+[23:29] Scrum Master (Maxim): We deliberately lowered the voice matching tolerance threshold in this MVP build to ensure mumbled speech from younger children would still be accepted. However, this caused an unintended audio loop bug where the microphone captures the device's own speakers playing the system voice. I will restore a stricter validation model so only clearly pronounced words trigger a success state.
+[23:59] Customer: The underlying issue is that when the game pronounces a hint, the microphone captures that audio output and flags it as a user attempt. Disabling the automatic text-to-speech engine entirely during gameplay or recommending headphones might mitigate this loop.
+[24:39] Product Owner (Marat): We will ensure all four games are brought up to a unified standard. We can implement a mechanical fix to ensure the application does not trigger falsely from its own audio outputs.
+[25:04] Customer: Programmatically muting or blocking microphone inputs while the system text-to-speech voice is actively speaking would resolve the loop cleanly.
+[25:34] Scrum Master (Maxim): Alternatively, we can remove the automated spoken hint at the start of the round so it doesn't trigger an immediate false positive.
+[25:54] Product Owner (Marat): Right now, the high sensitivity is directly tied to the lowered matching criteria we introduced after version 0.1.0. We will calibrate the algorithm to establish a better operational balance.
+[26:39] Customer: This will require some structured code isolation. I recommend moving the core voice processing logic into a shared module reused by all games to ensure uniform accuracy.
+[27:29] Customer: Testing the phrase tracking now. How many total bosses are included in the loop?
+[28:29] Scrum Master (Maxim): There are 15 bosses in total, arranged in an infinite loop.
+[28:45] Customer: An infinite loop can become exhausting for young learners. It might be better to structure the game around a shorter, finite session - for instance, defeating three bosses to win a round.
+[29:11] Product Owner (Marat): We can implement a dual layout containing both a Finite Mode (broken down into distinct difficulty stages of 10, 20, or 30 words) and an unlockable Infinite Mode for advanced practice.
+[31:14] System voice: An apple a day keeps the doctor...
+[31:21] Customer: The speech tracking functions well with long sentences, though pacing can be adjusted. Implementing the step-by-step difficulty layers (10, 20, 30 words) will make this excellent. Please document these game design choices.
+[32:49] Product Owner (Marat): We will finalize these modifications. That covers all current user stories ready for verification.
+[33:07] Customer: Perfect. We will stick to the plan of delivering two games per week. I'll see you at our next review session on Friday. Thank you for the productive session.
+[34:50] Scrum Master (Maxim): Thank you. Goodbye.
 
 ---
 
