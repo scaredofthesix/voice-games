@@ -159,7 +159,7 @@ must keep them passing or extend them rather than bypass them.
 
 ## Demo and review evidence
 
-- Public sanitized demo video (under 2 minutes): https://disk.yandex.ru/d/ug2Evs6iNoQ3eg
+- Public demo video (presentation, gameplay, and the increment demo): https://disk.yandex.ru/d/ug2Evs6iNoQ3eg
 - Presentation slides: shared with instructors through the Moodle PDF (they carry
   team identity, kept out of the public repo).
 - Public UAT results summary: customer executed UAT-01, UAT-02, UAT-03 on
