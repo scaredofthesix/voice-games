@@ -4,10 +4,9 @@ Canonical public report and submission index for Assignment 4 (Sprint 2).
 All public evidence is linked from here. Private identity, recordings, and
 credentials live only in the Moodle PDF.
 
-> Items marked "Pending team upload" depend on a team or Moodle action (a
-> screenshot, the demo video, the Moodle PDF) that cannot be produced from the
-> codebase alone. Everything else is filled and linked. See the bottom of this
-> file for the short remaining-work checklist.
+> All public Assignment 4 evidence is filled, linked, and embedded below. The
+> only item outside the public repository is the private Moodle PDF (team
+> identity, recording links and time-codes), as required by the assignment.
 
 ## Project
 
@@ -134,10 +133,14 @@ Global coverage is intentionally lower; rationale in
   (type check, tests with coverage, build, Lighthouse accessibility audit).
 - CI runs on `main`: [CI workflow filtered to `main`](https://github.com/scaredofthesix/voice-games/actions/workflows/ci.yml?query=branch%3Amain)
   (all recent runs green; e.g. [run 28288168347](https://github.com/scaredofthesix/voice-games/actions/runs/28288168347)).
-- Branch protection evidence: Pending team upload - screenshot of the `main`
-  protection settings (merge-commit only, one required approval, no force-push).
+  See [`images/ci-runs-main.png`](./images/ci-runs-main.png) and the run detail
+  [`images/ci-run-detail.png`](./images/ci-run-detail.png).
+- Branch protection: `main` requires a pull request, one approval, and
+  conversation resolution before merging - see
+  [`images/branch-protection-main.png`](./images/branch-protection-main.png).
 - Additional QA check: Lighthouse accessibility audit (the `accessibility` job),
-  green in the CI runs linked above. Report screenshot: Pending team upload.
+  green in the CI run - see the "Lighthouse accessibility audit" job in
+  [`images/ci-run-detail.png`](./images/ci-run-detail.png).
 - Link check (separate, not the additional QA check):
   [`.github/workflows/links.yml`](../../.github/workflows/links.yml).
 
@@ -156,9 +159,9 @@ must keep them passing or extend them rather than bypass them.
 
 ## Demo and review evidence
 
-- Public sanitized demo video (under 2 minutes): Pending team upload - record and
-  link here and in the release.
-- Optional public slides: see `reports/week4/presentation.pdf` if published.
+- Public sanitized demo video (under 2 minutes): https://disk.yandex.ru/d/ug2Evs6iNoQ3eg
+- Presentation slides: shared with instructors through the Moodle PDF (they carry
+  team identity, kept out of the public repo).
 - Public UAT results summary: customer executed UAT-01, UAT-02, UAT-03 on
   2026-06-27; all three passed. Details in
   [docs/user-acceptance-tests.md](../../docs/user-acceptance-tests.md) and
@@ -180,40 +183,54 @@ must keep them passing or extend them rather than bypass them.
   accepted.
 - **Next steps:** Address the next-release backlog from the review (issues #81 to
   #86 - audio-loop fix, shared voice module, Boss Fight finite modes, RU default,
-  Racer physics), keep continuing MVP v2 (parent progress, more games) on top of
-  the now-enforced quality gates, and add the team-supplied evidence screenshots
-  and the demo video noted above.
+  Racer physics) and keep continuing MVP v2 (parent progress, more games) on top
+  of the now-enforced quality gates.
 
 ## Contribution traceability
 
 GitHub handles are used here (identity-safe for the public repo); the
 handle-to-name mapping is in the Moodle PDF. Each member authored at least one
-issue-linked PR and reviewed a different member's PR (no self-review).
+issue-linked PR and reviewed a different member's PR (no self-review). The "Main
+contribution" column states the work each member led this sprint; the PR columns
+show the GitHub authorship and review evidence.
 
-| Member (GitHub) | Issues authored | PRs authored | PRs reviewed | Testing / quality / automation / docs |
-|---|---|---|---|---|
-| @scaredofthesix | #58, #30 | [#65](https://github.com/scaredofthesix/voice-games/pull/65) (test infra), Pause work | [#67](https://github.com/scaredofthesix/voice-games/pull/67) (CI) | Vitest setup, game logic + recognition tests, Pause / mic-off |
-| @flikspy | #60 | [#67](https://github.com/scaredofthesix/voice-games/pull/67) (CI + a11y) | [#69](https://github.com/scaredofthesix/voice-games/pull/69) (quality) | CI pipeline, Lighthouse accessibility QA job |
-| @MMavInno | #59 | [#69](https://github.com/scaredofthesix/voice-games/pull/69) (quality reqs + QRT + DoD) | [#66](https://github.com/scaredofthesix/voice-games/pull/66) (report) | Quality requirements, QRTs, Definition of Done |
-| @Kotumbaa | #61, #62 | [#68](https://github.com/scaredofthesix/voice-games/pull/68) (Boss Fight + Voice Rocket Climb) | [#65](https://github.com/scaredofthesix/voice-games/pull/65) (infra) | The two new games and their integration tests |
-| @TeraloToxin | #64 | [#66](https://github.com/scaredofthesix/voice-games/pull/66) (Week 4 report) | [#68](https://github.com/scaredofthesix/voice-games/pull/68) (games) | reports/week4 content and traceability |
-
-> Team to confirm this attribution matches the GitHub history before the Moodle
-> upload (authorship and reviews are visible on each linked PR).
+| Member (GitHub) | Main contribution (Sprint 2) | PRs authored | PRs reviewed |
+|---|---|---|---|
+| @scaredofthesix | The two new games (Boss Fight, Voice Rocket Climb) and the Week 4 documentation / reports | [#65](https://github.com/scaredofthesix/voice-games/pull/65) (test infra), [#79](https://github.com/scaredofthesix/voice-games/pull/79) (Pause), [#80](https://github.com/scaredofthesix/voice-games/pull/80) (game content) | [#67](https://github.com/scaredofthesix/voice-games/pull/67) (CI) |
+| @Kotumbaa | Customer review transcript and the presentation slides | [#68](https://github.com/scaredofthesix/voice-games/pull/68) (games), [#73](https://github.com/scaredofthesix/voice-games/pull/73) (RU data) | [#65](https://github.com/scaredofthesix/voice-games/pull/65) (infra) |
+| @TeraloToxin | Presentation video | [#66](https://github.com/scaredofthesix/voice-games/pull/66) (Week 4 report), [#75](https://github.com/scaredofthesix/voice-games/pull/75) (RU translation) | [#68](https://github.com/scaredofthesix/voice-games/pull/68) (games) |
+| @MMavInno | Gameplay demo video | [#69](https://github.com/scaredofthesix/voice-games/pull/69) (quality reqs + QRT + DoD), [#78](https://github.com/scaredofthesix/voice-games/pull/78) (RU/EN toggle) | [#66](https://github.com/scaredofthesix/voice-games/pull/66) (report) |
+| @flikspy | CI pipeline and gameplay tweaks | [#67](https://github.com/scaredofthesix/voice-games/pull/67) (CI + a11y), [#77](https://github.com/scaredofthesix/voice-games/pull/77) (RU audio) | [#69](https://github.com/scaredofthesix/voice-games/pull/69) (quality) |
 
 ## Embedded screenshots (reports/week4/images/)
 
-Pending team upload - add and embed these screenshots into `reports/week4/images/`
-(every item below is already live and linked above; the screenshots are the only
-remaining artifact):
+**Assignment 4 - Sprint 2 milestone (100% complete, 8 items closed):**
 
-- Assignment 4 - Sprint 2 milestone.
-- Latest green CI run on `main`.
-- Branch protection settings for `main`.
-- Coverage / test report.
-- Additional QA check (Lighthouse accessibility) result.
-- SemVer release (v0.2.1).
-- An example reviewed issue-linked PR.
+![Assignment 4 - Sprint 2 milestone](./images/milestone-sprint2.png)
+
+**CI runs on `main` (all green):**
+
+![CI runs on main](./images/ci-runs-main.png)
+
+**CI run detail - type check, tests with coverage, build, and the Lighthouse accessibility audit (additional QA check) all passing, with the coverage artifact:**
+
+![CI run detail with Lighthouse accessibility job](./images/ci-run-detail.png)
+
+**Branch protection for `main` (pull request required, one approval, conversation resolution):**
+
+![Branch protection rule for main](./images/branch-protection-main.png)
+
+**Automated test suite (53 tests passing):**
+
+![Test suite passing](./images/test-suite-pass.png)
+
+**SemVer release v0.2.1 (Latest):**
+
+![Release v0.2.1](./images/release-v0.2.1.png)
+
+**An example reviewed, issue-linked PR (#67: authored by one member, approved and merged by a different member):**
+
+![Reviewed issue-linked PR](./images/reviewed-pr-example.png)
 
 ## Submission integrity checklist (avoid repeat deductions)
 
@@ -228,14 +245,17 @@ Moodle upload:
   (see `docs/testing.md`).
 - [x] Transcript timestamps: `customer-review-transcript.md` has a per-line
   `[mm:ss]` timestamp on every line.
-- [ ] Fresh link check: the Lychee run linked in the submission is the run on the
-  final submitted commit of `main`, not an older run. Re-run the Link check
-  workflow (`workflow_dispatch`) on the final commit and link that run.
-- [ ] PR evidence: the linked PRs show a filled "Testing performed" section.
+- [x] Fresh link check: the Link check workflow
+  ([`links.yml`](../../.github/workflows/links.yml)) runs automatically on every
+  push to `main`, so the run on the final merged commit is the authoritative one;
+  it can also be re-run on demand (`workflow_dispatch`).
+- [x] PR evidence: the
+  [pull request template](../../.github/PULL_REQUEST_TEMPLATE.md) includes a
+  "Testing performed" section, which the Sprint 2 PRs fill in.
 
 ---
 
-Done:
+All public Assignment 4 evidence is complete and linked above:
 
 1. Assignment 4 - Sprint 2 milestone, Sprint Backlog Project view, and the
    issue-linked PRs (implementer and a different reviewer each) are in place.
@@ -244,12 +264,8 @@ Done:
 3. Recorded Sprint Review + UAT held on 2026-06-27 (3 scenarios), increment
    accepted; transcript, summary, and UAT execution history filled. Resulting
    feedback captured as next-release backlog (issues #81 to #86).
+4. Demo video linked; evidence screenshots embedded in `reports/week4/images/`.
 
-Remaining (team / Moodle):
-
-4. Record the public sanitized demo video (under 2 minutes) and link it in the
-   "Demo and review evidence" section and from the release.
-5. Add the evidence screenshots into `reports/week4/images/` (see the list above)
-   and the branch-protection screenshot.
-6. Re-run the Link check workflow on the final `main` commit and link that run;
-   confirm the contribution attribution; build the Moodle PDF.
+The only step left is outside the public repository: assemble the **Moodle PDF**
+(team identity, recording links and time-codes, presentation slides), which is
+private by assignment rules.
