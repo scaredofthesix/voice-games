@@ -1,6 +1,6 @@
 # Voice Games - Team 40
 
-A browser-based **voice-controlled English learning portal for children**. The child speaks the target word to trigger in-game actions - **voice is the only controller**. Features four games: Voice Racer (lane racing), Voice Bubble Popper, Boss Fight, and Word Ladder (rocket climb), with more planned.
+A browser-based **voice-controlled English learning portal for children**. The child speaks the target word to trigger in-game actions - **voice is the only controller**. Features four games: Voice Racer (lane racing), Voice Bubble Popper, Boss Fight (a 15-boss endless gauntlet), and Voice Rocket Climb (formerly Word Ladder), with more planned.
 
 - **Live (public, HTTPS):** https://scaredofthesix.github.io/voice-games/ - works in Google Chrome; allow microphone access when prompted.
 - **Release:** [v0.1.0 - MVP v1 (Sprint 1)](https://github.com/scaredofthesix/voice-games/releases/tag/v0.1.0) · [CHANGELOG](./CHANGELOG.md)
@@ -130,7 +130,7 @@ Since the Web Speech API requires a secure context, modern browsers **block micr
 │   ├── data.ts             # built-in word categories
 │   ├── types.ts            # shared TypeScript types
 │   ├── utils.ts            # speech synthesis, word matching helpers
-│   ├── gameLogic.ts        # pure game rules (Boss Fight, Word Ladder) + tests
+│   ├── gameLogic.ts        # pure game rules (Boss Fight, Voice Rocket Climb) + tests
 │   ├── useSpeechRecognition.ts  # shared Web Speech API hook
 │   └── components/         # GameCanvas, BubblePopperGame, BossFightGame, WordLadderGame, AudioVisualizer, CustomWordsManager
 └── reports/                # Assignment deliverables (week2, week3, week4)

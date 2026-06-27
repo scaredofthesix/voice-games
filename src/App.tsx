@@ -706,11 +706,7 @@ export default function App() {
                           }`}>
                             {g.title}
                           </h3>
-                          {g.unlocked ? (
-                            <span className="bg-emerald-400 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border-2 border-slate-900">
-                              {t('hub.playBadge')} 🟢
-                            </span>
-                          ) : (
+                          {!g.unlocked && (
                             <span className="bg-slate-300 text-slate-600 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border-2 border-slate-300">
                               {t('hub.lockedBadge')} 🔒
                             </span>
@@ -818,12 +814,81 @@ export default function App() {
                           : 'bg-white border-slate-300 text-slate-700 hover:border-slate-900'
                       }`}
                     >
-                      {style === 'forest' && 'Forest Land'}
-                      {style === 'night' && 'Cosmic Night'}
-                      {style === 'desert' && 'Golden Desert'}
-                      {style === 'city' && 'Neon City'}
+                      {t(`themes.racer.${style}`)}
                     </button>
                   ))}
+                </div>
+
+                {/* Mini-visual preview of selected highway theme */}
+                <div className={`w-full h-24 rounded-2xl border-4 border-slate-900 relative overflow-hidden transition-all duration-300 flex items-center justify-center ${
+                  trackStyle === 'forest' ? 'bg-gradient-to-b from-sky-300 to-emerald-400' :
+                  trackStyle === 'night' ? 'bg-gradient-to-b from-slate-950 via-purple-950 to-indigo-900' :
+                  trackStyle === 'desert' ? 'bg-gradient-to-b from-amber-200 via-orange-300 to-amber-500' :
+                  'bg-gradient-to-b from-blue-950 via-purple-950 to-fuchsia-900'
+                }`}>
+                  {trackStyle === 'forest' && (
+                    <>
+                      <div className="absolute inset-x-0 bottom-0 h-8 bg-emerald-500" />
+                      <span className="absolute bottom-6 left-6 text-2xl animate-bounce">🌲</span>
+                      <span className="absolute bottom-4 left-16 text-xl">🌸</span>
+                      <span className="absolute bottom-5 right-8 text-2xl animate-bounce" style={{ animationDelay: '0.2s' }}>🌲</span>
+                      <span className="absolute top-2 right-12 text-2xl animate-pulse">☀️</span>
+                      {/* Mini moving road in the center */}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-8 bg-slate-700 flex flex-col justify-between items-center py-1">
+                        <div className="w-1 h-2 bg-yellow-400 animate-pulse" />
+                        <div className="w-1 h-2 bg-yellow-400" />
+                      </div>
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-xl z-10 animate-bounce">🚗</span>
+                    </>
+                  )}
+                  {trackStyle === 'night' && (
+                    <>
+                      <div className="absolute inset-x-0 bottom-0 h-8 bg-indigo-950" />
+                      <span className="absolute top-2 left-6 text-2xl animate-pulse">🌙</span>
+                      <span className="absolute top-4 right-10 text-xs text-yellow-200 animate-ping">⭐</span>
+                      <span className="absolute top-8 left-20 text-xs text-yellow-200 animate-pulse">⭐</span>
+                      <span className="absolute bottom-5 left-10 text-xl">🛸</span>
+                      <span className="absolute bottom-4 right-8 text-xl">🌌</span>
+                      {/* Mini moving road */}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-8 bg-slate-900 flex flex-col justify-between items-center py-1 border-x border-purple-500">
+                        <div className="w-1 h-2 bg-purple-400 animate-pulse" />
+                        <div className="w-1 h-2 bg-purple-400" />
+                      </div>
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-xl z-10 animate-bounce">🚀</span>
+                    </>
+                  )}
+                  {trackStyle === 'desert' && (
+                    <>
+                      <div className="absolute inset-x-0 bottom-0 h-8 bg-amber-600" />
+                      <span className="absolute bottom-6 left-8 text-2xl animate-bounce">🌵</span>
+                      <span className="absolute bottom-5 right-12 text-2xl">🌵</span>
+                      <span className="absolute top-1 right-6 text-3xl animate-spin" style={{ animationDuration: '10s' }}>☀️</span>
+                      <span className="absolute bottom-4 left-24 text-sm">🏜️</span>
+                      {/* Mini moving road */}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-8 bg-amber-900 flex flex-col justify-between items-center py-1">
+                        <div className="w-1 h-2 bg-yellow-300 animate-pulse" />
+                        <div className="w-1 h-2 bg-yellow-300" />
+                      </div>
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-xl z-10 animate-bounce">🐫</span>
+                    </>
+                  )}
+                  {trackStyle === 'city' && (
+                    <>
+                      <div className="absolute inset-x-0 bottom-0 h-8 bg-fuchsia-950" />
+                      <span className="absolute bottom-8 left-4 text-2xl opacity-60">🏙️</span>
+                      <span className="absolute bottom-8 right-6 text-2xl opacity-60">🏢</span>
+                      <span className="absolute top-3 left-16 text-cyan-400 font-mono text-[10px] tracking-wider animate-pulse uppercase">NEON GRID ACTIVE</span>
+                      {/* Mini moving road */}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-8 bg-slate-950 flex flex-col justify-between items-center py-1 border-x border-cyan-400">
+                        <div className="w-1 h-2 bg-cyan-400 animate-pulse" />
+                        <div className="w-1 h-2 bg-cyan-400" />
+                      </div>
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-xl z-10 animate-bounce">🏎️</span>
+                    </>
+                  )}
+                  <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
+                    Preview
+                  </div>
                 </div>
               </div>
 
@@ -1114,8 +1179,14 @@ export default function App() {
                         </span>
 
                         {targetWord ? (
-                          <div className="flex flex-col items-center my-auto z-10 w-full truncate overflow-hidden justify-center">
-                            <span className="text-sm md:text-xl font-black text-slate-950 uppercase tracking-widest drop-shadow-[0_1.5px_0_rgba(255,255,255,1)]">
+                          <div className="flex flex-col items-center my-auto z-10 w-full overflow-hidden justify-center px-1">
+                            <span className={`${
+                              targetWord.length > 25
+                                ? 'text-[10px] md:text-xs font-black'
+                                : targetWord.length > 15
+                                ? 'text-xs md:text-sm font-black'
+                                : 'text-sm md:text-lg font-black'
+                            } text-slate-950 uppercase tracking-wider drop-shadow-[0_1.5px_0_rgba(255,255,255,1)] text-center leading-tight break-words max-h-12 overflow-hidden`}>
                               {targetWord}
                             </span>
                             <span className="text-[10px] text-slate-700 font-extrabold mt-0.5 truncate max-w-full">

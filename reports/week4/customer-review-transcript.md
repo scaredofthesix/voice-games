@@ -24,7 +24,7 @@ private or confidential content as `[redacted]`.
 [00:00] Product Owner: _TODO walk through the Sprint Backlog and what was planned._
 [00:00] Scrum Master: _TODO start the live demo of Boss Fight from the public deployment._
 [00:00] Customer: _TODO reaction and questions._
-[00:00] Developer: _TODO demo Word Ladder; show one full voice-triggered word-to-win._
+[00:00] Developer: _TODO demo Voice Rocket Climb; show one full voice-triggered word-to-win._
 [00:00] Customer: _TODO speak the UAT-01, UAT-02, UAT-03 results aloud._
 [00:00] Product Owner: _TODO capture feedback and any new backlog items._
 [00:00] Customer: _TODO approval or requested changes._

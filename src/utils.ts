@@ -81,6 +81,32 @@ export function matchesWord(spoken: string, target: string, easeMode: boolean = 
   
   if (!sSpoken || !sTarget) return false;
 
+  // If the target itself contains spaces, it's a phrase!
+  if (sTarget.includes(' ')) {
+    const cleanSpoken = sSpoken.replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
+    const cleanTarget = sTarget.replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
+
+    if (cleanSpoken === cleanTarget) return true;
+
+    if (cleanSpoken.includes(cleanTarget) || cleanTarget.includes(cleanSpoken)) {
+      const ratio = Math.min(cleanSpoken.length, cleanTarget.length) / Math.max(cleanSpoken.length, cleanTarget.length);
+      if (ratio >= 0.5) return true;
+    }
+
+    // Word overlap check: count how many words from cleanTarget are present in cleanSpoken
+    const targetWords = cleanTarget.split(' ').filter(w => w.length > 2); // only count words > 2 chars
+    if (targetWords.length === 0) {
+      const allTargetWords = cleanTarget.split(' ').filter(Boolean);
+      const spokenWords = cleanSpoken.split(' ').filter(Boolean);
+      const matches = allTargetWords.filter(w => spokenWords.includes(w));
+      return matches.length / allTargetWords.length >= 0.6;
+    } else {
+      const spokenWords = cleanSpoken.split(' ').filter(Boolean);
+      const matches = targetWords.filter(w => spokenWords.some(sw => sw === w || sw.includes(w) || w.includes(sw)));
+      return matches.length / targetWords.length >= 0.6; // 60% of words matched
+    }
+  }
+
   // 0. Multi-word transcript: test each spoken token individually (robust recognition #35)
   // Web Speech often returns padding like "i think cat" or "the apple please";
   // matching per token catches the intended word even with surrounding chatter.

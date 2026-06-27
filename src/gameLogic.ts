@@ -78,9 +78,21 @@ export interface BossKind {
 }
 
 export const BOSS_ROSTER: readonly BossKind[] = [
+  { name: 'Slime', emoji: '🫧', hp: 4, color: '#10b981' },
   { name: 'Goblin', emoji: '👺', hp: 5, color: '#22c55e' },
-  { name: 'Ogre', emoji: '👹', hp: 7, color: '#f97316' },
-  { name: 'Dragon', emoji: '🐉', hp: 10, color: '#ef4444' },
+  { name: 'Skeleton', emoji: '💀', hp: 6, color: '#94a3b8' },
+  { name: 'Spider', emoji: '🕷️', hp: 6, color: '#334155' },
+  { name: 'Mummy', emoji: '🧟', hp: 7, color: '#d97706' },
+  { name: 'Ogre', emoji: '👹', hp: 8, color: '#f97316' },
+  { name: 'Werewolf', emoji: '🐺', hp: 8, color: '#475569' },
+  { name: 'Ghost', emoji: '👻', hp: 9, color: '#a855f7' },
+  { name: 'Golem', emoji: '🗿', hp: 10, color: '#64748b' },
+  { name: 'Alien', emoji: '👽', hp: 10, color: '#22c55e' },
+  { name: 'Cyclops', emoji: '👁️', hp: 11, color: '#ec4899' },
+  { name: 'Dark Sorcerer', emoji: '🧙‍♀️', hp: 11, color: '#8b5cf6' },
+  { name: 'Kraken', emoji: '🐙', hp: 12, color: '#06b6d4' },
+  { name: 'Dragon', emoji: '🐉', hp: 12, color: '#ef4444' },
+  { name: 'Phoenix', emoji: '🐦‍🔥', hp: 14, color: '#f43f5e' },
 ];
 
 /** The boss for a (zero-based) gauntlet level, clamped into the roster. */

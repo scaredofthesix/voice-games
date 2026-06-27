@@ -14,7 +14,7 @@ import {
 } from '../gameLogic';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
-import { RocketClimb } from './RocketClimb';
+import { RocketClimb, RocketTheme } from './RocketClimb';
 import { CustomWordsManager } from './CustomWordsManager';
 import { useUiLanguage } from '../uiLanguage';
 
@@ -56,6 +56,7 @@ export function WordLadderGame({
   const [activeCategory, setActiveCategory] = useState<WordCategory>(
     BUILTIN_CATEGORIES[0],
   );
+  const [rocketTheme, setRocketTheme] = useState<RocketTheme>('earth');
   const [ladder, setLadder] = useState<WordLadderState>(() => createLadder());
   const [phase, setPhase] = useState<'START' | 'PLAYING'>('START');
   const [paused, setPaused] = useState(false);
@@ -191,7 +192,11 @@ export function WordLadderGame({
       </button>
 
       {phase === 'START' ? (
-        <div className="space-y-4" id="word-ladder-start">
+        <div className={`space-y-4 p-6 border-8 border-slate-900 rounded-4xl transition-all duration-300 ${
+          rocketTheme === 'earth' ? 'bg-sky-50 bubble-shadow-purple' :
+          rocketTheme === 'mars' ? 'bg-orange-50 bubble-shadow-pink' :
+          'bg-indigo-50 bubble-shadow-purple'
+        }`} id="word-ladder-start">
           <div className="flex flex-col items-center gap-2 text-center">
             <div className="w-16 h-16 rounded-3xl bg-indigo-500 border-4 border-slate-900 flex items-center justify-center">
               <Rocket className="w-9 h-9 text-white stroke-[3]" />
@@ -214,7 +219,71 @@ export function WordLadderGame({
             </p>
           </div>
 
-          <fieldset className="text-left bg-slate-50 border-4 border-slate-900 rounded-2xl p-3">
+          {/* Choose Mission Theme */}
+          <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
+            <label className="block text-xs font-black text-indigo-500 uppercase tracking-widest ml-1">
+              {t('shared.chooseMissionTheme')}
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['earth', 'mars', 'nebula'] as const).map((themeId) => (
+                <button
+                  key={themeId}
+                  onClick={() => {
+                    speakSound.playCoin();
+                    setRocketTheme(themeId);
+                  }}
+                  className={`px-2 py-2 border-4 rounded-xl text-[9px] font-black uppercase transition-all tracking-wider cursor-pointer text-center ${
+                    rocketTheme === themeId
+                      ? 'bg-indigo-500 border-slate-900 text-white shadow-sm -translate-y-0.5'
+                      : 'bg-white border-slate-300 text-slate-700 hover:border-slate-900'
+                  }`}
+                >
+                  {t(`themes.ladder.${themeId}`)}
+                </button>
+              ))}
+            </div>
+
+            {/* Dynamic visual preview of selected rocket theme */}
+            <div className={`w-full h-24 rounded-2xl border-4 border-slate-900 relative overflow-hidden transition-all duration-300 flex items-center justify-center ${
+              rocketTheme === 'earth' ? 'bg-gradient-to-b from-sky-400 to-indigo-950' :
+              rocketTheme === 'mars' ? 'bg-gradient-to-b from-orange-500 to-amber-950' :
+              'bg-gradient-to-b from-purple-950 via-pink-950 to-indigo-900'
+            }`}>
+              {rocketTheme === 'earth' && (
+                <>
+                  <div className="absolute inset-x-0 bottom-0 h-4 bg-emerald-500" />
+                  <span className="absolute bottom-1 left-4 text-xs">🌲</span>
+                  <span className="absolute bottom-2 right-4 text-xs">🌲</span>
+                  <span className="absolute top-2 right-6 text-xl animate-pulse">🌙</span>
+                  <span className="absolute top-8 left-12 text-sm animate-bounce">☁️</span>
+                  <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-3xl animate-pulse">🚀</span>
+                </>
+              )}
+              {rocketTheme === 'mars' && (
+                <>
+                  <div className="absolute inset-x-0 bottom-0 h-4 bg-amber-800" />
+                  <span className="absolute bottom-2 left-6 text-xs">🌵</span>
+                  <span className="absolute bottom-2 right-8 text-xs">🌵</span>
+                  <span className="absolute top-2 left-8 text-xl animate-pulse">☀️</span>
+                  <span className="absolute top-6 right-16 text-sm animate-bounce">🪐</span>
+                  <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-3xl animate-pulse">🚀</span>
+                </>
+              )}
+              {rocketTheme === 'nebula' && (
+                <>
+                  <div className="absolute w-16 h-16 rounded-full bg-pink-500/10 border border-pink-500/20 animate-ping" style={{ animationDuration: '3s' }} />
+                  <span className="absolute top-2 left-12 text-sm animate-pulse">🛸</span>
+                  <span className="absolute top-4 right-10 text-xs animate-ping">✨</span>
+                  <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-3xl animate-pulse">🚀</span>
+                </>
+              )}
+              <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
+                Preview
+              </div>
+            </div>
+          </div>
+
+          <fieldset className="text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
             <legend className="text-xs font-black uppercase tracking-wider text-slate-700 px-1">
               {t('shared.chooseWordSet')}
             </legend>
@@ -351,6 +420,7 @@ export function WordLadderGame({
               zone={zone}
               boostNonce={boostNonce}
               won={isWon}
+              theme={rocketTheme}
             />
             {paused && !isWon && (
               <div
@@ -419,10 +489,10 @@ export function WordLadderGame({
           {isWon ? (
             <div className="text-center space-y-4 py-4" role="status">
               <h2 className="text-3xl font-black uppercase tracking-wider text-slate-900">
-                Top reached! 🚀
+                {t('games.wordLadder.winTitle')}
               </h2>
               <p className="text-sm font-bold text-slate-600">
-                You climbed all {ladder.totalSteps} steps into space.
+                {t('games.wordLadder.winDescription').replace('{total}', ladder.totalSteps.toString())}
               </p>
               <div className="flex gap-2">
                 <button
@@ -430,7 +500,7 @@ export function WordLadderGame({
                   className="flex-1 py-3 bg-indigo-500 hover:bg-indigo-600 border-4 border-slate-900 text-white font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2"
                   aria-label="Play again"
                 >
-                  <RotateCcw className="w-4 h-4 stroke-[3]" /> Again
+                  <RotateCcw className="w-4 h-4 stroke-[3]" /> {t('games.wordLadder.again')}
                 </button>
                 <button
                   onClick={() => {
@@ -444,58 +514,81 @@ export function WordLadderGame({
               </div>
             </div>
           ) : (
-            <div className="text-center space-y-3 py-1">
-              <p className="text-xs font-black uppercase tracking-wider text-slate-500">
-                Say this word to climb
-              </p>
-              <p
-                className="text-4xl font-black tracking-wide text-slate-900"
-                data-testid="target-word"
-                aria-live="assertive"
-              >
-                {target}
-              </p>
-              {(() => {
-                const currentWordItem = list.find(
-                  (item) => item.word.toLowerCase() === target.toLowerCase(),
-                );
-                const translation =
-                  currentWordItem?.translationRu || currentWordItem?.translation;
-                return (
-                  <>
-                    {translation ? (
-                      <p className="text-sm font-extrabold text-purple-600 mt-0.5">
-                        {translation}
-                      </p>
-                    ) : null}
-                    <div className="flex items-center justify-center gap-4 mt-2">
-                      <button
-                        onClick={() => speakWord(target)}
-                        className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900"
-                        aria-label={`Hear the word ${target}`}
-                      >
-                        <Volume2 className="w-4 h-4 stroke-[3]" /> Hear it
-                      </button>
-                      {currentWordItem?.translationRu && (
-                        <button
-                          onClick={() => currentWordItem?.translationRu && speakWord(currentWordItem.translationRu, 'ru')}
-                          className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-blue-600 hover:text-blue-800"
-                          aria-label="Listen in Russian"
-                        >
-                          <Volume2 className="w-4 h-4 stroke-[3]" /> Слушать по-русски
-                        </button>
-                      )}
-                    </div>
-                  </>
-                );
-              })()}
-              <p className="text-[11px] font-bold text-slate-500 inline-flex items-center gap-1 justify-center">
-                <Mic className="w-3.5 h-3.5 stroke-[3]" /> {status.message}
-              </p>
-              {lastTranscript && (
-                <p className="text-[11px] font-mono text-slate-400">
-                  heard: {lastTranscript}
+            <div className="text-center space-y-4 py-1">
+              <div className="relative bg-amber-50 border-4 border-slate-900 rounded-2xl p-5 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] animate-pulse-subtle">
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-rose-500 border-2 border-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full shadow-sm">
+                  🎯 SAY THIS / ПРОИЗНЕСИ:
+                </span>
+                
+                <p
+                  className={`${
+                    target.length > 25
+                      ? 'text-lg md:text-xl'
+                      : target.length > 15
+                      ? 'text-2xl'
+                      : 'text-3.5xl'
+                  } font-black tracking-wide text-slate-900 leading-snug mt-1`}
+                  data-testid="target-word"
+                  aria-live="assertive"
+                >
+                  {target}
                 </p>
+
+                {(() => {
+                  const currentWordItem = list.find(
+                    (item) => item.word.toLowerCase() === target.toLowerCase(),
+                  );
+                  const translation =
+                    currentWordItem?.translationRu || currentWordItem?.translation;
+                  return (
+                    <div className="mt-2.5 space-y-2">
+                      {translation && (
+                        <p className="text-xs md:text-sm font-extrabold text-purple-600">
+                          {translation}
+                        </p>
+                      )}
+                      
+                      <div className="flex flex-wrap items-center justify-center gap-3 pt-2.5 border-t-2 border-dashed border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => speakWord(target)}
+                          className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-white border-2 border-slate-900 px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5"
+                          aria-label={`Hear the word ${target}`}
+                        >
+                          <Volume2 className="w-3.5 h-3.5 stroke-[3] text-indigo-500" /> {t('games.wordLadder.hearIt')}
+                        </button>
+                        {currentWordItem?.translationRu && (
+                          <button
+                            type="button"
+                            onClick={() => currentWordItem?.translationRu && speakWord(currentWordItem.translationRu, 'ru')}
+                            className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-blue-600 hover:text-blue-800 bg-white border-2 border-slate-900 px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5"
+                            aria-label="Listen in Russian"
+                          >
+                            <Volume2 className="w-3.5 h-3.5 stroke-[3] text-blue-500" /> Слушать перевод
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              <div className="flex items-center justify-center gap-2 bg-slate-100 border-2 border-slate-900 rounded-xl py-1.5 px-3 inline-flex mx-auto">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                <p className="text-[10px] font-black uppercase tracking-wider text-slate-700">
+                  {status.status === 'listening' ? '🎤 Mic is listening...' : status.message}
+                </p>
+              </div>
+
+              {lastTranscript && (
+                <div className="bg-slate-50 border-2 border-slate-300 rounded-xl p-2 max-w-xs mx-auto animate-fade-in">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Last heard / Распознано:
+                  </p>
+                  <p className="text-xs font-mono font-black text-rose-600 italic">
+                    "{lastTranscript}"
+                  </p>
+                </div>
               )}
             </div>
           )}

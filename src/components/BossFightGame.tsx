@@ -23,7 +23,9 @@ import {
   endlessBossAtLevel,
   pickNextIndex,
   playerHitByTimeout,
+  BossKind,
 } from '../gameLogic';
+import { BossTheme } from './BossArena';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { BossArena } from './BossArena';
@@ -64,9 +66,28 @@ export function BossFightGame({
   const [activeCategory, setActiveCategory] = useState<WordCategory>(
     BUILTIN_CATEGORIES[0],
   );
+  const [bossTheme, setBossTheme] = useState<BossTheme>('castle');
+  const [sessionRoster, setSessionRoster] = useState<BossKind[]>(() => {
+    // Shuffled copy initially
+    const r = [...BOSS_ROSTER];
+    for (let i = r.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [r[i], r[j]] = [r[j], r[i]];
+    }
+    return r;
+  });
   const [bossLevel, setBossLevel] = useState(0);
+
+  const getBossAtLevel = (level: number, roster: BossKind[]) => {
+    if (roster.length === 0) return endlessBossAtLevel(level);
+    const safe = Math.max(0, Math.floor(level));
+    const base = roster[safe % roster.length];
+    const loop = Math.floor(safe / roster.length);
+    return { ...base, hp: base.hp + loop * 3 };
+  };
+
   const [fight, setFight] = useState<BossFightState>(() =>
-    createBossFight(endlessBossAtLevel(0).hp, DEFAULT_PLAYER_HP),
+    createBossFight(getBossAtLevel(0, [...BOSS_ROSTER]).hp, DEFAULT_PLAYER_HP),
   );
   const [phase, setPhase] = useState<'START' | 'PLAYING'>('START');
   const [paused, setPaused] = useState(false);
@@ -85,6 +106,7 @@ export function BossFightGame({
   const bossLevelRef = useRef(bossLevel);
   const pausedRef = useRef(paused);
   const wordIndexRef = useRef(-1);
+  const sessionRosterRef = useRef<BossKind[]>(sessionRoster);
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -101,8 +123,20 @@ export function BossFightGame({
   useEffect(() => {
     pausedRef.current = paused;
   }, [paused]);
+  useEffect(() => {
+    sessionRosterRef.current = sessionRoster;
+  }, [sessionRoster]);
 
-  const boss = endlessBossAtLevel(bossLevel);
+  const boss = getBossAtLevel(bossLevel, sessionRoster);
+
+  const randomizeRoster = useCallback(() => {
+    const shuffled = [...BOSS_ROSTER];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setSessionRoster(shuffled);
+  }, []);
 
   const wordList = useCallback((): WordData[] => {
     if (activeCategory.id === 'custom') {
@@ -157,7 +191,7 @@ export function BossFightGame({
         setKillNonce((n) => n + 1);
         speakSound.playSuccess();
         const nextLevel = bossLevelRef.current + 1;
-        const nextBoss = endlessBossAtLevel(nextLevel);
+        const nextBoss = getBossAtLevel(nextLevel, sessionRosterRef.current);
         const fresh: BossFightState = {
           bossMaxHp: nextBoss.hp,
           bossHp: nextBoss.hp,
@@ -187,7 +221,17 @@ export function BossFightGame({
 
   const beginFight = useCallback(() => {
     speakSound.playCoin();
-    const fresh = createBossFight(endlessBossAtLevel(0).hp, DEFAULT_PLAYER_HP);
+    // Re-shuffle order on start to ensure complete randomness
+    const shuffled = [...BOSS_ROSTER];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setSessionRoster(shuffled);
+    sessionRosterRef.current = shuffled;
+
+    const firstBoss = getBossAtLevel(0, shuffled);
+    const fresh = createBossFight(firstBoss.hp, DEFAULT_PLAYER_HP);
     bossLevelRef.current = 0;
     setBossLevel(0);
     fightRef.current = fresh;
@@ -255,7 +299,12 @@ export function BossFightGame({
       </button>
 
       {phase === 'START' ? (
-        <div className="space-y-4" id="boss-fight-start">
+        <div className={`space-y-4 p-6 border-8 border-slate-900 rounded-4xl transition-all duration-300 ${
+          bossTheme === 'castle' ? 'bg-slate-100 bubble-shadow-purple' :
+          bossTheme === 'lava' ? 'bg-orange-50 bubble-shadow-pink' :
+          bossTheme === 'forest' ? 'bg-emerald-50 bubble-shadow-green' :
+          'bg-purple-50 bubble-shadow-purple'
+        }`} id="boss-fight-start">
           <div className="flex flex-col items-center gap-2 text-center">
             <div className="w-16 h-16 rounded-3xl bg-rose-500 border-4 border-slate-900 flex items-center justify-center">
               <Swords className="w-9 h-9 text-white stroke-[3]" />
@@ -278,16 +327,111 @@ export function BossFightGame({
             </p>
           </div>
 
-          {/* Boss roster preview */}
-          <div className="flex items-center justify-center gap-3" aria-hidden="true">
-            {BOSS_ROSTER.map((b, i) => (
-              <div key={b.name} className="flex flex-col items-center">
-                <span className="text-3xl">{b.emoji}</span>
-                <span className="text-[9px] font-black uppercase text-slate-500">
-                  {i + 1}. {b.name}
-                </span>
+          {/* Boss roster preview with randomize button */}
+          <div className="flex flex-col items-center gap-2 bg-white border-4 border-slate-900 rounded-2xl p-3">
+            <div className="flex items-center justify-between w-full">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-700">
+                Boss Gauntlet Order:
+              </span>
+              <button
+                type="button"
+                onClick={randomizeRoster}
+                className="bg-slate-100 hover:bg-slate-200 border-2 border-slate-900 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center gap-1 active:translate-y-0.5"
+              >
+                🎲 Shuffle Roster
+              </button>
+            </div>
+            <div className="flex items-center justify-center gap-3 w-full overflow-x-auto py-1" aria-hidden="true">
+              {sessionRoster.slice(0, 5).map((b, i) => (
+                <div key={`${b.name}-${i}`} className="flex flex-col items-center shrink-0">
+                  <span className="text-2xl animate-bounce">{b.emoji}</span>
+                  <span className="text-[8px] font-black uppercase text-slate-500">
+                    {i + 1}. {b.name}
+                  </span>
+                </div>
+              ))}
+              {sessionRoster.length > 5 && (
+                <div className="flex flex-col items-center shrink-0">
+                  <span className="text-sm font-black text-slate-400">...</span>
+                  <span className="text-[8px] font-black uppercase text-slate-400">
+                    +{sessionRoster.length - 5} more
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Choose Arena Theme */}
+          <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
+            <label className="block text-xs font-black text-rose-500 uppercase tracking-widest ml-1">
+              {t('shared.chooseArenaTheme')}
+            </label>
+            <div className="grid grid-cols-2 gap-2.5">
+              {(['castle', 'lava', 'forest', 'abyss'] as const).map((themeId) => (
+                <button
+                  key={themeId}
+                  onClick={() => {
+                    speakSound.playCoin();
+                    setBossTheme(themeId);
+                  }}
+                  className={`px-3 py-2 border-4 rounded-2xl text-[10px] font-black uppercase transition-all tracking-wider cursor-pointer text-center ${
+                    bossTheme === themeId
+                      ? 'bg-rose-500 border-slate-900 text-white shadow-sm -translate-y-0.5'
+                      : 'bg-white border-slate-300 text-slate-700 hover:border-slate-900'
+                  }`}
+                >
+                  {t(`themes.boss.${themeId}`)}
+                </button>
+              ))}
+            </div>
+
+            {/* Dynamic visual preview of selected boss fight theme */}
+            <div className={`w-full h-24 rounded-2xl border-4 border-slate-900 relative overflow-hidden transition-all duration-300 flex items-center justify-center ${
+              bossTheme === 'castle' ? 'bg-gradient-to-b from-slate-700 to-slate-900' :
+              bossTheme === 'lava' ? 'bg-gradient-to-b from-orange-800 to-stone-900' :
+              bossTheme === 'forest' ? 'bg-gradient-to-b from-teal-800 to-emerald-950' :
+              'bg-gradient-to-b from-purple-950 via-indigo-950 to-slate-950'
+            }`}>
+              {bossTheme === 'castle' && (
+                <>
+                  <div className="absolute inset-y-0 left-4 w-6 bg-slate-800/60 border-x border-slate-700" />
+                  <div className="absolute inset-y-0 right-4 w-6 bg-slate-800/60 border-x border-slate-700" />
+                  <span className="absolute bottom-3 left-12 text-2xl animate-bounce">🛡️</span>
+                  <span className="absolute bottom-3 right-12 text-2xl animate-bounce" style={{ animationDelay: '0.3s' }}>👹</span>
+                  <span className="absolute top-2 left-6 text-[10px] animate-pulse">🔥</span>
+                </>
+              )}
+              {bossTheme === 'lava' && (
+                <>
+                  <div className="absolute inset-x-0 bottom-0 h-4 bg-orange-600 animate-pulse" />
+                  <span className="absolute bottom-3 left-12 text-2xl animate-bounce">🛡️</span>
+                  <span className="absolute bottom-3 right-12 text-2xl animate-bounce" style={{ animationDelay: '0.2s' }}>🐉</span>
+                  <span className="absolute bottom-4 left-24 text-xs animate-ping">🫧</span>
+                  <span className="absolute bottom-6 right-24 text-xs animate-pulse">🫧</span>
+                </>
+              )}
+              {bossTheme === 'forest' && (
+                <>
+                  <span className="absolute bottom-2 left-2 text-2xl">🌲</span>
+                  <span className="absolute bottom-2 right-2 text-2xl">🌲</span>
+                  <span className="absolute bottom-3 left-12 text-2xl animate-bounce">🛡️</span>
+                  <span className="absolute bottom-3 right-12 text-2xl animate-bounce" style={{ animationDelay: '0.1s' }}>🧟</span>
+                  <span className="absolute top-2 left-20 text-[6px] text-lime-400 animate-ping">✨</span>
+                  <span className="absolute top-4 right-20 text-[6px] text-lime-400 animate-pulse">✨</span>
+                </>
+              )}
+              {bossTheme === 'abyss' && (
+                <>
+                  <div className="absolute w-12 h-12 rounded-full border border-purple-500/30 bg-purple-500/10 animate-ping" />
+                  <span className="absolute bottom-3 left-12 text-2xl animate-bounce">🛡️</span>
+                  <span className="absolute bottom-3 right-12 text-2xl animate-bounce" style={{ animationDelay: '0.4s' }}>👽</span>
+                  <span className="absolute top-2 right-12 text-xs animate-pulse">🌌</span>
+                </>
+              )}
+              <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
+                Preview
               </div>
-            ))}
+            </div>
           </div>
 
           <fieldset className="text-left bg-slate-50 border-4 border-slate-900 rounded-2xl p-3">
@@ -432,6 +576,8 @@ export function BossFightGame({
               killNonce={killNonce}
               defeated={false}
               victory={false}
+              bossName={boss.name}
+              theme={bossTheme}
             />
             {paused && !isOver && (
               <div
@@ -538,67 +684,91 @@ export function BossFightGame({
               </div>
             </div>
           ) : (
-            <div className="text-center space-y-3 py-1">
-              <p className="text-xs font-black uppercase tracking-wider text-slate-500">
-                Say this word
-              </p>
-              <p
-                className="text-4xl font-black tracking-wide text-slate-900"
-                data-testid="target-word"
-                aria-live="assertive"
-              >
-                {target}
-              </p>
-              {(() => {
-                const currentWordItem = list.find(
-                  (item) => item.word.toLowerCase() === target.toLowerCase(),
-                );
-                const translation =
-                  currentWordItem?.translationRu || currentWordItem?.translation;
-                return (
-                  <>
-                    {translation ? (
-                      <p className="text-sm font-extrabold text-purple-600 mt-0.5">
-                        {translation}
-                      </p>
-                    ) : null}
-                    <div className="flex items-center justify-center gap-4 mt-2">
-                      <button
-                        onClick={() => speakWord(target)}
-                        className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900"
-                        aria-label={`Hear the word ${target}`}
-                      >
-                        <Volume2 className="w-4 h-4 stroke-[3]" /> Hear it
-                      </button>
-                      {currentWordItem?.translationRu && (
-                        <button
-                          onClick={() => currentWordItem?.translationRu && speakWord(currentWordItem.translationRu, 'ru')}
-                          className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-blue-600 hover:text-blue-800"
-                          aria-label="Listen in Russian"
-                        >
-                          <Volume2 className="w-4 h-4 stroke-[3]" /> Слушать по-русски
-                        </button>
+            <div className="text-center space-y-4 py-1">
+              <div className="relative bg-amber-50 border-4 border-slate-900 rounded-2xl p-5 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] animate-pulse-subtle">
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-rose-500 border-2 border-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full shadow-sm">
+                  🎯 SAY THIS / ПРОИЗНЕСИ:
+                </span>
+                
+                <p
+                  className={`${
+                    target.length > 25
+                      ? 'text-lg md:text-xl'
+                      : target.length > 15
+                      ? 'text-2xl'
+                      : 'text-3.5xl'
+                  } font-black tracking-wide text-slate-900 leading-snug mt-1`}
+                  data-testid="target-word"
+                  aria-live="assertive"
+                >
+                  {target}
+                </p>
+
+                {(() => {
+                  const currentWordItem = list.find(
+                    (item) => item.word.toLowerCase() === target.toLowerCase(),
+                  );
+                  const translation =
+                    currentWordItem?.translationRu || currentWordItem?.translation;
+                  return (
+                    <div className="mt-2.5 space-y-2">
+                      {translation && (
+                        <p className="text-xs md:text-sm font-extrabold text-purple-600">
+                          {translation}
+                        </p>
                       )}
+                      
+                      <div className="flex flex-wrap items-center justify-center gap-3 pt-2.5 border-t-2 border-dashed border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => speakWord(target)}
+                          className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-white border-2 border-slate-900 px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5"
+                          aria-label={`Hear the word ${target}`}
+                        >
+                          <Volume2 className="w-3.5 h-3.5 stroke-[3] text-indigo-500" /> Hear it
+                        </button>
+                        {currentWordItem?.translationRu && (
+                          <button
+                            type="button"
+                            onClick={() => currentWordItem?.translationRu && speakWord(currentWordItem.translationRu, 'ru')}
+                            className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-blue-600 hover:text-blue-800 bg-white border-2 border-slate-900 px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5"
+                            aria-label="Listen in Russian"
+                          >
+                            <Volume2 className="w-3.5 h-3.5 stroke-[3] text-blue-500" /> Слушать перевод
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </>
-                );
-              })()}
+                  );
+                })()}
+              </div>
+
               <div
-                className="h-2 rounded-full bg-slate-200 border-2 border-slate-900 overflow-hidden"
+                className="h-3.5 rounded-full bg-slate-200 border-4 border-slate-900 overflow-hidden shadow-inner"
                 aria-label={`Time left: ${timeLeft} seconds`}
               >
                 <div
-                  className="h-full bg-amber-400 transition-all"
+                  className="h-full bg-amber-400 transition-all border-r-4 border-slate-900"
                   style={{ width: `${(timeLeft / WORD_TIME_SECONDS) * 100}%` }}
                 />
               </div>
-              <p className="text-[11px] font-bold text-slate-500 inline-flex items-center gap-1 justify-center">
-                <Mic className="w-3.5 h-3.5 stroke-[3]" /> {status.message}
-              </p>
-              {lastTranscript && (
-                <p className="text-[11px] font-mono text-slate-400">
-                  heard: {lastTranscript}
+
+              <div className="flex items-center justify-center gap-2 bg-slate-100 border-2 border-slate-900 rounded-xl py-1.5 px-3 inline-flex mx-auto">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                <p className="text-[10px] font-black uppercase tracking-wider text-slate-700">
+                  {status.status === 'listening' ? '🎤 Mic is listening...' : status.message}
                 </p>
+              </div>
+
+              {lastTranscript && (
+                <div className="bg-slate-50 border-2 border-slate-300 rounded-xl p-2 max-w-xs mx-auto animate-fade-in">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Last heard / Распознано:
+                  </p>
+                  <p className="text-xs font-mono font-black text-rose-600 italic">
+                    "{lastTranscript}"
+                  </p>
+                </div>
               )}
             </div>
           )}

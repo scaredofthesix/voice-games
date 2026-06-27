@@ -13,7 +13,7 @@ belong only in the Moodle PDF.
 
 ## Delivered increment discussed
 
-- Boss Fight and Word Ladder games, played live from the public deployment.
+- Boss Fight and Voice Rocket Climb games, played live from the public deployment.
 - The automated quality foundation: tests, quality requirements and QRTs,
   CI gates, and the accessibility audit.
 

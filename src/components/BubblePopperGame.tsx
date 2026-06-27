@@ -1193,12 +1193,53 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                         : 'bg-white border-slate-300 text-slate-700 hover:border-slate-900'
                     }`}
                   >
-                    {theme === 'sky' && '☁️ Drifting Clouds'}
-                    {theme === 'snow' && '❄️ Snowy Wilderness'}
-                    {theme === 'starry' && '🌙 Moonlit Sparkles'}
-                    {theme === 'nebula' && '🌌 Cosmic Galaxies'}
+                    {t(`themes.bubble.${theme}`)}
                   </button>
                 ))}
+              </div>
+
+              {/* Dynamic visual preview of selected bubble theme */}
+              <div className={`w-full h-24 rounded-2xl border-4 border-slate-900 relative overflow-hidden transition-all duration-300 flex items-center justify-center ${
+                bubbleTheme === 'sky' ? 'bg-gradient-to-b from-sky-200 to-sky-450' :
+                bubbleTheme === 'snow' ? 'bg-gradient-to-b from-blue-100 to-indigo-200' :
+                bubbleTheme === 'starry' ? 'bg-gradient-to-b from-slate-900 to-indigo-950' :
+                'bg-gradient-to-b from-purple-950 via-pink-950 to-indigo-900'
+              }`}>
+                {bubbleTheme === 'sky' && (
+                  <>
+                    <span className="absolute top-3 left-6 text-2xl opacity-80 animate-bounce">☁️</span>
+                    <span className="absolute bottom-4 right-10 text-xl opacity-80">☁️</span>
+                    <span className="absolute bottom-5 left-16 text-3xl animate-pulse">🫧</span>
+                    <span className="absolute top-2 right-16 text-2xl">🎈</span>
+                  </>
+                )}
+                {bubbleTheme === 'snow' && (
+                  <>
+                    <span className="absolute top-2 left-10 text-xl animate-spin" style={{ animationDuration: '8s' }}>❄️</span>
+                    <span className="absolute bottom-3 right-6 text-3xl animate-pulse">⛄</span>
+                    <span className="absolute bottom-4 left-12 text-2xl animate-bounce">🫧</span>
+                    <span className="absolute top-4 right-16 text-xl">❄️</span>
+                  </>
+                )}
+                {bubbleTheme === 'starry' && (
+                  <>
+                    <span className="absolute top-2 left-6 text-2xl animate-pulse">🌙</span>
+                    <span className="absolute top-4 right-10 text-xs text-yellow-200 animate-ping">✨</span>
+                    <span className="absolute bottom-4 left-20 text-3xl animate-bounce">🫧</span>
+                    <span className="absolute bottom-5 right-20 text-xs text-yellow-200 animate-pulse">✨</span>
+                  </>
+                )}
+                {bubbleTheme === 'nebula' && (
+                  <>
+                    <span className="absolute top-3 left-8 text-2xl animate-pulse">🪐</span>
+                    <span className="absolute bottom-4 right-8 text-2xl">☄️</span>
+                    <span className="absolute bottom-3 left-24 text-3xl animate-bounce">🫧</span>
+                    <span className="absolute top-2 right-20 text-xl opacity-70">🌌</span>
+                  </>
+                )}
+                <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
+                  Preview
+                </div>
               </div>
             </div>
 
