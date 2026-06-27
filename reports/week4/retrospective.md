@@ -16,11 +16,13 @@ Public and sanitized. No private personal information.
 
 - The legacy canvas games remain untested, so global coverage looks low and we
   had to document why.
-- We set the Lighthouse accessibility threshold without a local run, so it still
-  needs confirmation in CI.
-- Several non-code items (Sprint milestone, reviewer assignments, recorded
-  meetings, release tag) bunch up at the end of the sprint and depend on the
-  whole team and the customer.
+- We set the Lighthouse accessibility threshold without a local run, so it needed
+  iteration in CI (the first run failed and we tuned the baseline) before it
+  passed.
+- Automated tests did not catch the audio-loop self-trigger that the customer
+  found in UAT; only a real device with speakers and a microphone exposed it.
+- Several non-code items (recorded meetings, demo video, release tag) bunch up at
+  the end of the sprint and depend on the whole team and the customer.
 
 ## What we changed from the previous sprint
 

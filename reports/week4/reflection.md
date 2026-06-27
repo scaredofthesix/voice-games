@@ -31,24 +31,30 @@
 
 ## Friction and gaps
 
+- The recorded UAT surfaced a real defect our automated tests could not catch:
+  the speech engine self-triggers from the game's own spoken hint (the
+  microphone hears the device speakers and auto-passes a word). It comes from the
+  matching tolerance we lowered after v0.1.0 to accept mumbled child speech.
+  Tracked for the next release (#81), with a shared voice module to fix it in one
+  place (#82).
+- The customer found Boss Fight's endless 15-boss loop tiring for young learners;
+  finite difficulty modes were requested (#83). A useful reminder that "more" is
+  not the same as "age-appropriate".
 - Global coverage stays low because the older canvas games (`App.tsx`,
   `GameCanvas.tsx`, `BubblePopperGame.tsx`) are not unit testable in jsdom. We
   accept this and explain it in `docs/testing.md`, but it is real debt.
-- The Lighthouse accessibility threshold is set conservatively; the team still
-  needs to confirm the CI run is green and tune the score if the runner reports
-  a lower achievable value.
 - Manual screen-reader testing is not yet automated and remains a follow-up.
-- Sprint milestone, reviewer assignments, the recorded UAT and Sprint Review,
-  the demo video, and the release tag are still open at the time of writing.
 
 ## Planned response
 
-- Tag `v0.2.0` after the work merges through reviewed, issue-linked PRs, and
-  confirm the protected-branch CI run is green.
-- Run the recorded UAT and Sprint Review using the scenarios in
-  [docs/user-acceptance-tests.md](../../docs/user-acceptance-tests.md).
-- Continue MVP v2 (bilingual UI US-17, pause US-16, parent progress US-10) on top
-  of the enforced gates, keeping the Definition of Done and the QRTs in
+- Releases `v0.2.0` and `v0.2.1` shipped through reviewed, issue-linked PRs with
+  a green protected-branch CI run; the recorded UAT and Sprint Review are done
+  and the customer accepted the increment.
+- Address the review backlog in the next release: the audio-loop self-trigger
+  (#81), a shared voice-processing module (#82), Boss Fight finite modes (#83),
+  Russian as the default language (#84), and Voice Racer physics (#85).
+- Continue MVP v2 (parent progress US-10, more games) on top of the enforced
+  gates, keeping the Definition of Done and the QRTs in
   [docs/quality-requirement-tests.md](../../docs/quality-requirement-tests.md)
   satisfied.
 - Add manual screen-reader testing and raise critical-module coverage as the
