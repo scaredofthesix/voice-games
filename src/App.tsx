@@ -27,12 +27,14 @@ import { CustomWordsManager } from './components/CustomWordsManager';
 import { BubblePopperGame } from './components/BubblePopperGame';
 import { BossFightGame } from './components/BossFightGame';
 import { WordLadderGame } from './components/WordLadderGame';
+import { SkateWordGame } from './components/SkateWordGame';
+import { AsteWordGame } from './components/AsteWordGame';
 import { speakWord, speakSound, matchesWord } from './utils';
 import { useUiLanguage } from './uiLanguage';
 
 export default function App() {
   const { language, setLanguage, t } = useUiLanguage();
-  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER'>('HUB');
+  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD'>('HUB');
 
   // Game states
   const [gameState, setGameState] = useState<GameState>('START_SCREEN');
@@ -104,6 +106,34 @@ export default function App() {
     localStorage.setItem('word_ladder_highscore', newScore.toString());
   };
 
+  const [skateWordHighScore, setSkateWordHighScore] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('skate_word_highscore');
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const handleUpdateSkateWordHighScore = (newScore: number) => {
+    setSkateWordHighScore(newScore);
+    localStorage.setItem('skate_word_highscore', newScore.toString());
+  };
+
+  const [asteWordHighScore, setAsteWordHighScore] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('aste_word_highscore');
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const handleUpdateAsteWordHighScore = (newScore: number) => {
+    setAsteWordHighScore(newScore);
+    localStorage.setItem('aste_word_highscore', newScore.toString());
+  };
+
   const games = [
     {
       id: "voice-racer",
@@ -139,6 +169,28 @@ export default function App() {
       icon: "🚀",
       accent: "bg-indigo-400",
       record: wordLadderHighScore,
+      unlocked: true,
+    },
+    {
+      id: "skate-word",
+      title: language === 'en' ? 'SkateWord' : 'СкейтВорд',
+      description: language === 'en' 
+        ? 'Jump over road obstacles by saying the approaching words out loud! 🛹' 
+        : 'Перепрыгивай дорожные барьеры на скейте, произнося слова вслух! 🛹',
+      icon: "🛹",
+      accent: "bg-rose-400",
+      record: skateWordHighScore,
+      unlocked: true,
+    },
+    {
+      id: "aste-word",
+      title: language === 'en' ? 'AsteWord Destroyer' : 'АстеВорд Разрушитель',
+      description: language === 'en' 
+        ? 'Shoot laser beams at incoming asteroids by saying the words written on them!' 
+        : 'Сбивай лазером летящие астероиды, произнося написанные на них слова!',
+      icon: "☄️",
+      accent: "bg-indigo-500",
+      record: asteWordHighScore,
       unlocked: true,
     },
   ];
@@ -539,8 +591,8 @@ export default function App() {
       <div className="absolute top-28 right-[10%] w-32 h-12 bg-white rounded-full opacity-60 blur-[1px] pointer-events-none animate-pulse" />
       <div className="absolute bottom-20 left-[4%] w-28 h-10 bg-white rounded-full opacity-40 blur-[1px] pointer-events-none" />
 
-      {/* HEADER BAR - hidden for the self-contained Sprint 2 games (Boss Fight, Word Ladder) */}
-      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && (
+      {/* HEADER BAR - hidden for the self-contained Sprint 2 games (Boss Fight, Word Ladder, SkateWord, AsteWord) */}
+      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && (
       <header className="bg-yellow-400 border-b-8 border-slate-900 py-3.5 px-6 md:px-12 sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
         {currentView === 'HUB' ? (
           <>
@@ -691,7 +743,7 @@ export default function App() {
                     {/* Left: Icon, Title & Description */}
                     <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left flex-grow w-full">
                       <div
-                        className={`w-14 h-14 rounded-2xl border-4 border-slate-900 ${
+                        className={`w-14 h-14 rounded-2xl border-4 border-slate-950 ${
                           isColleague ? 'bg-slate-200 border-dashed border-slate-400' : g.accent
                         } flex items-center justify-center text-3xl shrink-0 ${
                           g.unlocked ? 'animate-bounce shadow-sm' : 'shadow-none'
@@ -746,6 +798,10 @@ export default function App() {
                               setCurrentView('BOSS_FIGHT');
                             } else if (g.id === 'word-ladder') {
                               setCurrentView('WORD_LADDER');
+                            } else if (g.id === 'skate-word') {
+                              setCurrentView('SKATE_WORD');
+                            } else if (g.id === 'aste-word') {
+                              setCurrentView('ASTE_WORD');
                             }
                           }}
                           className="w-full sm:w-32 py-2 bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-0.5 uppercase tracking-wider transition-all select-none hover:scale-103 shadow-sm"
@@ -965,7 +1021,7 @@ export default function App() {
                 {isWarmupExpanded && (
                   <div className="bg-white border-4 border-slate-900 rounded-2xl p-3">
                     {activeCategory.id === 'custom' && customWords.length === 0 ? (
-                      <div className="text-center py-4 bg-amber-50 rounded-xl border-2 border-dashed border-amber-300">
+                      <div className="text-center py-4 bg-amber-50 rounded-xl border-2 border-dashed border-amber-350">
                         <p className="text-xs text-amber-800 font-black">{t('shared.emptyCustomList')}</p>
                       </div>
                     ) : (
@@ -992,7 +1048,7 @@ export default function App() {
                                   className="text-blue-600 hover:text-blue-800 text-[10px] font-black uppercase flex items-center gap-0.5 cursor-pointer shrink-0 animate-none"
                                   aria-label="Listen in Russian"
                                 >
-                                  <Volume2 className="w-3 h-3 shrink-0" /> RU
+                                  <Volume2 className="w-3.5 h-3.5 shrink-0" /> RU
                                 </button>
                               )}
                             </div>
@@ -1096,7 +1152,7 @@ export default function App() {
                     recognitionRef.current.abort();
                   }
                 }}
-                className="bg-rose-500 hover:bg-rose-600 border-2 border-slate-900 px-3 py-1 rounded-xl text-white font-black text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-sm"
+                className="bg-rose-500 hover:bg-rose-600 border-2 border-slate-950 px-3 py-1 rounded-xl text-white font-black text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-sm"
                 id="btn-quit-playing-state"
               >
                 <X className="w-3.5 h-3.5 stroke-[3]" /> QUIT GAME
@@ -1440,7 +1496,7 @@ export default function App() {
             onDeleteCustomWord={handleDeleteWord}
             onClearCustomWords={handleClearCustomWords}
           />
-        ) : (
+        ) : currentView === 'WORD_LADDER' ? (
           <WordLadderGame
             onBackToHub={() => setCurrentView('HUB')}
             customWords={customWords}
@@ -1449,6 +1505,20 @@ export default function App() {
             onAddCustomWord={handleAddNewWord}
             onDeleteCustomWord={handleDeleteWord}
             onClearCustomWords={handleClearCustomWords}
+          />
+        ) : currentView === 'SKATE_WORD' ? (
+          <SkateWordGame
+            onBackToHub={() => setCurrentView('HUB')}
+            customWords={customWords}
+            highScore={skateWordHighScore}
+            onUpdateHighScore={handleUpdateSkateWordHighScore}
+          />
+        ) : (
+          <AsteWordGame
+            onBackToHub={() => setCurrentView('HUB')}
+            customWords={customWords}
+            highScore={asteWordHighScore}
+            onUpdateHighScore={handleUpdateAsteWordHighScore}
           />
         )}
       </main>
