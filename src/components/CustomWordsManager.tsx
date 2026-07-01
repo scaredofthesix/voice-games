@@ -28,17 +28,17 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
     const trimmedTranslation = newTranslation.trim();
 
     if (!trimmedWord) {
-      setError('Please write an English word!');
+      setError('Please write an English word or phrase!');
       return;
     }
 
     if (!trimmedTranslation) {
-      setError('Please add the Russian translation!');
+      setError('Please add the translation!');
       return;
     }
 
-    if (!/^[a-zA-Z\s\-]+$/.test(trimmedWord)) {
-      setError('Letters only, please!');
+    if (!/^[a-zA-Z0-9\s\-\?\!\,\.\'\"’]+$/.test(trimmedWord)) {
+      setError('Letters, numbers, spaces and standard punctuation only!');
       return;
     }
 
@@ -55,11 +55,11 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-[11px] font-black text-rose-500 uppercase tracking-widest mb-1.5 ml-1">
-              English Word:
+              English Word or Phrase:
             </label>
             <input
               type="text"
-              placeholder="e.g. Rabbit"
+              placeholder="e.g. Nice to meet you!"
               value={newWord}
               onChange={(e) => setNewWord(e.target.value)}
               className="w-full bg-white border-4 border-slate-900 text-slate-800 text-xs px-4 py-3 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-200 placeholder:text-slate-400 transition-all font-bold"
@@ -68,11 +68,11 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
           </div>
           <div>
             <label className="block text-[11px] font-black text-rose-500 uppercase tracking-widest mb-1.5 ml-1">
-              Russian Translation:
+              Translation:
             </label>
             <input
               type="text"
-              placeholder="e.g. Кролик"
+              placeholder="e.g. Приятно познакомиться!"
               value={newTranslation}
               onChange={(e) => setNewTranslation(e.target.value)}
               className="w-full bg-white border-4 border-slate-900 text-slate-800 text-xs px-4 py-3 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-200 placeholder:text-slate-400 transition-all font-bold"
@@ -93,7 +93,7 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
           className="w-full bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs px-6 py-3.5 rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-1 active:shadow-none bubble-shadow-pink"
           id="btn-add-custom-word"
         >
-          <Plus className="w-4 h-4 stroke-[3]" /> ADD TO MY RACING LIST!
+          <Plus className="w-4 h-4 stroke-[3]" /> ADD TO MY LIST!
         </button>
       </form>
 

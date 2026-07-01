@@ -78,9 +78,21 @@ export interface BossKind {
 }
 
 export const BOSS_ROSTER: readonly BossKind[] = [
+  { name: 'Slime', emoji: '🫧', hp: 4, color: '#10b981' },
   { name: 'Goblin', emoji: '👺', hp: 5, color: '#22c55e' },
-  { name: 'Ogre', emoji: '👹', hp: 7, color: '#f97316' },
-  { name: 'Dragon', emoji: '🐉', hp: 10, color: '#ef4444' },
+  { name: 'Skeleton', emoji: '💀', hp: 6, color: '#94a3b8' },
+  { name: 'Spider', emoji: '🕷️', hp: 6, color: '#334155' },
+  { name: 'Mummy', emoji: '🧟', hp: 7, color: '#d97706' },
+  { name: 'Ogre', emoji: '👹', hp: 8, color: '#f97316' },
+  { name: 'Werewolf', emoji: '🐺', hp: 8, color: '#475569' },
+  { name: 'Ghost', emoji: '👻', hp: 9, color: '#a855f7' },
+  { name: 'Golem', emoji: '🗿', hp: 10, color: '#64748b' },
+  { name: 'Alien', emoji: '👽', hp: 10, color: '#22c55e' },
+  { name: 'Cyclops', emoji: '👁️', hp: 11, color: '#ec4899' },
+  { name: 'Dark Sorcerer', emoji: '🧙‍♀️', hp: 11, color: '#8b5cf6' },
+  { name: 'Kraken', emoji: '🐙', hp: 12, color: '#06b6d4' },
+  { name: 'Dragon', emoji: '🐉', hp: 12, color: '#ef4444' },
+  { name: 'Phoenix', emoji: '🐦‍🔥', hp: 14, color: '#f43f5e' },
 ];
 
 /** The boss for a (zero-based) gauntlet level, clamped into the roster. */
@@ -92,6 +104,22 @@ export function bossAtLevel(level: number): BossKind {
 /** True when the given level is the last boss of the gauntlet. */
 export function isFinalBoss(level: number): boolean {
   return Math.floor(level) >= BOSS_ROSTER.length - 1;
+}
+
+/** Extra HP added to a looped boss for every full pass through the roster. */
+export const ENDLESS_HP_RAMP = 3;
+
+/**
+ * Endless Boss Fight: instead of stopping after the last roster boss, the
+ * bosses loop forever and get tougher each full pass. Levels 0..n-1 are the
+ * roster as-is; after that the roster repeats with ENDLESS_HP_RAMP more HP per
+ * completed loop. Keeps the fight going until the player runs out of lives.
+ */
+export function endlessBossAtLevel(level: number): BossKind {
+  const safe = Math.max(0, Math.floor(level));
+  const base = BOSS_ROSTER[safe % BOSS_ROSTER.length];
+  const loop = Math.floor(safe / BOSS_ROSTER.length);
+  return { ...base, hp: base.hp + loop * ENDLESS_HP_RAMP };
 }
 
 export type BossPhase = 'calm' | 'angry' | 'enraged';
@@ -117,7 +145,7 @@ export interface WordLadderState {
   status: PlayStatus;
 }
 
-export const DEFAULT_LADDER_STEPS = 10;
+export const DEFAULT_LADDER_STEPS = 20;
 
 export function createLadder(
   totalSteps: number = DEFAULT_LADDER_STEPS,

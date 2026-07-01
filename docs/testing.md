@@ -53,12 +53,12 @@ Boss Fight - win path:
 4. Expected outcome: the boss is defeated and the win screen appears with the
    number of words defeated. This terminal outcome is the smoke result.
 
-Word Ladder - win path:
+Voice Rocket Climb - win path:
 
-1. Open the deployment, press Play on Word Ladder, then Start Climb.
+1. Open the deployment, press Play on Voice Rocket Climb, then Start Launch.
 2. Allow the microphone.
 3. Read each target word aloud so the rocket advances one step per correct word.
-4. Expected outcome: the rocket reaches the top and the "Top reached" win screen
+4. Expected outcome: the rocket reaches orbit and the "Orbit reached" win screen
    appears. This terminal outcome is the smoke result.
 
 The same end-to-end win paths are asserted automatically (without real hardware)
@@ -68,7 +68,7 @@ emit the on-screen target words, and assert the win state. The manual smoke
 confirms the identical outcome on a real microphone and the live deployment.
 
 Latest recorded smoke result: _TODO date, tester, and link to the win-screen
-evidence for Boss Fight and Word Ladder_.
+evidence for Boss Fight and Voice Rocket Climb_.
 
 ## Critical modules and coverage
 

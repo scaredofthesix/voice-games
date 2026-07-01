@@ -34,16 +34,17 @@ https://scaredofthesix.github.io/voice-games/.
   of time lowers the player's hearts; defeating the boss shows the win screen
   with the number of words defeated.
 
-## UAT-03 Reach the top in Word Ladder
+## UAT-03 Reach orbit in Voice Rocket Climb
 
-- **Goal:** A child can play the new Word Ladder (rocket) game end to end.
+- **Goal:** A child can play the new Voice Rocket Climb game (formerly Word
+  Ladder) end to end.
 - **Preconditions:** App open in Chrome, microphone allowed.
 - **Steps:**
-  1. From the hub, press Play on Word Ladder.
-  2. Press Start Climb.
+  1. From the hub, press Play on Voice Rocket Climb.
+  2. Press Start Launch.
   3. Pronounce each shown word.
 - **Expected result:** Each correct word advances the rocket one step on the
-  progress bar; reaching the top shows the "Top reached" win screen.
+  progress bar; reaching the top shows the "Orbit reached" win screen.
 
 ## UAT-04 Hear how a word should sound
 
@@ -60,10 +61,12 @@ https://scaredofthesix.github.io/voice-games/.
 
 | Date | Scenario | Executed by | Result | Notes |
 |------|----------|-------------|--------|-------|
-| _TODO (Sprint Review / UAT session date)_ | UAT-01 | Customer | _TODO pass/fail_ | _TODO_ |
-| _TODO_ | UAT-02 | Customer | _TODO_ | _TODO_ |
-| _TODO_ | UAT-03 | Customer | _TODO_ | _TODO_ |
+| 2026-06-27 | UAT-01 | Customer | Pass | Voice control responded in Voice Racer. Two observations logged for the next release: movement physics felt random while streaming (#85), and the speech engine can self-trigger from its own spoken hint, causing an automatic pass (#81). |
+| 2026-06-27 | UAT-02 | Customer | Pass | Boss Fight played end to end (3 player hearts, boss defeated by correct words, per-word timer). Customer asked for finite difficulty modes plus an unlockable Infinite Mode instead of the endless loop (#83). |
+| 2026-06-27 | UAT-03 | Customer | Pass | Voice Rocket Climb reached the win state; phrase tracking worked well with long sentences. Pacing tweak and an end-of-climb interactive event suggested for later (#86). |
 
-Record the customer-executed results here after the recorded session, and
-summarize them (without private customer details) in
-`reports/week4/README.md`.
+Results were recorded during the recorded Sprint Review / UAT session of
+2026-06-27 and are summarized (without private customer details) in
+[`reports/week4/customer-review-summary.md`](../reports/week4/customer-review-summary.md).
+All three scenarios passed; the observations above are tracked as next-release
+backlog items and the demonstrated build (v0.2.1) is not changed in response.

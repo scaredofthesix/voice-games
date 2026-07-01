@@ -21,7 +21,14 @@ export function isSpeechSynthesisActive(): boolean {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     return false;
   }
-  return window.speechSynthesis.speaking || window.speechSynthesis.pending;
+
+  const isSpeaking = window.speechSynthesis.speaking;
+  const isPending = window.speechSynthesis.pending;
+  const globalActive = (window as any).speechSynthesisActive;
+  const lastEndTime = (window as any).lastSpeechSynthesisEndTime || 0;
+  const now = Date.now();
+
+  return Boolean(isSpeaking || isPending || globalActive || (now - lastEndTime < 500));
 }
 
 export function speakWord(word: string, lang: VoiceLanguage = 'en') {
@@ -38,6 +45,20 @@ export function speakWord(word: string, lang: VoiceLanguage = 'en') {
   utterance.lang = bcp47;
   utterance.rate = 0.85;
   utterance.pitch = 1.15;
+
+  (window as any).speechSynthesisActive = true;
+  (window as any).lastSpeechSynthesisEndTime = Date.now();
+
+  const handleSpeechEnd = () => {
+    (window as any).speechSynthesisActive = false;
+    (window as any).lastSpeechSynthesisEndTime = Date.now();
+  };
+
+  utterance.onstart = () => {
+    (window as any).speechSynthesisActive = true;
+  };
+  utterance.onend = handleSpeechEnd;
+  utterance.onerror = handleSpeechEnd;
 
   const voices = window.speechSynthesis.getVoices();
   const match = voices.find((voice) =>
