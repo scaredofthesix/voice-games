@@ -22,6 +22,7 @@ import {
   createBossFight,
   DEFAULT_PLAYER_HP,
   endlessBossAtLevel,
+  isFinalBoss,
   pickNextIndex,
   playerHitByTimeout,
   BossKind,
@@ -78,6 +79,19 @@ export function BossFightGame({
     return r;
   });
   const [bossLevel, setBossLevel] = useState(0);
+  const [bossMode, setBossMode] = useState<number>(3); // 3, 5, 10, or -1 (Endless)
+  const [isInfiniteUnlocked, setIsInfiniteUnlocked] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('boss_fight_infinite_unlocked') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const bossModeRef = useRef(bossMode);
+  useEffect(() => {
+    bossModeRef.current = bossMode;
+  }, [bossMode]);
 
   const getBossAtLevel = (level: number, roster: BossKind[]) => {
     if (roster.length === 0) return endlessBossAtLevel(level);
@@ -164,9 +178,8 @@ export function BossFightGame({
   }, [score, onScoreChange]);
 
   useEffect(() => {
-    // Endless mode never reaches 'won'; record the best run when the player
-    // finally loses all lives.
-    if (fight.status === 'lost' && score > highScore) {
+    // Record the high score when the game concludes (either won or lost)
+    if ((fight.status === 'lost' || fight.status === 'won') && score > highScore) {
       onUpdateHighScore?.(score);
     }
   }, [fight.status, score, highScore, onUpdateHighScore]);
@@ -194,11 +207,25 @@ export function BossFightGame({
       }));
 
       if (hit.status === 'won') {
-        // Endless mode: a defeated boss is immediately replaced by the next,
-        // tougher one, so there is no victory screen. The player keeps fighting
-        // until they run out of lives. Player HP carries across bosses.
         setKillNonce((n) => n + 1);
         speakSound.playSuccess();
+
+        const isFinite = bossModeRef.current !== -1;
+        const isLast = isFinite && isFinalBoss(bossLevelRef.current, bossModeRef.current);
+
+        if (isLast) {
+          // Whole gauntlet cleared!
+          fightRef.current = hit;
+          setFight(hit);
+          // Unlock Endless mode
+          try {
+            localStorage.setItem('boss_fight_infinite_unlocked', 'true');
+            setIsInfiniteUnlocked(true);
+          } catch {}
+          return;
+        }
+
+        // Advance to the next, tougher boss; carry player HP and max HP.
         const nextLevel = bossLevelRef.current + 1;
         const nextBoss = getBossAtLevel(nextLevel, sessionRosterRef.current);
         const fresh: BossFightState = {
@@ -293,6 +320,7 @@ export function BossFightGame({
   }, [phase, fight.status, timeLeft, nextWord, paused]);
 
   const isOver = fight.status !== 'playing';
+  const won = fight.status === 'won';
   const list = wordList();
 
   return (
@@ -333,7 +361,13 @@ export function BossFightGame({
               {t('games.bossFight.title')}
             </h1>
             <p className="text-xs font-bold text-slate-600 max-w-xs leading-relaxed">
-              {t('games.bossFight.description')}
+              {bossMode === -1 
+                ? (language === 'ru' 
+                  ? 'Сражайся с бесконечной ордой боссов! Произноси английские слова вслух, пока не закончатся жизни.' 
+                  : 'Fight an endless horde of bosses! Say each English word out loud to survive as long as you can.')
+                : (language === 'ru'
+                  ? `Победи ${bossMode} боссов, произнося английские слова вслух. Успей до конца таймера, иначе босс ударит в ответ!`
+                  : `Beat ${bossMode} bosses by saying each English word out loud. Say it before the timer runs out, or the boss hits back!`)}
             </p>
           </div>
 
@@ -341,18 +375,18 @@ export function BossFightGame({
           <div className="flex flex-col items-center gap-2 bg-white border-4 border-slate-900 rounded-2xl p-3">
             <div className="flex items-center justify-between w-full">
               <span className="text-xs font-black uppercase tracking-wider text-slate-700">
-                Boss Gauntlet Order:
+                {language === 'ru' ? 'Порядок Боссов в Бою:' : 'Boss Gauntlet Order:'}
               </span>
               <button
                 type="button"
                 onClick={randomizeRoster}
                 className="bg-slate-100 hover:bg-slate-200 border-2 border-slate-900 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center gap-1 active:translate-y-0.5"
               >
-                🎲 Shuffle Roster
+                🎲 {language === 'ru' ? 'Перемешать' : 'Shuffle Roster'}
               </button>
             </div>
             <div className="flex items-center justify-center gap-3 w-full overflow-x-auto py-1" aria-hidden="true">
-              {sessionRoster.slice(0, 5).map((b, i) => (
+              {sessionRoster.slice(0, bossMode === -1 ? 5 : Math.min(5, bossMode)).map((b, i) => (
                 <div key={`${b.name}-${i}`} className="flex flex-col items-center shrink-0">
                   <span className="text-2xl animate-bounce">{b.emoji}</span>
                   <span className="text-[8px] font-black uppercase text-slate-500">
@@ -360,13 +394,22 @@ export function BossFightGame({
                   </span>
                 </div>
               ))}
-              {sessionRoster.length > 5 && (
+              {bossMode === -1 ? (
                 <div className="flex flex-col items-center shrink-0">
-                  <span className="text-sm font-black text-slate-400">...</span>
+                  <span className="text-2xl animate-pulse">♾️</span>
                   <span className="text-[8px] font-black uppercase text-slate-400">
-                    +{sessionRoster.length - 5} more
+                    {language === 'ru' ? 'и др.' : '& more'}
                   </span>
                 </div>
+              ) : (
+                bossMode > 5 && (
+                  <div className="flex flex-col items-center shrink-0">
+                    <span className="text-sm font-black text-slate-400">...</span>
+                    <span className="text-[8px] font-black uppercase text-slate-400">
+                      +{bossMode - 5} {language === 'ru' ? 'еще' : 'more'}
+                    </span>
+                  </div>
+                )
               )}
             </div>
           </div>
@@ -443,6 +486,66 @@ export function BossFightGame({
               </div>
             </div>
           </div>
+
+          {/* Battle Length Selection */}
+          <fieldset className="text-left bg-slate-50 border-4 border-slate-900 rounded-2xl p-3">
+            <legend className="text-xs font-black uppercase tracking-wider text-slate-700 px-1">
+              {language === 'ru' ? 'Длительность битвы:' : 'Battle Length:'}
+            </legend>
+            <div className="flex flex-wrap gap-2">
+              {[3, 5, 10].map((num) => (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => {
+                    speakSound.playCoin();
+                    setBossMode(num);
+                  }}
+                  aria-pressed={bossMode === num}
+                  className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide cursor-pointer ${
+                    bossMode === num
+                      ? 'bg-rose-500 border-slate-900 text-white font-black'
+                      : 'bg-white border-slate-300 text-slate-600 hover:border-slate-900'
+                  }`}
+                >
+                  {num === 3 
+                    ? (language === 'ru' ? '3 Босса' : '3 Bosses') 
+                    : num === 5 
+                    ? (language === 'ru' ? '5 Боссов' : '5 Bosses') 
+                    : (language === 'ru' ? '10 Боссов' : '10 Bosses')}
+                </button>
+              ))}
+              <button
+                type="button"
+                disabled={!isInfiniteUnlocked}
+                onClick={() => {
+                  if (isInfiniteUnlocked) {
+                    speakSound.playCoin();
+                    setBossMode(-1);
+                  }
+                }}
+                aria-pressed={bossMode === -1}
+                className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide relative flex items-center gap-1.5 cursor-pointer ${
+                  bossMode === -1
+                    ? 'bg-purple-600 border-slate-900 text-white font-black'
+                    : isInfiniteUnlocked
+                    ? 'bg-white border-slate-300 text-slate-600 hover:border-slate-900'
+                    : 'bg-slate-200 border-slate-350 text-slate-400 cursor-not-allowed'
+                }`}
+                title={isInfiniteUnlocked ? 'Endless Boss Fight' : 'Beat a boss fight once to unlock!'}
+              >
+                <span>{language === 'ru' ? 'Бесконечно' : 'Endless'}</span>
+                {!isInfiniteUnlocked && <span className="text-[10px]">🔒</span>}
+              </button>
+            </div>
+            {!isInfiniteUnlocked && (
+              <p className="text-[10px] text-purple-700 font-bold mt-1.5 ml-1 leading-normal">
+                ⭐ {language === 'ru' 
+                  ? 'Совет: Победи в любом режиме, чтобы разблокировать бесконечный бой!' 
+                  : 'Tip: Beat any mode to unlock Endless mode!'}
+              </p>
+            )}
+          </fieldset>
 
           <fieldset className="text-left bg-slate-50 border-4 border-slate-900 rounded-2xl p-3">
             <legend className="text-xs font-black uppercase tracking-wider text-slate-700 px-1">
@@ -584,8 +687,8 @@ export function BossFightGame({
               hitNonce={hitNonce}
               attackNonce={attackNonce}
               killNonce={killNonce}
-              defeated={false}
-              victory={false}
+              defeated={won}
+              victory={won}
               bossName={boss.name}
               theme={bossTheme}
             />
@@ -632,7 +735,10 @@ export function BossFightGame({
               <Swords className="w-4 h-4 stroke-[3]" /> {boss.emoji} {boss.name}
             </span>
             <span className="text-[10px] font-black uppercase text-slate-500">
-              ♾️ Boss #{bossLevel + 1} · {score} hits
+              {bossMode === -1 
+                ? `♾️ Boss #${bossLevel + 1}` 
+                : `${language === 'ru' ? 'Босс' : 'Boss'} ${bossLevel + 1}/${bossMode}`}
+               · {score} {language === 'ru' ? 'уд.' : 'hits'}
             </span>
           </div>
 
@@ -669,12 +775,16 @@ export function BossFightGame({
             <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
               <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
                 
-                <span className="inline-flex items-center gap-1 bg-yellow-300 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest">
-                  {language === 'ru' ? 'БИТВА ЗАВЕРШЕНА!' : 'BATTLE CONCLUDED!'}
+                <span className="inline-flex items-center gap-1 bg-yellow-300 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest animate-pulse">
+                  {won
+                    ? (language === 'ru' ? 'ТЫ ПОБЕДИЛ!' : 'VICTORY!')
+                    : (language === 'ru' ? 'БИТВА ЗАВЕРШЕНА!' : 'BATTLE CONCLUDED!')}
                 </span>
 
                 <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
-                  {language === 'ru' ? 'БИТВА ЗАВЕРШЕНА!' : 'GAME OVER!'}
+                  {won
+                    ? (language === 'ru' ? 'ПОБЕДА!' : 'YOU WON!')
+                    : (language === 'ru' ? 'БИТВА ЗАВЕРШЕНА!' : 'GAME OVER!')}
                 </h2>
                 <p className="text-xs text-slate-500 leading-normal font-bold">
                   {language === 'ru' ? 'Твой боевой отчет по английским словам:' : 'Review your English combat stats below:'}
