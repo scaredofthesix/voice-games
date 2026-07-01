@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
 import {
   ArrowLeft,
   BookOpen,
@@ -192,6 +193,7 @@ export function BossFightGame({
           struggled: prevStats[current]?.struggled || 0,
         },
       }));
+      saveProgress(recordWordSpoken(loadProgress(), 'boss-fight', current));
 
       if (hit.status === 'won') {
         // Endless mode: a defeated boss is immediately replaced by the next,
@@ -230,6 +232,8 @@ export function BossFightGame({
 
   const beginFight = useCallback(() => {
     speakSound.playCoin();
+    const updatedProgress = recordSessionPlayed(loadProgress(), 'boss-fight');
+    saveProgress(updatedProgress);
     // Re-shuffle order on start to ensure complete randomness
     const shuffled = [...BOSS_ROSTER];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -833,6 +837,7 @@ export function BossFightGame({
                                 struggled: (p[target]?.struggled || 0) + 1,
                               },
                             }));
+                            saveProgress(recordWordStruggled(loadProgress(), 'boss-fight', target));
                           }}
                           className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-white border-2 border-slate-900 px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5"
                           aria-label={`Hear the word ${target}`}

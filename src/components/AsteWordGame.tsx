@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
 import { ArrowLeft, Play, Pause, RotateCcw, Heart, BookOpen, Volume2 } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
@@ -189,6 +190,7 @@ export function AsteWordGame({
         struggled: prevStats[destroyedWord]?.struggled || 0,
       },
     }));
+    saveProgress(recordWordSpoken(loadProgress(), 'aste-word', destroyedWord));
 
     asteroids.current = asteroids.current.filter((a) => a.id !== targetAst.id);
     setActiveAsteroids([...asteroids.current]);
@@ -564,6 +566,8 @@ export function AsteWordGame({
 
   const startGame = useCallback(() => {
     speakSound.playCoin();
+    const updatedProgress = recordSessionPlayed(loadProgress(), 'aste-word');
+    saveProgress(updatedProgress);
     setScore(0);
     setWordStudyStats({});
     setLives(3);
@@ -824,6 +828,7 @@ export function AsteWordGame({
                                 struggled: (p[ast.word]?.struggled || 0) + 1,
                               },
                             }));
+                            saveProgress(recordWordStruggled(loadProgress(), 'aste-word', ast.word));
                           }}
                           className="px-2 py-1 bg-yellow-50 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg text-[10px] font-black uppercase inline-flex items-center gap-1 cursor-pointer shadow-sm active:translate-y-0.5"
                         >

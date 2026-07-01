@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
 import { ArrowLeft, Play, Pause, Volume2, Heart, RotateCcw, BookOpen } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
@@ -217,6 +218,7 @@ export function SkateWordGame({
             struggled: prevStats[current]?.struggled || 0,
           },
         }));
+        saveProgress(recordWordSpoken(loadProgress(), 'skate-word', current));
         if (phaseRef.current === 'PLAYING') nextWord();
       }
     },
@@ -697,6 +699,8 @@ export function SkateWordGame({
 
   const startGame = useCallback(() => {
     speakSound.playCoin();
+    const updatedProgress = recordSessionPlayed(loadProgress(), 'skate-word');
+    saveProgress(updatedProgress);
     setScore(0);
     setWordStudyStats({});
     setLives(3);
@@ -935,6 +939,7 @@ export function SkateWordGame({
                       struggled: (p[target]?.struggled || 0) + 1,
                     },
                   }));
+                  saveProgress(recordWordStruggled(loadProgress(), 'skate-word', target));
                 }}
                 className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-white border-2 border-slate-900 px-3 py-1.5 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5 cursor-pointer"
               >
