@@ -27,7 +27,7 @@ import {
   BossKind,
 } from '../gameLogic';
 import { BossTheme } from './BossArena';
-import { matchesWord, speakSound, speakWord } from '../utils';
+import { matchesWord, speakSound, speakWord } from '../voice/engine';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { BossArena } from './BossArena';
 import { CustomWordsManager } from './CustomWordsManager';

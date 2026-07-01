@@ -20,7 +20,7 @@ import { BUILTIN_CATEGORIES } from '../data';
 import { AudioVisualizer } from './AudioVisualizer';
 import { CustomWordsManager } from './CustomWordsManager';
 import { useUiLanguage } from '../uiLanguage';
-import { speakWord, speakSound, matchesWord, isSpeechSynthesisActive } from '../utils';
+import { speakWord, speakSound, matchesWord, isSpeechSynthesisActive } from '../voice/engine';
 
 type BubbleTheme = 'sky' | 'snow' | 'starry' | 'nebula';
 
