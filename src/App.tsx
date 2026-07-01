@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   Play,
+  Pause,
   RotateCcw,
   Volume2,
   X,
@@ -26,18 +27,21 @@ import { CustomWordsManager } from './components/CustomWordsManager';
 import { BubblePopperGame } from './components/BubblePopperGame';
 import { BossFightGame } from './components/BossFightGame';
 import { WordLadderGame } from './components/WordLadderGame';
+import { SkateWordGame } from './components/SkateWordGame';
+import { AsteWordGame } from './components/AsteWordGame';
 import {
   createInitialRacerMovementState,
   speakWord,
   speakSound,
   matchesWord,
+  isSpeechSynthesisActive,
   updateRacerMovement,
 } from './voice/engine';
 import { useUiLanguage } from './uiLanguage';
 
 export default function App() {
   const { language, setLanguage, t } = useUiLanguage();
-  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER'>('HUB');
+  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD'>('HUB');
 
   // Game states
   const [gameState, setGameState] = useState<GameState>('START_SCREEN');
@@ -109,6 +113,34 @@ export default function App() {
     localStorage.setItem('word_ladder_highscore', newScore.toString());
   };
 
+  const [skateWordHighScore, setSkateWordHighScore] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('skate_word_highscore');
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const handleUpdateSkateWordHighScore = (newScore: number) => {
+    setSkateWordHighScore(newScore);
+    localStorage.setItem('skate_word_highscore', newScore.toString());
+  };
+
+  const [asteWordHighScore, setAsteWordHighScore] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('aste_word_highscore');
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const handleUpdateAsteWordHighScore = (newScore: number) => {
+    setAsteWordHighScore(newScore);
+    localStorage.setItem('aste_word_highscore', newScore.toString());
+  };
+
   const games = [
     {
       id: "voice-racer",
@@ -146,6 +178,28 @@ export default function App() {
       record: wordLadderHighScore,
       unlocked: true,
     },
+    {
+      id: "skate-word",
+      title: language === 'en' ? 'SkateWord' : 'СкейтВорд',
+      description: language === 'en' 
+        ? 'Jump over road obstacles by saying the approaching words out loud! 🛹' 
+        : 'Перепрыгивай дорожные барьеры на скейте, произнося слова вслух! 🛹',
+      icon: "🛹",
+      accent: "bg-rose-400",
+      record: skateWordHighScore,
+      unlocked: true,
+    },
+    {
+      id: "aste-word",
+      title: language === 'en' ? 'AsteWord Destroyer' : 'АстеВорд Разрушитель',
+      description: language === 'en' 
+        ? 'Shoot laser beams at incoming asteroids by saying the words written on them!' 
+        : 'Сбивай лазером летящие астероиды, произнося написанные на них слова!',
+      icon: "☄️",
+      accent: "bg-indigo-500",
+      record: asteWordHighScore,
+      unlocked: true,
+    },
   ];
 
   const totalRecordSum = games.reduce((acc, g) => acc + g.record, 0);
@@ -171,6 +225,7 @@ export default function App() {
   // Bullet time states
   const [isBulletTime, setIsBulletTime] = useState(false);
   const [bulletTimeProgress, setBulletTimeProgress] = useState(100);
+  const [racerPaused, setRacerPaused] = useState(false);
 
   // Current level words tracking
   const [currentLaneWords, setCurrentLaneWords] = useState<Record<Lane, string>>({
@@ -185,6 +240,7 @@ export default function App() {
   const currentLaneWordsRef = useRef(currentLaneWords);
   const isBulletTimeRef = useRef(isBulletTime);
   const vocabIndexRef = useRef(vocabIndex);
+  const racerPausedRef = useRef(racerPaused);
 
   useEffect(() => {
     gameStateRef.current = gameState;
@@ -205,6 +261,10 @@ export default function App() {
   useEffect(() => {
     vocabIndexRef.current = vocabIndex;
   }, [vocabIndex]);
+
+  useEffect(() => {
+    racerPausedRef.current = racerPaused;
+  }, [racerPaused]);
 
   // Speech Recognition hook
   const recognitionRef = useRef<any>(null);
@@ -314,8 +374,9 @@ export default function App() {
       };
 
       rec.onend = () => {
-        // Automatically restart speech loop to keep continuous practice active
-        if (gameStateRef.current === 'PLAYING') {
+        // Automatically restart speech loop to keep continuous practice active,
+        // unless the race is paused (then we keep the mic off until resume).
+        if (gameStateRef.current === 'PLAYING' && !racerPausedRef.current) {
           try {
             rec.start();
           } catch {
@@ -330,6 +391,10 @@ export default function App() {
       };
 
       rec.onresult = (event: any) => {
+        if (isSpeechSynthesisActive()) {
+          return;
+        }
+
         let textResult = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (typeof event.results[i][0].transcript === 'string') {
@@ -353,6 +418,7 @@ export default function App() {
   // Evaluate if spoken transcript matches target adjacent lane words
   const evaluateVoiceTrigger = (spokenText: string) => {
     if (gameStateRef.current !== 'PLAYING') return;
+    if (racerPausedRef.current) return;
     if (!isBulletTimeRef.current) return;
 
     const activeWords = currentLaneWordsRef.current;
@@ -438,8 +504,25 @@ export default function App() {
     setVocabIndex(0);
     setLastHeardTranscript('');
     setWordStudyStats({});
+    setRacerPaused(false);
+    racerPausedRef.current = false;
     startVoiceEngine();
     speakSound.playCoin();
+  };
+
+  // Pause/resume the race: freeze the canvas + swerve timer and stop listening.
+  const toggleRacerPause = () => {
+    const next = !racerPausedRef.current;
+    racerPausedRef.current = next;
+    setRacerPaused(next);
+    if (next) {
+      // Stop the mic; onend will not auto-restart while paused.
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    } else {
+      startVoiceEngine();
+    }
   };
 
   // Bullet-time countdown timer loop
@@ -448,6 +531,7 @@ export default function App() {
       setBulletTimeProgress(100);
       return;
     }
+    if (racerPaused) return; // freeze the swerve countdown while paused
 
     const maxInputTime = Math.max(2200, 5500 - level * 750);
     const startTimeStamp = Date.now();
@@ -464,7 +548,7 @@ export default function App() {
     }, 25);
 
     return () => clearInterval(interval);
-  }, [isBulletTime, level]);
+  }, [isBulletTime, level, racerPaused]);
 
   // Collision damage event triggered by physical canvas detection or timeout
   const handleCarCollision = () => {
@@ -534,8 +618,8 @@ export default function App() {
       <div className="absolute top-28 right-[10%] w-32 h-12 bg-white rounded-full opacity-60 blur-[1px] pointer-events-none animate-pulse" />
       <div className="absolute bottom-20 left-[4%] w-28 h-10 bg-white rounded-full opacity-40 blur-[1px] pointer-events-none" />
 
-      {/* HEADER BAR - hidden for the self-contained Sprint 2 games (Boss Fight, Word Ladder) */}
-      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && (
+      {/* HEADER BAR - hidden for the self-contained Sprint 2 games (Boss Fight, Word Ladder, SkateWord, AsteWord) */}
+      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && (
       <header className="bg-yellow-400 border-b-8 border-slate-900 py-3.5 px-6 md:px-12 sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
         {currentView === 'HUB' ? (
           <>
@@ -686,7 +770,7 @@ export default function App() {
                     {/* Left: Icon, Title & Description */}
                     <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left flex-grow w-full">
                       <div
-                        className={`w-14 h-14 rounded-2xl border-4 border-slate-900 ${
+                        className={`w-14 h-14 rounded-2xl border-4 border-slate-950 ${
                           isColleague ? 'bg-slate-200 border-dashed border-slate-400' : g.accent
                         } flex items-center justify-center text-3xl shrink-0 ${
                           g.unlocked ? 'animate-bounce shadow-sm' : 'shadow-none'
@@ -701,11 +785,7 @@ export default function App() {
                           }`}>
                             {g.title}
                           </h3>
-                          {g.unlocked ? (
-                            <span className="bg-emerald-400 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border-2 border-slate-900">
-                              {t('hub.playBadge')} 🟢
-                            </span>
-                          ) : (
+                          {!g.unlocked && (
                             <span className="bg-slate-300 text-slate-600 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border-2 border-slate-300">
                               {t('hub.lockedBadge')} 🔒
                             </span>
@@ -745,6 +825,10 @@ export default function App() {
                               setCurrentView('BOSS_FIGHT');
                             } else if (g.id === 'word-ladder') {
                               setCurrentView('WORD_LADDER');
+                            } else if (g.id === 'skate-word') {
+                              setCurrentView('SKATE_WORD');
+                            } else if (g.id === 'aste-word') {
+                              setCurrentView('ASTE_WORD');
                             }
                           }}
                           className="w-full sm:w-32 py-2 bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-0.5 uppercase tracking-wider transition-all select-none hover:scale-103 shadow-sm"
@@ -813,12 +897,81 @@ export default function App() {
                           : 'bg-white border-slate-300 text-slate-700 hover:border-slate-900'
                       }`}
                     >
-                      {style === 'forest' && 'Forest Land'}
-                      {style === 'night' && 'Cosmic Night'}
-                      {style === 'desert' && 'Golden Desert'}
-                      {style === 'city' && 'Neon City'}
+                      {t(`themes.racer.${style}`)}
                     </button>
                   ))}
+                </div>
+
+                {/* Mini-visual preview of selected highway theme */}
+                <div className={`w-full h-24 rounded-2xl border-4 border-slate-900 relative overflow-hidden transition-all duration-300 flex items-center justify-center ${
+                  trackStyle === 'forest' ? 'bg-gradient-to-b from-sky-300 to-emerald-400' :
+                  trackStyle === 'night' ? 'bg-gradient-to-b from-slate-950 via-purple-950 to-indigo-900' :
+                  trackStyle === 'desert' ? 'bg-gradient-to-b from-amber-200 via-orange-300 to-amber-500' :
+                  'bg-gradient-to-b from-blue-950 via-purple-950 to-fuchsia-900'
+                }`}>
+                  {trackStyle === 'forest' && (
+                    <>
+                      <div className="absolute inset-x-0 bottom-0 h-8 bg-emerald-500" />
+                      <span className="absolute bottom-6 left-6 text-2xl animate-bounce">🌲</span>
+                      <span className="absolute bottom-4 left-16 text-xl">🌸</span>
+                      <span className="absolute bottom-5 right-8 text-2xl animate-bounce" style={{ animationDelay: '0.2s' }}>🌲</span>
+                      <span className="absolute top-2 right-12 text-2xl animate-pulse">☀️</span>
+                      {/* Mini moving road in the center */}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-8 bg-slate-700 flex flex-col justify-between items-center py-1">
+                        <div className="w-1 h-2 bg-yellow-400 animate-pulse" />
+                        <div className="w-1 h-2 bg-yellow-400" />
+                      </div>
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-xl z-10 animate-bounce">🚗</span>
+                    </>
+                  )}
+                  {trackStyle === 'night' && (
+                    <>
+                      <div className="absolute inset-x-0 bottom-0 h-8 bg-indigo-950" />
+                      <span className="absolute top-2 left-6 text-2xl animate-pulse">🌙</span>
+                      <span className="absolute top-4 right-10 text-xs text-yellow-200 animate-ping">⭐</span>
+                      <span className="absolute top-8 left-20 text-xs text-yellow-200 animate-pulse">⭐</span>
+                      <span className="absolute bottom-5 left-10 text-xl">🛸</span>
+                      <span className="absolute bottom-4 right-8 text-xl">🌌</span>
+                      {/* Mini moving road */}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-8 bg-slate-900 flex flex-col justify-between items-center py-1 border-x border-purple-500">
+                        <div className="w-1 h-2 bg-purple-400 animate-pulse" />
+                        <div className="w-1 h-2 bg-purple-400" />
+                      </div>
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-xl z-10 animate-bounce">🚀</span>
+                    </>
+                  )}
+                  {trackStyle === 'desert' && (
+                    <>
+                      <div className="absolute inset-x-0 bottom-0 h-8 bg-amber-600" />
+                      <span className="absolute bottom-6 left-8 text-2xl animate-bounce">🌵</span>
+                      <span className="absolute bottom-5 right-12 text-2xl">🌵</span>
+                      <span className="absolute top-1 right-6 text-3xl animate-spin" style={{ animationDuration: '10s' }}>☀️</span>
+                      <span className="absolute bottom-4 left-24 text-sm">🏜️</span>
+                      {/* Mini moving road */}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-8 bg-amber-900 flex flex-col justify-between items-center py-1">
+                        <div className="w-1 h-2 bg-yellow-300 animate-pulse" />
+                        <div className="w-1 h-2 bg-yellow-300" />
+                      </div>
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-xl z-10 animate-bounce">🐫</span>
+                    </>
+                  )}
+                  {trackStyle === 'city' && (
+                    <>
+                      <div className="absolute inset-x-0 bottom-0 h-8 bg-fuchsia-950" />
+                      <span className="absolute bottom-8 left-4 text-2xl opacity-60">🏙️</span>
+                      <span className="absolute bottom-8 right-6 text-2xl opacity-60">🏢</span>
+                      <span className="absolute top-3 left-16 text-cyan-400 font-mono text-[10px] tracking-wider animate-pulse uppercase">NEON GRID ACTIVE</span>
+                      {/* Mini moving road */}
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-8 bg-slate-950 flex flex-col justify-between items-center py-1 border-x border-cyan-400">
+                        <div className="w-1 h-2 bg-cyan-400 animate-pulse" />
+                        <div className="w-1 h-2 bg-cyan-400" />
+                      </div>
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-xl z-10 animate-bounce">🏎️</span>
+                    </>
+                  )}
+                  <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
+                    Preview
+                  </div>
                 </div>
               </div>
 
@@ -895,7 +1048,7 @@ export default function App() {
                 {isWarmupExpanded && (
                   <div className="bg-white border-4 border-slate-900 rounded-2xl p-3">
                     {activeCategory.id === 'custom' && customWords.length === 0 ? (
-                      <div className="text-center py-4 bg-amber-50 rounded-xl border-2 border-dashed border-amber-300">
+                      <div className="text-center py-4 bg-amber-50 rounded-xl border-2 border-dashed border-amber-350">
                         <p className="text-xs text-amber-800 font-black">{t('shared.emptyCustomList')}</p>
                       </div>
                     ) : (
@@ -922,7 +1075,7 @@ export default function App() {
                                   className="text-blue-600 hover:text-blue-800 text-[10px] font-black uppercase flex items-center gap-0.5 cursor-pointer shrink-0 animate-none"
                                   aria-label="Listen in Russian"
                                 >
-                                  <Volume2 className="w-3 h-3 shrink-0" /> RU
+                                  <Volume2 className="w-3.5 h-3.5 shrink-0" /> RU
                                 </button>
                               )}
                             </div>
@@ -999,6 +1152,25 @@ export default function App() {
                 Topic: {activeCategory.name}
               </div>
 
+              {/* Pause / Resume */}
+              <button
+                onClick={toggleRacerPause}
+                aria-pressed={racerPaused}
+                aria-label={racerPaused ? 'Resume the race' : 'Pause the race'}
+                className={`border-2 border-slate-900 px-3 py-1 rounded-xl font-black text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-sm uppercase ${
+                  racerPaused
+                    ? 'bg-emerald-400 hover:bg-emerald-500 text-slate-900'
+                    : 'bg-amber-400 hover:bg-amber-500 text-slate-900'
+                }`}
+                id="btn-pause-playing-state"
+              >
+                {racerPaused ? (
+                  <><Play className="w-3.5 h-3.5 fill-current stroke-[3]" /> RESUME</>
+                ) : (
+                  <><Pause className="w-3.5 h-3.5 fill-current stroke-[3]" /> PAUSE</>
+                )}
+              </button>
+
               {/* Exit out button */}
               <button
                 onClick={() => {
@@ -1007,7 +1179,7 @@ export default function App() {
                     recognitionRef.current.abort();
                   }
                 }}
-                className="bg-rose-500 hover:bg-rose-600 border-2 border-slate-900 px-3 py-1 rounded-xl text-white font-black text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-sm"
+                className="bg-rose-500 hover:bg-rose-600 border-2 border-slate-950 px-3 py-1 rounded-xl text-white font-black text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-sm"
                 id="btn-quit-playing-state"
               >
                 <X className="w-3.5 h-3.5 stroke-[3]" /> QUIT GAME
@@ -1024,6 +1196,7 @@ export default function App() {
                 onAvoidObstacle={handleAvoidObstacle}
                 lives={lives}
                 isBulletTime={isBulletTime}
+                paused={racerPaused}
                 onApproach={handleApproachObstacle}
                 score={score}
                 level={level}
@@ -1089,8 +1262,14 @@ export default function App() {
                         </span>
 
                         {targetWord ? (
-                          <div className="flex flex-col items-center my-auto z-10 w-full truncate overflow-hidden justify-center">
-                            <span className="text-sm md:text-xl font-black text-slate-950 uppercase tracking-widest drop-shadow-[0_1.5px_0_rgba(255,255,255,1)]">
+                          <div className="flex flex-col items-center my-auto z-10 w-full overflow-hidden justify-center px-1">
+                            <span className={`${
+                              targetWord.length > 25
+                                ? 'text-[10px] md:text-xs font-black'
+                                : targetWord.length > 15
+                                ? 'text-xs md:text-sm font-black'
+                                : 'text-sm md:text-lg font-black'
+                            } text-slate-950 uppercase tracking-wider drop-shadow-[0_1.5px_0_rgba(255,255,255,1)] text-center leading-tight break-words max-h-12 overflow-hidden`}>
                               {targetWord}
                             </span>
                             <span className="text-[10px] text-slate-700 font-extrabold mt-0.5 truncate max-w-full">
@@ -1140,6 +1319,16 @@ export default function App() {
                       </div>
                     );
                   })}
+                </div>
+              )}
+
+              {/* Pause overlay over the racing canvas */}
+              {racerPaused && (
+                <div className="absolute inset-0 z-50 bg-slate-900/75 flex flex-col items-center justify-center gap-1">
+                  <span className="text-5xl" aria-hidden="true">⏸️</span>
+                  <span className="text-xl font-black uppercase tracking-widest text-white">
+                    Paused
+                  </span>
                 </div>
               )}
             </div>
@@ -1334,7 +1523,7 @@ export default function App() {
             onDeleteCustomWord={handleDeleteWord}
             onClearCustomWords={handleClearCustomWords}
           />
-        ) : (
+        ) : currentView === 'WORD_LADDER' ? (
           <WordLadderGame
             onBackToHub={() => setCurrentView('HUB')}
             customWords={customWords}
@@ -1343,6 +1532,20 @@ export default function App() {
             onAddCustomWord={handleAddNewWord}
             onDeleteCustomWord={handleDeleteWord}
             onClearCustomWords={handleClearCustomWords}
+          />
+        ) : currentView === 'SKATE_WORD' ? (
+          <SkateWordGame
+            onBackToHub={() => setCurrentView('HUB')}
+            customWords={customWords}
+            highScore={skateWordHighScore}
+            onUpdateHighScore={handleUpdateSkateWordHighScore}
+          />
+        ) : (
+          <AsteWordGame
+            onBackToHub={() => setCurrentView('HUB')}
+            customWords={customWords}
+            highScore={asteWordHighScore}
+            onUpdateHighScore={handleUpdateAsteWordHighScore}
           />
         )}
       </main>

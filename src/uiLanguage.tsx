@@ -24,7 +24,7 @@ const STORAGE_KEY = 'ui_language';
 const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
   en: {
     header: {
-      title: 'VOICE WORD GAMES',
+      title: 'VOICE GAMES',
       subtitle: '⭐ KIDS LEARNING HUB',
       totalRecord: 'TOTAL RECORD:',
       backToHub: 'HUB',
@@ -55,11 +55,16 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       },
       bossFight: {
         title: 'BOSS FIGHT',
-        description: 'Say each English word to strike the boss! Beat the boss before it beats you, but watch the timer on every word.',
+        description: 'Say each English word to strike the boss! Beat one boss and a tougher one appears - survive as long as you can, and watch the timer on every word.',
       },
       wordLadder: {
-        title: 'WORD LADDER',
-        description: 'Pronounce words to fly your rocket one step higher. Reach the top of the ladder to win the launch!',
+        title: 'VOICE ROCKET CLIMB',
+        description: 'Pronounce words correctly to launch your rocket higher and higher! Reach orbit to win!',
+        winTitle: 'Orbit reached! 🚀',
+        winDescription: 'You boosted your rocket through all {total} stages into deep space!',
+        sayToLaunch: 'Say this word to boost',
+        hearIt: 'Hear it',
+        again: 'Again',
       },
     },
     shared: {
@@ -69,7 +74,7 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       customWords: 'Custom Words List',
       start: 'Start',
       startFight: 'Start Fight',
-      startClimb: 'Start Climb',
+      startClimb: 'Start Launch',
       startPopping: 'START POPPING!',
       backToHub: 'Hub',
       learnAndPractice: 'Learn and practice',
@@ -82,6 +87,33 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       listenAndLearnPractice: 'LISTEN & LEARN PRACTICE',
       wordsLabel: 'words',
       customListEmpty: 'No words registered yet. Tap start to play again.',
+      chooseMissionTheme: 'CHOOSE MISSION THEME:',
+      chooseArenaTheme: 'CHOOSE ARENA THEME:',
+    },
+    themes: {
+      racer: {
+        forest: '🌲 Forest Land',
+        night: '🌌 Cosmic Night',
+        desert: '🏜️ Golden Desert',
+        city: '🏎️ Neon City',
+      },
+      ladder: {
+        earth: '🌍 Earth Orbit',
+        mars: '🔴 Flight to Mars',
+        nebula: '🌌 Alien Nebula',
+      },
+      bubble: {
+        sky: '☁️ Drifting Clouds',
+        snow: '❄️ Snowy Wilderness',
+        starry: '🌙 Moonlit Sparkles',
+        nebula: '🌌 Cosmic Galaxies',
+      },
+      boss: {
+        castle: '🏰 Castle Ruins',
+        lava: '🌋 Lava Dungeon',
+        forest: '🌲 Magic Forest',
+        abyss: '🌌 Void Abyss',
+      },
     },
     bubble: {
       gameSelected: 'Game Selected',
@@ -143,11 +175,16 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       },
       bossFight: {
         title: 'БОЙ С БОССОМ',
-        description: 'Произноси каждое английское слово, чтобы ударить босса! Победи до того, как он победит тебя, и следи за таймером.',
+        description: 'Произноси каждое английское слово, чтобы бить босса! Победишь одного - приходит посильнее. Держись как можно дольше и следи за таймером.',
       },
       wordLadder: {
-        title: 'ЛЕСТНИЦА СЛОВ',
-        description: 'Произноси слова, чтобы подниматься по лестнице всё выше. Достигни вершины и выиграй запуск!',
+        title: 'КОСМИЧЕСКИЙ СТАРТ',
+        description: 'Произноси слова правильно, чтобы запустить ракету в космос! Доберись до орбиты для победы!',
+        winTitle: 'Орбита достигнута! 🚀',
+        winDescription: 'Ты успешно вывел ракету на все {total} ступеней в открытый космос!',
+        sayToLaunch: 'Произнеси слово для запуска',
+        hearIt: 'Прослушать',
+        again: 'Заново',
       },
     },
     shared: {
@@ -157,7 +194,7 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       customWords: 'Список своих слов',
       start: 'Старт',
       startFight: 'Начать бой',
-      startClimb: 'Начать подъём',
+      startClimb: 'Начать запуск',
       startPopping: 'НАЧАТЬ ЛОПАТЬ!',
       backToHub: 'Хаб',
       learnAndPractice: 'Учись и практикуйся',
@@ -170,6 +207,33 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       listenAndLearnPractice: 'СЛУШАЙ И УЧИСЬ',
       wordsLabel: 'слов',
       customListEmpty: 'Слов ещё нет. Нажми старт, чтобы сыграть снова.',
+      chooseMissionTheme: 'ВЫБЕРИ ТЕМУ МИССИИ:',
+      chooseArenaTheme: 'ВЫБЕРИ ТЕМУ АРЕНЫ:',
+    },
+    themes: {
+      racer: {
+        forest: '🌲 Лесная Трасса',
+        night: '🌌 Космическая Ночь',
+        desert: '🏜️ Золотая Пустыня',
+        city: '🏎️ Неоновый Город',
+      },
+      ladder: {
+        earth: '🌍 Орбита Земли',
+        mars: '🔴 Полет на Марс',
+        nebula: '🌌 Чужая Туманность',
+      },
+      bubble: {
+        sky: '☁️ Плывущие облака',
+        snow: '❄️ Снежная пустыня',
+        starry: '🌙 Лунные искры',
+        nebula: '🌌 Космические галактики',
+      },
+      boss: {
+        castle: '🏰 Руины Замка',
+        lava: '🌋 Лавовое Подземелье',
+        forest: '🌲 Волшебный Лес',
+        abyss: '🌌 Бездна Пустоты',
+      },
     },
     bubble: {
       gameSelected: 'Выбрана игра',
@@ -205,14 +269,14 @@ const UiLanguageContext = createContext<UiLanguageContextValue | undefined>(unde
 export function UiLanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<UiLanguage>(() => {
     if (typeof window === 'undefined') {
-      return 'en';
+      return 'ru';
     }
 
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
-      return saved === 'ru' ? 'ru' : 'en';
+      return saved === 'en' ? 'en' : 'ru';
     } catch {
-      return 'en';
+      return 'ru';
     }
   });
 
@@ -257,11 +321,11 @@ export function useUiLanguage() {
   }
 
   return {
-    language: 'en' as UiLanguage,
+    language: 'ru' as UiLanguage,
     setLanguage: () => undefined,
     t: (path: string) => {
       const keys = path.split('.');
-      let current: unknown = UI_TEXT.en;
+      let current: unknown = UI_TEXT.ru;
 
       for (const key of keys) {
         if (typeof current !== 'object' || current === null || !(key in current)) {

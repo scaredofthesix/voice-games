@@ -22,7 +22,8 @@ Quality-and-automation sprint. Delivered increment plus the quality gates that n
 all later work.
 
 - **Two new games** answering the customer "more games" request (issue #54):
-  Boss Fight and Word Ladder (rocket climb).
+  Boss Fight (a 15-boss endless gauntlet) and Voice Rocket Climb (formerly
+  Word Ladder).
 - **Automated testing** added with Vitest: unit, integration, and a performance test;
   critical modules kept above the coverage floor (see `docs/testing.md`).
 - **Quality requirements** defined against ISO/IEC 25010 with automated quality requirement
@@ -30,6 +31,24 @@ all later work.
 - **CI quality gates** added: type check, tests with coverage, build, and a Lighthouse
   accessibility audit. These gates and tests are maintained assets and continue to apply to
   every later sprint per the updated Definition of Done.
+
+## Next - from the Sprint 2 review and UAT (next release, after v0.2.1)
+
+Raised by the customer at the recorded Sprint Review / UAT on 2026-06-27. The
+demonstrated build v0.2.1 is not changed; these are scheduled for the next
+release.
+
+- Fix the speech engine self-trigger (audio-loop false positive): mute the
+  microphone while text-to-speech plays and / or drop the auto hint, and
+  recalibrate the matching tolerance lowered after v0.1.0 - issue #81.
+- Extract a shared voice-processing module reused by all games for uniform
+  accuracy - issue #82.
+- Boss Fight: finite difficulty modes (10 / 20 / 30 words) plus an unlockable
+  Infinite Mode, with the design documented - issue #83.
+- Default the interface to Russian on launch, keeping the RU/EN toggle - issue #84.
+- Smooth Voice Racer movement physics under live streaming - issue #85.
+- Later polish: an interactive end-of-climb event (meet an alien) in Voice Rocket
+  Climb - issue #86.
 
 ## Next - MVP v2 (remaining post-review scope)
 
