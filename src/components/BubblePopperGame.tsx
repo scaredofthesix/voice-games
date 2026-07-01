@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   Play,
+  Pause,
   RotateCcw,
   Volume2,
   X,
@@ -18,7 +19,8 @@ import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { AudioVisualizer } from './AudioVisualizer';
 import { CustomWordsManager } from './CustomWordsManager';
-import { speakWord, speakSound, matchesWord } from '../utils';
+import { useUiLanguage } from '../uiLanguage';
+import { speakWord, speakSound, matchesWord, isSpeechSynthesisActive } from '../utils';
 
 type BubbleTheme = 'sky' | 'snow' | 'starry' | 'nebula';
 
@@ -26,6 +28,7 @@ interface Bubble {
   id: string;
   word: string;
   translation: string;
+  translationRu?: string;
   x: number; // percentage X (0 to 100)
   y: number; // Y position in pixels
   radius: number;
@@ -75,6 +78,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 }) => {
   const [gameState, setGameState] = useState<'START_SCREEN' | 'PLAYING' | 'GAME_OVER'>('START_SCREEN');
   const [bubbleTheme, setBubbleTheme] = useState<BubbleTheme>('sky');
+  const { t, language, setLanguage } = useUiLanguage();
   const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
 
   // Collapsible drawers
@@ -86,6 +90,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
   const [lives, setLives] = useState(3);
+  const [paused, setPaused] = useState(false);
 
   // Synchronize score and level back to App.tsx
   useEffect(() => {
@@ -130,13 +135,18 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
     canvasHeight: 520,
     theme: 'sky' as BubbleTheme,
     vocabIndex: 0,
-    vocabList: [] as { word: string; translation: string }[]
+    paused: false,
+    vocabList: [] as { word: string; translation: string; translationRu?: string }[]
   });
 
   // Sync state transitions on variables triggered from React buttons and options
   useEffect(() => {
     stateRef.current.gameState = gameState;
   }, [gameState]);
+
+  useEffect(() => {
+    stateRef.current.paused = paused;
+  }, [paused]);
 
   useEffect(() => {
     stateRef.current.theme = bubbleTheme;
@@ -201,8 +211,9 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       };
 
       rec.onend = () => {
-        // Automatically regain continuous speech streaming if the gamethread is still live
-        if (stateRef.current.gameState === 'PLAYING') {
+        // Automatically regain continuous speech streaming if the gamethread is
+        // still live and not paused.
+        if (stateRef.current.gameState === 'PLAYING' && !stateRef.current.paused) {
           try {
             rec.start();
           } catch {
@@ -217,6 +228,10 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       };
 
       rec.onresult = (event: any) => {
+        if (isSpeechSynthesisActive()) {
+          return;
+        }
+
         let textResult = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (typeof event.results[i][0].transcript === 'string') {
@@ -240,7 +255,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
   // Check if spoken word matches any floating bubble
   const evaluateVoiceInput = (speechText: string) => {
     const s = stateRef.current;
-    if (s.gameState !== 'PLAYING') return;
+    if (s.gameState !== 'PLAYING' || s.paused) return;
 
     // Search active unburst bubbles for matches
     let matchedIndex = -1;
@@ -349,18 +364,37 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
     s.bubbles = [];
     s.particles = [];
     s.lastSpawnTime = Date.now();
+    s.paused = false;
 
     // Set aligned React states
     setGameState('PLAYING');
     setScore(0);
     setLevel(1);
     setLives(3);
+    setPaused(false);
     setLastHeardTranscript('');
     setWordStudyStats({});
     setStruggleCounter({});
 
     startVoiceEngine();
     speakSound.playCoin();
+  };
+
+  // Pause/resume: freeze the bubbles and stop listening while paused.
+  const togglePause = () => {
+    const s = stateRef.current;
+    const next = !s.paused;
+    s.paused = next;
+    setPaused(next);
+    if (next) {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    } else {
+      // Reset the spawn clock so the pause does not dump a burst of bubbles.
+      s.lastSpawnTime = Date.now();
+      startVoiceEngine();
+    }
   };
 
   // Clean and exit voice recognition triggers during gameplay failures
@@ -861,6 +895,13 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       const s = stateRef.current;
       if (s.gameState !== 'PLAYING') return;
 
+      // Frozen while paused: keep the last frame and the loop alive, but stop
+      // spawning, floating and the danger-line checks until the player resumes.
+      if (s.paused) {
+        frameId = requestAnimationFrame(frameLoop);
+        return;
+      }
+
       const now = Date.now();
       const w = s.canvasWidth;
       const h = s.canvasHeight;
@@ -912,6 +953,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
             id: Math.random().toString(),
             word: wordObj.word,
             translation: wordObj.translation,
+            translationRu: (wordObj as any).translationRu,
             x: rx,
             y: h + 45, // start just below physical canvas
             radius: bubbleRadius,
@@ -997,17 +1039,34 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
         ctx.fillStyle = '#0F172A'; // deep slate text color
         ctx.strokeStyle = 'rgba(255, 255, 255, 1)'; // stark layout contrast
         ctx.lineWidth = 4;
-        ctx.font = '900 15px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        ctx.strokeText(b.word.toUpperCase(), cx, b.y - 7);
-        ctx.fillText(b.word.toUpperCase(), cx, b.y - 7);
+        const trans = b.translationRu || b.translation;
+        if (trans) {
+          ctx.font = '900 13px sans-serif';
+          ctx.strokeText(b.word.toUpperCase(), cx, b.y - 10);
+          ctx.fillText(b.word.toUpperCase(), cx, b.y - 10);
 
-        // Sound icon replace translation per request: intuition friendly sound symbols
-        ctx.fillStyle = `hsla(${b.hue}, 100%, 30%, 1)`;
-        ctx.font = '14px Arial, sans-serif';
-        ctx.fillText('🔊', cx, b.y + 11);
+          ctx.fillStyle = '#475569'; // slate-600/700
+          ctx.font = 'bold 9px sans-serif';
+          ctx.strokeText(trans, cx, b.y + 2);
+          ctx.fillText(trans, cx, b.y + 2);
+
+          // Sound icon
+          ctx.fillStyle = `hsla(${b.hue}, 100%, 30%, 1)`;
+          ctx.font = '11px Arial, sans-serif';
+          ctx.fillText('🔊', cx, b.y + 14);
+        } else {
+          ctx.font = '900 15px sans-serif';
+          ctx.strokeText(b.word.toUpperCase(), cx, b.y - 6);
+          ctx.fillText(b.word.toUpperCase(), cx, b.y - 6);
+
+          // Sound icon
+          ctx.fillStyle = `hsla(${b.hue}, 100%, 30%, 1)`;
+          ctx.font = '14px Arial, sans-serif';
+          ctx.fillText('🔊', cx, b.y + 10);
+        }
 
         // 5. Warning Red-Zone limits evaluation when crossing alertY boundary
         if (b.y - b.radius * 0.5 <= alertY) {
@@ -1081,7 +1140,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
           onClick={onBackToHub}
           className="bg-white hover:bg-slate-50 border-2 border-slate-900 px-3 py-1.5 rounded-xl text-xs font-black text-slate-900 uppercase tracking-wider cursor-pointer transition-all hover:scale-102"
         >
-          ← Hub Portal
+          ← {t('bubble.hubPortal')}
         </button>
       </div>
 
@@ -1094,8 +1153,18 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
             <div className="w-18 h-18 rounded-3xl bg-sky-400 border-4 border-slate-900 flex items-center justify-center shadow-lg mb-3">
               <span className="text-4xl animate-bounce">🫧</span>
             </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setLanguage(language === 'en' ? 'ru' : 'en')}
+                aria-label={language === 'en' ? t('header.switchLabel') : t('header.switchLabel')}
+                className="bg-white border-4 border-slate-900 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider"
+              >
+                {language === 'en' ? 'RU' : 'EN'}
+              </button>
+            </div>
             <h1 className="text-3xl font-black tracking-wider text-slate-900 uppercase drop-shadow-[0_3px_0_rgba(255,255,255,1)]">
-              Voice Bubble Popper
+              {t('bubble.title')}
             </h1>
           </div>
 
@@ -1107,7 +1176,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
               className="w-full py-5 bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 border-4 border-slate-900 text-white font-black text-xl rounded-2xl flex items-center justify-center gap-3 cursor-pointer transition-all hover:scale-102 active:translate-y-1.5 active:shadow-none bubble-shadow-green uppercase tracking-wide"
               id="btn-start-bubble-popper"
             >
-              <Play className="w-6 h-6 fill-current stroke-[3.5] animate-bounce" /> START POPPING!
+              <Play className="w-6 h-6 fill-current stroke-[3.5] animate-bounce" /> {t('shared.startPopping')}
             </button>
 
             <div className="border-b-4 border-dashed border-slate-300 my-1" />
@@ -1115,7 +1184,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
             {/* Atmosphere Sky Theme Choice */}
             <div className="space-y-2 text-left">
               <label className="block text-xs font-black text-pink-500 uppercase tracking-widest ml-1">
-                CHOOSE SKY ATMOSPHERE Theme:
+                {t('bubble.chooseSkyAtmosphere')}
               </label>
               <div className="grid grid-cols-2 gap-2.5">
                 {(['sky', 'snow', 'starry', 'nebula'] as BubbleTheme[]).map((theme) => (
@@ -1128,12 +1197,53 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                         : 'bg-white border-slate-300 text-slate-700 hover:border-slate-900'
                     }`}
                   >
-                    {theme === 'sky' && '☁️ Drifting Clouds'}
-                    {theme === 'snow' && '❄️ Snowy Wilderness'}
-                    {theme === 'starry' && '🌙 Moonlit Sparkles'}
-                    {theme === 'nebula' && '🌌 Cosmic Galaxies'}
+                    {t(`themes.bubble.${theme}`)}
                   </button>
                 ))}
+              </div>
+
+              {/* Dynamic visual preview of selected bubble theme */}
+              <div className={`w-full h-24 rounded-2xl border-4 border-slate-900 relative overflow-hidden transition-all duration-300 flex items-center justify-center ${
+                bubbleTheme === 'sky' ? 'bg-gradient-to-b from-sky-200 to-sky-450' :
+                bubbleTheme === 'snow' ? 'bg-gradient-to-b from-blue-100 to-indigo-200' :
+                bubbleTheme === 'starry' ? 'bg-gradient-to-b from-slate-900 to-indigo-950' :
+                'bg-gradient-to-b from-purple-950 via-pink-950 to-indigo-900'
+              }`}>
+                {bubbleTheme === 'sky' && (
+                  <>
+                    <span className="absolute top-3 left-6 text-2xl opacity-80 animate-bounce">☁️</span>
+                    <span className="absolute bottom-4 right-10 text-xl opacity-80">☁️</span>
+                    <span className="absolute bottom-5 left-16 text-3xl animate-pulse">🫧</span>
+                    <span className="absolute top-2 right-16 text-2xl">🎈</span>
+                  </>
+                )}
+                {bubbleTheme === 'snow' && (
+                  <>
+                    <span className="absolute top-2 left-10 text-xl animate-spin" style={{ animationDuration: '8s' }}>❄️</span>
+                    <span className="absolute bottom-3 right-6 text-3xl animate-pulse">⛄</span>
+                    <span className="absolute bottom-4 left-12 text-2xl animate-bounce">🫧</span>
+                    <span className="absolute top-4 right-16 text-xl">❄️</span>
+                  </>
+                )}
+                {bubbleTheme === 'starry' && (
+                  <>
+                    <span className="absolute top-2 left-6 text-2xl animate-pulse">🌙</span>
+                    <span className="absolute top-4 right-10 text-xs text-yellow-200 animate-ping">✨</span>
+                    <span className="absolute bottom-4 left-20 text-3xl animate-bounce">🫧</span>
+                    <span className="absolute bottom-5 right-20 text-xs text-yellow-200 animate-pulse">✨</span>
+                  </>
+                )}
+                {bubbleTheme === 'nebula' && (
+                  <>
+                    <span className="absolute top-3 left-8 text-2xl animate-pulse">🪐</span>
+                    <span className="absolute bottom-4 right-8 text-2xl">☄️</span>
+                    <span className="absolute bottom-3 left-24 text-3xl animate-bounce">🫧</span>
+                    <span className="absolute top-2 right-20 text-xl opacity-70">🌌</span>
+                  </>
+                )}
+                <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
+                  Preview
+                </div>
               </div>
             </div>
 
@@ -1148,7 +1258,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                 className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer font-black text-xs text-slate-800"
               >
                 <span className="flex items-center gap-2">
-                  WORD LIST TOPIC: <span className="text-purple-600 font-black uppercase text-xs">[{activeCategory.name}]</span>
+                  {t('bubble.wordListTopic')} <span className="text-purple-600 font-black uppercase text-xs">[{activeCategory.name}]</span>
                 </span>
                 <span className="text-xs text-slate-800 bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">{isCategorySelectorExpanded ? '▲' : '▼'}</span>
               </button>
@@ -1202,7 +1312,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                 className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer font-black text-xs text-slate-800"
               >
                 <span className="flex items-center gap-2">
-                  LISTEN & PRACTICE ({vocabularyList.length} Words)
+                  {t('bubble.listenAndPractice')} ({vocabularyList.length} {t('shared.wordsLabel')})
                 </span>
                 <span className="text-xs text-slate-800 bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">{isWarmupExpanded ? '▲' : '▼'}</span>
               </button>
@@ -1211,22 +1321,45 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                 <div className="bg-white border-4 border-slate-900 rounded-2xl p-3">
                   {activeCategory.id === 'custom' && customWords.length === 0 ? (
                     <div className="text-center py-4 bg-amber-50 rounded-xl border-2 border-dashed border-amber-300">
-                      <p className="text-xs text-amber-800 font-black">Your custom list is currently empty!</p>
+                      <p className="text-xs text-amber-800 font-black">{t('shared.emptyCustomListBubble')}</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
                       {vocabularyList.map((item, index) => (
-                        <button
+                        <div
                           key={index}
-                          type="button"
-                          onClick={() => speakWord(item.word)}
-                          className="bg-yellow-50 hover:bg-yellow-105 border-2 border-slate-900 text-left p-2 rounded-xl transition-all cursor-pointer flex flex-col justify-between group active:scale-95"
+                          className="bg-yellow-50 border-2 border-slate-900 text-left p-2 rounded-xl flex flex-col justify-between"
                         >
-                          <span className="text-slate-900 font-extrabold text-xs flex items-center justify-between w-full">
-                            <span className="truncate">{item.word}</span>
-                            <Volume2 className="w-4 h-4 text-slate-600 group-hover:text-purple-600 shrink-0" />
-                          </span>
-                        </button>
+                          <div className="flex items-center justify-between gap-1 w-full">
+                            <button
+                              type="button"
+                              onClick={() => speakWord(item.word)}
+                              className="text-slate-900 font-extrabold text-xs flex items-center gap-1 cursor-pointer hover:text-purple-600 truncate flex-1"
+                              aria-label={`Hear the word ${item.word}`}
+                            >
+                              <span className="truncate">{item.word}</span>
+                              <Volume2 className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                            </button>
+                            {item.translationRu && (
+                              <button
+                                type="button"
+                                onClick={() => item.translationRu && speakWord(item.translationRu, 'ru')}
+                                className="text-blue-600 hover:text-blue-800 text-[10px] font-black uppercase flex items-center gap-0.5 cursor-pointer shrink-0"
+                                aria-label="Listen in Russian"
+                              >
+                                <Volume2 className="w-3 h-3 shrink-0" /> RU
+                              </button>
+                            )}
+                          </div>
+                          {(() => {
+                            const translation = item.translationRu || item.translation;
+                            return translation ? (
+                              <span className="text-[10px] text-purple-700 font-bold truncate mt-0.5">
+                                {translation}
+                              </span>
+                            ) : null;
+                          })()}
+                        </div>
                       ))}
                     </div>
                   )}
@@ -1245,7 +1378,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                 className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer font-black text-xs text-slate-800"
               >
                 <span className="flex items-center gap-2">
-                  CUSTOM WORDS BUILDER ({customWords.length})
+                  {t('bubble.customWordsBuilder')} ({customWords.length})
                 </span>
                 <span className="text-xs text-slate-800 bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">{isCustomWordsExpanded ? '▲' : '▼'}</span>
               </button>
@@ -1286,12 +1419,13 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 
             {/* Text info layout */}
             <div className="text-xs font-black text-purple-900 uppercase">
-              WORDS: <span className="text-slate-900 uppercase">{activeCategory.name}</span>
+              {t('bubble.words')}
+              <span className="text-slate-900 uppercase">{activeCategory.name}</span>
             </div>
 
             {/* Score */}
             <div className="bg-pink-100 border-2 border-slate-900 px-3 py-1 rounded-xl text-pink-600 font-mono font-black text-xs shadow-inner">
-              PTS: {score}
+              {t('bubble.points')} {score}
             </div>
 
             {/* Quit button */}
@@ -1304,9 +1438,27 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
               }}
               className="bg-rose-500 hover:bg-rose-600 border-2 border-slate-900 px-2 py-1 rounded-xl text-white font-black text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-sm"
             >
-              <X className="w-3.5 h-3.5 stroke-[3]" /> QUIT
+              <X className="w-3.5 h-3.5 stroke-[3]" /> {t('bubble.quit')}
             </button>
           </div>
+
+          {/* Prominent pause / resume control */}
+          <button
+            onClick={togglePause}
+            aria-pressed={paused}
+            aria-label={paused ? 'Resume the game' : 'Pause the game'}
+            className={`w-full py-3 border-4 border-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 ${
+              paused
+                ? 'bg-orange-400 hover:bg-orange-500 text-slate-900'
+                : 'bg-orange-500 hover:bg-orange-600 text-white'
+            }`}
+          >
+            {paused ? (
+              <><Play className="w-5 h-5 fill-current stroke-[3]" /> Resume</>
+            ) : (
+              <><Pause className="w-5 h-5 fill-current stroke-[3]" /> Pause</>
+            )}
+          </button>
 
           {/* Gameplay Canvas wrapper */}
           <div className="relative border-8 border-slate-900 rounded-3xl overflow-hidden shadow-2xl bg-indigo-950">
@@ -1320,9 +1472,19 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
             {/* Micro-Help Tips banner */}
             <div className="absolute top-2 w-full px-2 flex justify-center pointer-events-none">
               <span className="bg-slate-900/80 backdrop-blur-xs text-white text-[9px] px-3 py-1 rounded-full uppercase tracking-wider font-extrabold flex items-center gap-1.5 shadow-sm">
-                🎙️ Speak the correct word on bubble or click it for vocal clues!
+                🎙️ {t('bubble.sayAnyWord')}
               </span>
             </div>
+
+            {/* Pause overlay over the bubble canvas */}
+            {paused && (
+              <div className="absolute inset-0 z-50 bg-slate-900/75 flex flex-col items-center justify-center gap-1">
+                <span className="text-5xl" aria-hidden="true">⏸️</span>
+                <span className="text-xl font-black uppercase tracking-widest text-orange-400">
+                  Paused
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Audio speech monitoring overlay */}
@@ -1341,14 +1503,14 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    Words Heard:
+                    {t('bubble.wordsHeard')}
                   </p>
                   
                   <div className="bg-sky-100 border-2 border-slate-900 text-slate-900 font-black text-sm px-3 py-1 rounded-xl relative mt-1 inline-block">
                     {lastHeardTranscript ? (
                       <span className="text-sky-900 italic font-black">"{lastHeardTranscript}"</span>
                     ) : (
-                      <span className="text-slate-500 font-bold">Say any word written on the bubbles!</span>
+                      <span className="text-slate-500 font-bold">{t('bubble.sayAnyWord')}</span>
                     )}
                   </div>
                 </div>
@@ -1365,24 +1527,24 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
           <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
             
             <span className="inline-flex items-center gap-1 bg-yellow-300 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest">
-              POPPER CHALLENGE FINISHED!
+              {t('bubble.gameOverTitle')}
             </span>
 
             <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
-              SUPER BUBBLES POPPING!
+              {t('bubble.gameOverTitle')}
             </h2>
             <p className="text-xs text-slate-500 leading-normal font-bold">
-              Speech bubble pop-out concluded! Review your English scoring below:
+              {t('bubble.gameOverSubtitle')}
             </p>
 
             {/* Score logs */}
             <div className="grid grid-cols-2 gap-3.5 my-6">
               <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest">POPPING SCORE</span>
+                <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest">{t('bubble.poppingScore')}</span>
                 <span className="text-lg font-black text-sky-900 mt-1 font-mono">{score} points</span>
               </div>
               <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">PERSONAL HIGH</span>
+                <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">{t('bubble.personalHigh')}</span>
                 <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} points</span>
               </div>
             </div>
@@ -1392,7 +1554,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
               <div className="flex items-center gap-2 mb-2.5">
                 <BookOpen className="w-5 h-5 text-purple-700 stroke-[2.5]" />
                 <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">
-                  Your Spelling Scorecard:
+                  {t('bubble.scoreCard')}
                 </h4>
               </div>
 
@@ -1400,7 +1562,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                 {Object.keys(wordStudyStats).length === 0 ? (
                   <div className="text-center py-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl">
                     <p className="text-xs text-slate-500 font-extrabold leading-normal">
-                      No words registered yet. Tap start to play again.
+                      {t('shared.customListEmpty')}
                     </p>
                   </div>
                 ) : (
@@ -1419,19 +1581,34 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span className="text-[8px] md:text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-1 rounded-full font-black border border-emerald-300">
-                            Popped: {spoken}m
+                            {t('bubble.poppedLabel')} {spoken}m
                           </span>
                           {struggled > 0 && (
                             <span className="text-[8px] md:text-[9px] text-amber-800 bg-amber-100 px-1.5 py-1 rounded-full font-black border border-amber-350">
-                              Clues: {struggled}m
+                              {t('bubble.clueLabel')} {struggled}m
                             </span>
                           )}
                           <button
                             onClick={() => speakWord(word)}
                             className="p-1 bg-yellow-105 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg cursor-pointer"
+                            aria-label={`Hear the word ${word}`}
                           >
                             <Volume2 className="w-3.5 h-3.5 text-slate-900" />
                           </button>
+                          {(() => {
+                            const matchedObj = vocabularyList.find(
+                              (item) => item.word.toLowerCase() === word.toLowerCase()
+                            );
+                            return matchedObj?.translationRu ? (
+                              <button
+                                onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
+                                className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
+                                aria-label="Listen in Russian"
+                              >
+                                RU
+                              </button>
+                            ) : null;
+                          })()}
                         </div>
                       </div>
                     );
@@ -1447,13 +1624,13 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                   onClick={startGame}
                   className="flex-1 bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs px-5 py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 shadow-md uppercase"
                 >
-                  <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> Popping Again!
+                  <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {t('bubble.playAgain')}
                 </button>
                 <button
                   onClick={() => setGameState('START_SCREEN')}
                   className="flex-1 bg-white hover:bg-slate-50 border-4 border-slate-900 text-slate-800 font-black text-xs px-4 py-4 rounded-xl flex items-center justify-center cursor-pointer active:translate-y-1 transition-all shadow-sm"
                 >
-                  Bubble Options
+                  {t('bubble.bubbleOptions')}
                 </button>
               </div>
               
@@ -1461,7 +1638,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                 onClick={onBackToHub}
                 className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-900 text-white font-black text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase mt-1"
               >
-                🏰 EXIT TO GAMES PORTAL
+                🏰 {t('bubble.exitToPortal')}
               </button>
             </div>
 

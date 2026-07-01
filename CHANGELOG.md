@@ -6,6 +6,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Planned (from the Sprint 2 customer review / UAT, 2026-06-27)
+
+Feedback from the recorded review is scheduled for the next release. The
+demonstrated build v0.2.1 is unchanged.
+
+- Fix the speech engine self-triggering from its own spoken hint (audio-loop
+  false positive): mute the microphone while text-to-speech plays and / or drop
+  the auto hint, and recalibrate the matching tolerance (#81).
+- Extract a shared voice-processing module reused by all games (#82).
+- Boss Fight finite difficulty modes (10 / 20 / 30 words) plus an unlockable
+  Infinite Mode, with the design documented (#83).
+- Default the interface to Russian on launch, keeping the RU/EN toggle (#84).
+- Smooth Voice Racer movement physics under live streaming (#85).
+- Later polish: an interactive end-of-climb event in Voice Rocket Climb (#86).
+
+## [0.2.1] - 2026-06-27
+
+### Added
+
+- Per-game visual theme pickers: Voice Rocket Climb mission themes (Earth Orbit,
+  Flight to Mars, Alien Nebula), Boss Fight arena themes (Castle Ruins, Lava
+  Dungeon, Magic Forest, Void Abyss), plus theme choices for Voice Racer (with a
+  live highway preview) and Bubble Popper.
+- Two phrase vocabulary sets, Short Phrases and Long Phrases, so children can
+  practise whole greetings and sentences instead of only single words.
+
+### Changed
+
+- Renamed the Word Ladder game to Voice Rocket Climb (RU: Космический старт) and
+  shortened the app title from "Voice Word Games" to "Voice Games".
+- Boss Fight gauntlet expanded from 3 to 15 bosses (Slime through Phoenix) with a
+  steadily rising health curve for a longer endless run.
+- The recognition matcher now grades multi-word phrases by word overlap, and the
+  on-screen target word scales its font down so long phrases stay readable.
+
+## [0.2.0] - 2026-06-26
+
 ### Added
 
 - Two new voice games requested by the customer: Boss Fight (pronounce words to
@@ -19,15 +56,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Testing strategy documentation: `docs/testing.md`.
 - Continuous integration: type check, tests with coverage, build, and a
   Lighthouse accessibility audit (`.github/workflows/ci.yml`).
+- Pause and resume in every game (US-16): a prominent Pause/Resume control and a
+  "Paused" overlay that freezes gameplay and turns the microphone off until you
+  resume.
+- Russian support: translations for every built-in word set, an in-game RU/EN
+  interface toggle, the word translation shown during play, and a "Listen in
+  Russian" button.
 
 ### Changed
 
-- Boss Fight and Word Ladder reworked into full canvas games. Boss Fight is now a
-  three-boss gauntlet (Goblin, Ogre, Dragon) with an animated arena, boss phases
-  by remaining health, and a per-word timer; Word Ladder flies an animated rocket
-  through ground, cloud, sky and space zones. Both now open with a setup screen
+- Boss Fight and Word Ladder reworked into full canvas games. Boss Fight is an
+  endless boss gauntlet (Goblin, Ogre, Dragon and beyond) that keeps sending
+  tougher bosses until you run out of lives, with an animated arena and a
+  per-word timer; Word Ladder flies an animated rocket (now pointing straight up)
+  through ground, cloud, sky and space zones. Both open with a setup screen
   (word-set choice, a listen-and-learn warmup, and add-your-own-words) like the
   first two games.
+- The interface now scales up on desktop screens, and the Boss Fight hero reads
+  more clearly against the arena background.
 - Definition of Done now requires passing CI, automated tests, quality
   requirement tests, and minimum coverage on critical modules.
 
@@ -56,5 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - This is the MVP v1 release for the Sprint 1 customer review.
 - Voice input requires Google Chrome (Web Speech API).
 
-[Unreleased]: https://github.com/scaredofthesix/voice-games/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/scaredofthesix/voice-games/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/scaredofthesix/voice-games/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/scaredofthesix/voice-games/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/scaredofthesix/voice-games/releases/tag/v0.1.0

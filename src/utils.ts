@@ -3,7 +3,9 @@
  */
 export function speakWord(word: string, lang: 'en' | 'ru' = 'en') {
   if ('speechSynthesis' in window) {
-    // Cancel any ongoing speech so it speaks immediately on click
+    // Reset global flags before cancelling to be safe
+    (window as any).speechSynthesisActive = false;
+    (window as any).lastSpeechSynthesisEndTime = Date.now();
     window.speechSynthesis.cancel();
 
     const bcp47 = lang === 'ru' ? 'ru-RU' : 'en-US';
@@ -12,6 +14,23 @@ export function speakWord(word: string, lang: 'en' | 'ru' = 'en') {
     // Friendly, playful pitch & speed suited for kids
     utterance.rate = 0.85;
     utterance.pitch = 1.15;
+
+    // Track speaking status globally to avoid microphone feedback
+    (window as any).speechSynthesisActive = true;
+    (window as any).lastSpeechSynthesisEndTime = Date.now();
+    (window as any).activeUtterance = utterance;
+
+    const handleSpeechEnd = () => {
+      (window as any).speechSynthesisActive = false;
+      (window as any).lastSpeechSynthesisEndTime = Date.now();
+      (window as any).activeUtterance = null;
+    };
+
+    utterance.onstart = () => {
+      (window as any).speechSynthesisActive = true;
+    };
+    utterance.onend = handleSpeechEnd;
+    utterance.onerror = handleSpeechEnd;
 
     // Pick a voice matching the requested language if available
     const voices = window.speechSynthesis.getVoices();
@@ -22,6 +41,21 @@ export function speakWord(word: string, lang: 'en' | 'ru' = 'en') {
 
     window.speechSynthesis.speak(utterance);
   }
+}
+
+/**
+ * Check if speech synthesis is actively speaking or just completed speaking,
+ * to prevent the microphone from capturing synthesized audio output.
+ */
+export function isSpeechSynthesisActive(): boolean {
+  if (typeof window === 'undefined') return false;
+  const isSpeaking = window.speechSynthesis && window.speechSynthesis.speaking;
+  const globalActive = (window as any).speechSynthesisActive;
+  const lastEndTime = (window as any).lastSpeechSynthesisEndTime || 0;
+  const now = Date.now();
+  
+  // Cooldown of 500ms to allow recognition audio buffers to clear
+  return Boolean(isSpeaking || globalActive || (now - lastEndTime < 500));
 }
 
 /**
@@ -75,61 +109,100 @@ export function cleanWord(word: string): string {
  * Robust Speech Transcribing Matcher
  * Evaluates whether a spoken text represents the target word
  */
+/**
+ * Robust Speech Transcribing Matcher
+ * Evaluates whether a spoken text represents the target word
+ */
 export function matchesWord(spoken: string, target: string, easeMode: boolean = false): boolean {
   const sSpoken = spoken.toLowerCase().trim();
   const sTarget = target.toLowerCase().trim();
   
   if (!sSpoken || !sTarget) return false;
 
-  // 0. Multi-word transcript: test each spoken token individually (robust recognition #35)
-  // Web Speech often returns padding like "i think cat" or "the apple please";
-  // matching per token catches the intended word even with surrounding chatter.
-  if (sSpoken.includes(' ')) {
-    const tokens = sSpoken.split(/\s+/).filter(Boolean);
-    for (const token of tokens) {
-      if (token !== sSpoken && matchesWord(token, sTarget, easeMode)) {
+  // 1. Direct raw match
+  if (sSpoken === sTarget) return true;
+
+  // Clean strings (retain letters, digits, and Cyrillic)
+  const cleanStr = (str: string) => str.toLowerCase().replace(/[^a-z0-9а-яё\s]/g, '');
+  const cSpoken = cleanStr(sSpoken);
+  const cTarget = cleanStr(sTarget);
+
+  if (cSpoken === cTarget) return true;
+
+  // Tokenize
+  const getTokens = (str: string) => str.split(/\s+/).filter(Boolean);
+  const spokenTokens = getTokens(cSpoken);
+  const targetTokens = getTokens(cTarget);
+
+  if (targetTokens.length === 0) return false;
+
+  // If target has multiple words (phrase)
+  if (targetTokens.length > 1) {
+    let matchedWords = 0;
+    for (const tToken of targetTokens) {
+      const found = spokenTokens.some(sToken => {
+        if (sToken === tToken) return true;
+        const dist = levenshteinDistance(sToken, tToken);
+        const maxLen = Math.max(sToken.length, tToken.length);
+        const similarity = maxLen > 0 ? (1 - dist / maxLen) : 0;
+        return similarity >= 0.55; // 55% similarity per word in phrase is very forgiving
+      });
+      if (found) matchedWords++;
+    }
+    const ratio = matchedWords / targetTokens.length;
+    return ratio >= 0.6; // 60% of target words found is a match!
+  }
+
+  // Single-word target
+  const singleTarget = targetTokens[0];
+  if (!singleTarget) return false;
+
+  // Vowel remover for Russian and English
+  const stripVowels = (w: string) => w.replace(/[aeiouyаеёиоуыэюя]/g, '');
+  const targetNoVowels = stripVowels(singleTarget);
+
+  for (const token of spokenTokens) {
+    if (token === singleTarget) return true;
+
+    // Substring contains for medium/long words (e.g. "butterfly" vs "butter" or "butterflies")
+    if (singleTarget.length >= 4 && token.length >= 4) {
+      if (token.includes(singleTarget) || singleTarget.includes(token)) {
+        return true;
+      }
+    }
+
+    // Levenshtein-based character similarity percentage
+    const dist = levenshteinDistance(token, singleTarget);
+    const maxLen = Math.max(token.length, singleTarget.length);
+    const charSimilarity = maxLen > 0 ? (1 - dist / maxLen) : 0;
+
+    // 50% character similarity for words with length > 3
+    // 66% character similarity for short words (length <= 3)
+    const requiredSimilarity = singleTarget.length <= 3 ? 0.66 : 0.50;
+    if (charSimilarity >= requiredSimilarity) {
+      return true;
+    }
+
+    // Consonant skeleton matching (excellent for speech recognition errors and pronunciation slips)
+    const tokenNoVowels = stripVowels(token);
+    if (tokenNoVowels && targetNoVowels) {
+      if (tokenNoVowels === targetNoVowels) return true;
+      const consDist = levenshteinDistance(tokenNoVowels, targetNoVowels);
+      const consMaxLen = Math.max(tokenNoVowels.length, targetNoVowels.length);
+      const consSimilarity = consMaxLen > 0 ? (1 - consDist / consMaxLen) : 0;
+      if (consSimilarity >= 0.60) {
         return true;
       }
     }
   }
 
-  // 1. Direct Match
-  if (sSpoken === sTarget) return true;
-  
-  // 2. Direct Substring (handles surrounding audio junk e.g. "I say apple" or "apple ok")
-  if (sSpoken.includes(sTarget) || sTarget.includes(sSpoken)) {
-    return true;
-  }
-  
-  // Clean alphanumeric comparison
-  const cSpoken = cleanWord(sSpoken);
-  const cTarget = cleanWord(sTarget);
-  if (cSpoken === cTarget || cSpoken.includes(cTarget) || cTarget.includes(cSpoken)) {
-    return true;
-  }
-  
-  // 3. Consonants Only Match (vowel stripping)
-  const consSpoken = consonantsOnly(sSpoken);
-  const consTarget = consonantsOnly(sTarget);
-  if (consSpoken && consTarget) {
-    if (consSpoken === consTarget || consSpoken.includes(consTarget) || consTarget.includes(consSpoken)) {
-      return true;
-    }
-    
-    // Levenshtein on consonant representation
-    const consDist = levenshteinDistance(consSpoken, consTarget);
-    if (consDist <= (easeMode ? 2 : 1)) {
+  // Fallback: target exists inside spoken phrase
+  if (cSpoken.includes(singleTarget) || singleTarget.includes(cSpoken)) {
+    if (singleTarget.length >= 3 && cSpoken.length >= 3) {
       return true;
     }
   }
-  
-  // 4. Levenshtein on full words (with high threshold/leniency)
-  const fullDist = levenshteinDistance(cSpoken, cTarget);
-  const tolerance = easeMode ? Math.max(1, Math.floor(cTarget.length * 0.4)) : Math.max(1, Math.floor(cTarget.length * 0.25));
-  if (fullDist <= tolerance) {
-    return true;
-  }
-  
+
   return false;
 }
 
