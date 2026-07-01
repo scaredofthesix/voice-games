@@ -42,13 +42,17 @@ describe('BossFightGame (integration)', () => {
     ).toBeInTheDocument();
   });
 
-  test('speaking words defeats bosses and the fight continues endlessly', () => {
+  test('speaking words defeats bosses and the fight continues endlessly in Endless mode', () => {
+    window.localStorage.setItem('boss_fight_infinite_unlocked', 'true');
     cleanup = installMockSpeechRecognition();
     render(
       <UiLanguageProvider>
         <BossFightGame onBackToHub={() => {}} customWords={[]} />
       </UiLanguageProvider>,
     );
+
+    // Select Endless mode
+    fireEvent.click(screen.getByRole('button', { name: /endless/i }));
 
     fireEvent.click(
       screen.getByRole('button', { name: /start the boss fight/i }),
@@ -69,5 +73,34 @@ describe('BossFightGame (integration)', () => {
 
     expect(screen.queryByText(/you won/i)).not.toBeInTheDocument();
     expect(screen.getByTestId('target-word')).toBeInTheDocument();
+  });
+
+  test('speaking words defeats 3 bosses and ends in victory in Normal mode', () => {
+    cleanup = installMockSpeechRecognition();
+    render(
+      <UiLanguageProvider>
+        <BossFightGame onBackToHub={() => {}} customWords={[]} />
+      </UiLanguageProvider>,
+    );
+
+    // Default mode is 3 bosses (Normal)
+    fireEvent.click(
+      screen.getByRole('button', { name: /start the boss fight/i }),
+    );
+
+    const rec = MockSpeechRecognition.latest();
+    expect(rec).toBeTruthy();
+
+    // Speak words until all 3 bosses are defeated and win screen is shown
+    for (let i = 0; i < 60; i++) {
+      const targetEl = screen.queryByTestId('target-word');
+      if (!targetEl) break;
+      const word = targetEl.textContent ?? '';
+      act(() => rec.emit(word));
+    }
+
+    expect(screen.getByText(/you won/i)).toBeInTheDocument();
+    expect(screen.queryByTestId('target-word')).not.toBeInTheDocument();
+    expect(window.localStorage.getItem('boss_fight_infinite_unlocked')).toBe('true');
   });
 });
