@@ -1,7 +1,8 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 import { BossFightGame } from './BossFightGame';
+import { UiLanguageProvider } from '../uiLanguage';
 import {
   installMockSpeechRecognition,
   MockSpeechRecognition,
@@ -15,13 +16,23 @@ import {
 describe('BossFightGame (integration)', () => {
   let cleanup: () => void;
 
+  beforeEach(() => {
+    // Pin these mechanic tests to English so the accessible labels are
+    // deterministic; the app itself defaults to Russian on launch (issue #84).
+    window.localStorage.setItem('ui_language', 'en');
+  });
+
   afterEach(() => {
     cleanup?.();
   });
 
   test('start screen shows accessible title and start control', () => {
     cleanup = installMockSpeechRecognition();
-    render(<BossFightGame onBackToHub={() => {}} customWords={[]} />);
+    render(
+      <UiLanguageProvider>
+        <BossFightGame onBackToHub={() => {}} customWords={[]} />
+      </UiLanguageProvider>,
+    );
 
     expect(
       screen.getByRole('button', { name: /start the boss fight/i }),
@@ -33,7 +44,11 @@ describe('BossFightGame (integration)', () => {
 
   test('speaking words defeats bosses and the fight continues endlessly', () => {
     cleanup = installMockSpeechRecognition();
-    render(<BossFightGame onBackToHub={() => {}} customWords={[]} />);
+    render(
+      <UiLanguageProvider>
+        <BossFightGame onBackToHub={() => {}} customWords={[]} />
+      </UiLanguageProvider>,
+    );
 
     fireEvent.click(
       screen.getByRole('button', { name: /start the boss fight/i }),

@@ -20,7 +20,7 @@ import { BUILTIN_CATEGORIES } from '../data';
 import { AudioVisualizer } from './AudioVisualizer';
 import { CustomWordsManager } from './CustomWordsManager';
 import { useUiLanguage } from '../uiLanguage';
-import { speakWord, speakSound, matchesWord } from '../utils';
+import { speakWord, speakSound, matchesWord, isSpeechSynthesisActive } from '../utils';
 
 type BubbleTheme = 'sky' | 'snow' | 'starry' | 'nebula';
 
@@ -228,6 +228,10 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       };
 
       rec.onresult = (event: any) => {
+        if (isSpeechSynthesisActive()) {
+          return;
+        }
+
         let textResult = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (typeof event.results[i][0].transcript === 'string') {
@@ -1445,8 +1449,8 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
             aria-label={paused ? 'Resume the game' : 'Pause the game'}
             className={`w-full py-3 border-4 border-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 ${
               paused
-                ? 'bg-emerald-400 hover:bg-emerald-500 text-slate-900'
-                : 'bg-amber-400 hover:bg-amber-500 text-slate-900'
+                ? 'bg-orange-400 hover:bg-orange-500 text-slate-900'
+                : 'bg-orange-500 hover:bg-orange-600 text-white'
             }`}
           >
             {paused ? (
@@ -1476,7 +1480,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
             {paused && (
               <div className="absolute inset-0 z-50 bg-slate-900/75 flex flex-col items-center justify-center gap-1">
                 <span className="text-5xl" aria-hidden="true">⏸️</span>
-                <span className="text-xl font-black uppercase tracking-widest text-white">
+                <span className="text-xl font-black uppercase tracking-widest text-orange-400">
                   Paused
                 </span>
               </div>

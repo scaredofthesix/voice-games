@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isSpeechSynthesisActive } from './utils';
 
 /**
  * Shared continuous speech-recognition hook for the voice games.
@@ -124,6 +125,11 @@ export function useSpeechRecognition(
     };
 
     rec.onresult = (event: any) => {
+      // Ignore transcriptions if TTS is speaking or in its cooldown period
+      if (isSpeechSynthesisActive()) {
+        return;
+      }
+
       let text = '';
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcript = event.results[i]?.[0]?.transcript;
