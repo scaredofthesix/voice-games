@@ -12,7 +12,7 @@ import {
   ladderZone,
   pickNextIndex,
 } from '../gameLogic';
-import { matchesWord, speakSound, speakWord } from '../utils';
+import { matchesWord, speakSound, speakWord } from '../voice/engine';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { RocketClimb } from './RocketClimb';
 import { CustomWordsManager } from './CustomWordsManager';

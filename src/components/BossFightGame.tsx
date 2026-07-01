@@ -24,7 +24,7 @@ import {
   pickNextIndex,
   playerHitByTimeout,
 } from '../gameLogic';
-import { matchesWord, speakSound, speakWord } from '../utils';
+import { matchesWord, speakSound, speakWord } from '../voice/engine';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { BossArena } from './BossArena';
 import { CustomWordsManager } from './CustomWordsManager';
