@@ -26,7 +26,13 @@ import { CustomWordsManager } from './components/CustomWordsManager';
 import { BubblePopperGame } from './components/BubblePopperGame';
 import { BossFightGame } from './components/BossFightGame';
 import { WordLadderGame } from './components/WordLadderGame';
-import { speakWord, speakSound, matchesWord, updateRacerMovement } from './voice/engine';
+import {
+  createInitialRacerMovementState,
+  speakWord,
+  speakSound,
+  matchesWord,
+  updateRacerMovement,
+} from './voice/engine';
 import { useUiLanguage } from './uiLanguage';
 
 export default function App() {
@@ -149,11 +155,9 @@ export default function App() {
   const [bubbleLevel, setBubbleLevel] = useState(1);
   const [lives, setLives] = useState(3);
   const [playerLane, setPlayerLane] = useState<Lane>(1); // 1 = Center
-  const [racerMovementState, setRacerMovementState] = useState({
-    lane: 1 as Lane,
-    pendingLane: null as Lane | null,
-    lastAppliedAt: 0,
-  });
+  const [racerMovementState, setRacerMovementState] = useState(() =>
+    createInitialRacerMovementState(1),
+  );
   const [vocabIndex, setVocabIndex] = useState(0);
   const [lastHeardTranscript, setLastHeardTranscript] = useState('');
   const [wordMatchFlash, setWordMatchFlash] = useState(false);
@@ -430,7 +434,7 @@ export default function App() {
     setLives(3);
     setLevel(1);
     setPlayerLane(1);
-    setRacerMovementState({ lane: 1, pendingLane: null, lastAppliedAt: 0 });
+    setRacerMovementState(createInitialRacerMovementState(1));
     setVocabIndex(0);
     setLastHeardTranscript('');
     setWordStudyStats({});
