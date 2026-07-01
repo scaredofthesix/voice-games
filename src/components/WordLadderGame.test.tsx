@@ -54,6 +54,29 @@ describe('WordLadderGame (integration)', () => {
     expect(screen.getByText(/top reached/i)).toBeInTheDocument();
   });
 
+  test('the win screen shows a friendly alien encounter', () => {
+    cleanup = installMockSpeechRecognition();
+    render(<WordLadderGame onBackToHub={() => {}} customWords={[]} />);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /start the rocket climb/i }),
+    );
+
+    const rec = MockSpeechRecognition.latest();
+    for (let i = 0; i < 40; i++) {
+      const targetEl = screen.queryByTestId('target-word');
+      if (!targetEl) break;
+      const word = targetEl.textContent ?? '';
+      act(() => rec.emit(word));
+    }
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /say hello to the alien/i }),
+    );
+
+    expect(screen.getByText(/the alien says/i)).toBeInTheDocument();
+  });
+
   test('an unrelated transcript does not advance the climb', () => {
     cleanup = installMockSpeechRecognition();
     render(<WordLadderGame onBackToHub={() => {}} customWords={[]} />);

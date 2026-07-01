@@ -60,6 +60,7 @@ export function WordLadderGame({
   const [boostNonce, setBoostNonce] = useState(0);
   const [isWarmupOpen, setIsWarmupOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isAlienGreetingOpen, setIsAlienGreetingOpen] = useState(false);
 
   const phaseRef = useRef(phase);
   const targetRef = useRef(target);
@@ -349,6 +350,38 @@ export function WordLadderGame({
               <p className="text-sm font-bold text-slate-600">
                 You climbed all {ladder.totalSteps} steps into space.
               </p>
+              <div className="rounded-2xl border-4 border-slate-900 bg-sky-100 p-4 text-left shadow-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl" aria-hidden="true">
+                    👽
+                  </span>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wider text-slate-700">
+                      Alien encounter
+                    </p>
+                    <p className="text-sm font-bold text-slate-800">
+                      A friendly alien is waving from orbit.
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-3 text-sm font-semibold text-slate-700">
+                  The alien says: “You did it! Keep practicing and your rocket
+                  will shine brighter.”
+                </p>
+                <button
+                  onClick={() => setIsAlienGreetingOpen((value) => !value)}
+                  className="mt-3 w-full py-2.5 bg-white hover:bg-slate-50 border-3 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-xl"
+                  aria-label="Say hello to the alien"
+                >
+                  Say hello to the alien
+                </button>
+                {isAlienGreetingOpen && (
+                  <p className="mt-3 rounded-xl border-2 border-slate-900 bg-white px-3 py-2 text-sm font-semibold text-slate-700">
+                    The alien says: “You did it! Keep practicing and your rocket
+                    will shine brighter.”
+                  </p>
+                )}
+              </div>
               <div className="flex gap-2">
                 <button
                   onClick={restart}
