@@ -145,7 +145,7 @@ export interface WordLadderState {
   status: PlayStatus;
 }
 
-export const DEFAULT_LADDER_STEPS = 10;
+export const DEFAULT_LADDER_STEPS = 20;
 
 export function createLadder(
   totalSteps: number = DEFAULT_LADDER_STEPS,

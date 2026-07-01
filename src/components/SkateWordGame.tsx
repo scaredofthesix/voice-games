@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Play, Pause, Volume2, Heart, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Volume2, Heart, RotateCcw, BookOpen } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
@@ -83,8 +83,10 @@ export function SkateWordGame({
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [target, setTarget] = useState('');
+  const [wordStudyStats, setWordStudyStats] = useState<Record<string, { spoken: number; struggled: number }>>({});
   const [feedback, setFeedback] = useState<'correct' | 'listening' | 'idle'>('idle');
   const [theme, setTheme] = useState<SkateTheme>('forest');
+  const [lastRecognized, setLastRecognized] = useState<string>('');
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -119,6 +121,7 @@ export function SkateWordGame({
   const particles = useRef<Particle[]>([]);
   const obstacleX = useRef(650);
   const obstacleSpeed = useRef(2.5);
+  const obstacleEmojiRef = useRef('🚧');
 
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
@@ -164,8 +167,8 @@ export function SkateWordGame({
     const word = list[nextIdx].word;
     setTarget(word);
     setFeedback('listening');
-    playWordTTS(word);
-  }, [wordList, playWordTTS]);
+    setLastRecognized('');
+  }, [wordList]);
 
   const triggerJump = useCallback(() => {
     if (phaseRef.current === 'PLAYING' && !pausedRef.current) {
@@ -192,23 +195,29 @@ export function SkateWordGame({
   const handleTranscript = useCallback(
     (text: string) => {
       if (phaseRef.current !== 'PLAYING' || pausedRef.current) return;
+      setLastRecognized(text); // Store the heard word for UI display!
       const current = targetRef.current;
       if (!current) return;
 
       const now = Date.now();
       
-      // Блокируем микрофон на 1.1 сек во время озвучки (слово произносит динамик)
-      if (now - lastTTSPlayTime.current < 1100) return;
+      // Блокируем микрофон на 750мс во время озвучки (слово произносит динамик)
+      if (now - lastTTSPlayTime.current < 750) return;
 
-      // Защита от дребезга / двойного прыжка
-      if (now - lastTriggerTime.current < 1300) return;
+      // Защита от дребезга / двойного прыжка (750мс)
+      if (now - lastTriggerTime.current < 750) return;
 
       if (matchesWord(text, current, true) || checkLooseMatch(text, current)) {
         lastTriggerTime.current = now; 
         triggerJump();
-        setTimeout(() => {
-          if (phaseRef.current === 'PLAYING') nextWord();
-        }, 1500);
+        setWordStudyStats((prevStats) => ({
+          ...prevStats,
+          [current]: {
+            spoken: (prevStats[current]?.spoken || 0) + 1,
+            struggled: prevStats[current]?.struggled || 0,
+          },
+        }));
+        if (phaseRef.current === 'PLAYING') nextWord();
       }
     },
     [nextWord, triggerJump]
@@ -243,9 +252,7 @@ export function SkateWordGame({
     } else {
       obstacleX.current = canvasWidth + 150; 
       isStoppedBeforeObstacle.current = false;
-      setTimeout(() => {
-        if (phaseRef.current === 'PLAYING') nextWord();
-      }, 1000);
+      if (phaseRef.current === 'PLAYING') nextWord();
     }
   }, [stop, nextWord]);
 
@@ -415,6 +422,8 @@ export function SkateWordGame({
 
         if (obstacleX.current < -50) {
           obstacleX.current = canvas.width + 100;
+          const emojis = ['🚧', '🪨', '🪵', '📦', '🧱', '🗑️', '⚠️'];
+          obstacleEmojiRef.current = emojis[Math.floor(Math.random() * emojis.length)];
         }
       }
 
@@ -467,7 +476,7 @@ export function SkateWordGame({
       // Конус 🚧 и звезда ⭐️
       if (obstacleX.current > -40 && obstacleX.current < canvas.width + 40) {
         ctx.font = '44px sans-serif';
-        ctx.fillText('🚧', obstacleX.current, groundY - 6);
+        ctx.fillText(obstacleEmojiRef.current, obstacleX.current, groundY - 6);
 
         ctx.font = '28px sans-serif';
         ctx.fillText('⭐️', obstacleX.current + 8, groundY - 80);
@@ -501,13 +510,142 @@ export function SkateWordGame({
         }
       }
 
-      // Скейтер 🛹
+      // Скейтер 🛹 (Премиум векторный персонаж с крутящимися колесами и трюками!)
       const skaterX = 80;
       const sY = playerY.current;
 
-      ctx.font = '48px sans-serif';
-      ctx.fillText('🛹', skaterX, sY + 32);
-      ctx.fillText('🧑‍🎤', skaterX + 4, sY);
+      ctx.save();
+      ctx.translate(skaterX + 24, sY + 14);
+      
+      // Наклон скейта при прыжке / трюке
+      if (isJumping.current) {
+        ctx.rotate(playerVy.current * 0.04);
+      } else {
+        ctx.rotate(Math.sin(Date.now() / 90) * 0.02); // легкая вибрация езды
+      }
+
+      // 1. Дека скейта (Зеленая или Розовая)
+      ctx.fillStyle = themeRef.current === 'cyber' ? '#f43f5e' : '#10b981';
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3.5;
+      drawRoundedRect(ctx, -24, 6, 48, 6, 3);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-20, 9);
+      ctx.lineTo(20, 9);
+      ctx.stroke();
+
+      // 2. Вращающиеся колеса!
+      if (!pausedRef.current && !isStoppedBeforeObstacle.current) {
+        wheelAngle.current = (wheelAngle.current + 0.16) % (Math.PI * 2);
+      }
+      
+      // Подвески (Trucks)
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(-15, 12, 4, 3);
+      ctx.fillRect(11, 12, 4, 3);
+
+      const drawSkateWheel = (wx: number, wy: number) => {
+        ctx.save();
+        ctx.translate(wx, wy);
+        ctx.rotate(wheelAngle.current);
+        // Резина
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(0, 0, 6, 0, Math.PI * 2);
+        ctx.fill();
+        // Диск
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        // Рисунок протектора (чтобы было видно вращение)
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, -6);
+        ctx.lineTo(0, 6);
+        ctx.stroke();
+        ctx.restore();
+      };
+
+      drawSkateWheel(-13, 15);
+      drawSkateWheel(13, 15);
+
+      // 3. Скейтбордист
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 4.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // Левая нога
+      ctx.beginPath();
+      ctx.moveTo(-8, -10);
+      ctx.lineTo(-10, 0);
+      ctx.lineTo(-6, 6);
+      ctx.stroke();
+
+      // Правая нога
+      ctx.beginPath();
+      ctx.moveTo(6, -10);
+      ctx.lineTo(8, 0);
+      ctx.lineTo(6, 6);
+      ctx.stroke();
+
+      // Куртка
+      ctx.fillStyle = themeRef.current === 'cyber' ? '#c084fc' : '#60a5fa';
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3.5;
+      drawRoundedRect(ctx, -9, -26, 18, 16, 4);
+      ctx.fill();
+      ctx.stroke();
+
+      // Голова
+      ctx.fillStyle = '#fed7aa';
+      ctx.beginPath();
+      ctx.arc(0, -33, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Очки
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(-2, -36, 8, 3.5);
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-5, -34);
+      ctx.lineTo(5, -34);
+      ctx.stroke();
+
+      // Красная бейсболка задом наперед
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(0, -39, 6.5, Math.PI, 0);
+      ctx.fill();
+      ctx.fillRect(-11, -40, 7, 2.5);
+
+      // Руки (поднимаются вверх при прыжке!)
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      if (isJumping.current) {
+        ctx.moveTo(-7, -22);
+        ctx.lineTo(-17, -30);
+        ctx.moveTo(7, -22);
+        ctx.lineTo(17, -28);
+      } else {
+        ctx.moveTo(-7, -22);
+        ctx.lineTo(-13, -13);
+        ctx.moveTo(7, -22);
+        ctx.lineTo(13, -13);
+      }
+      ctx.stroke();
+
+      ctx.restore();
 
       animId = requestAnimationFrame(gameLoop);
     };
@@ -560,6 +698,7 @@ export function SkateWordGame({
   const startGame = useCallback(() => {
     speakSound.playCoin();
     setScore(0);
+    setWordStudyStats({});
     setLives(3);
     livesRef.current = 3;
     setPhase('PLAYING');
@@ -570,6 +709,7 @@ export function SkateWordGame({
     particles.current = [];
     lastTriggerTime.current = 0;
     isStoppedBeforeObstacle.current = false;
+    setLastRecognized('');
     nextWord();
     start();
   }, [nextWord, start]);
@@ -747,7 +887,7 @@ export function SkateWordGame({
             {paused && (
               <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center gap-1">
                 <span className="text-4xl" aria-hidden="true">⏸️</span>
-                <span className="text-lg font-black uppercase tracking-widest text-white">{strings.paused}</span>
+                <span className="text-lg font-black uppercase tracking-widest text-orange-400">{strings.paused}</span>
               </div>
             )}
           </div>
@@ -773,20 +913,54 @@ export function SkateWordGame({
               ) : null;
             })()}
 
-            <div className="flex justify-center gap-3 mt-3.5">
+            {lastRecognized && (
+              <div className="mt-4 inline-flex flex-col items-center justify-center bg-indigo-50 border-2 border-indigo-200 rounded-xl px-4 py-1.5 max-w-full">
+                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">
+                  {language === 'ru' ? 'Вы сказали / Слышу:' : 'You said / Heard:'}
+                </span>
+                <span className="text-sm font-black text-indigo-700 italic font-mono truncate max-w-xs">
+                  "{lastRecognized}"
+                </span>
+              </div>
+            )}
+
+            <div className="flex justify-center flex-wrap gap-2.5 mt-3.5">
               <button
-                onClick={() => playWordTTS(target)}
+                onClick={() => {
+                  playWordTTS(target);
+                  setWordStudyStats((p) => ({
+                    ...p,
+                    [target]: {
+                      spoken: p[target]?.spoken || 0,
+                      struggled: (p[target]?.struggled || 0) + 1,
+                    },
+                  }));
+                }}
                 className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-white border-2 border-slate-900 px-3 py-1.5 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5 cursor-pointer"
               >
-                <Volume2 className="w-4 h-4 text-rose-500 stroke-[3]" /> Listen
+                <Volume2 className="w-4 h-4 text-rose-500 stroke-[3]" /> Listen (EN)
               </button>
+              {(() => {
+                const currentWordItem = list.find(
+                  (item) => item.word.toLowerCase() === target.toLowerCase(),
+                );
+                const translation = currentWordItem?.translationRu;
+                return translation ? (
+                  <button
+                    onClick={() => speakWord(translation, 'ru')}
+                    className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-blue-700 hover:text-blue-900 bg-white border-2 border-slate-900 px-3 py-1.5 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5 cursor-pointer"
+                  >
+                    <Volume2 className="w-4 h-4 text-blue-500 stroke-[3]" /> Слушать (RU)
+                  </button>
+                ) : null;
+              })()}
             </div>
           </div>
 
           <button
             onClick={togglePause}
             className={`w-full py-3 border-4 border-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer ${
-              paused ? 'bg-emerald-400 hover:bg-emerald-500 text-slate-900' : 'bg-rose-400 hover:bg-rose-500 text-slate-955'
+              paused ? 'bg-orange-400 hover:bg-orange-500 text-slate-900' : 'bg-orange-500 hover:bg-orange-600 text-white'
             }`}
           >
             {paused ? <Play className="w-4 h-4 fill-current stroke-[3]" /> : <Pause className="w-4 h-4 fill-current stroke-[3]" />}
@@ -802,26 +976,124 @@ export function SkateWordGame({
       )}
 
       {phase === 'GAMEOVER' && (
-        <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-slate-100 text-center shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
-          <span className="text-5xl" aria-hidden="true">💥</span>
-          <h2 className="text-3xl font-black uppercase tracking-wider text-slate-900">Game Over!</h2>
-          <p className="text-sm font-bold text-slate-600">You crashed too many times! Practice more to skate further!</p>
-          <div className="flex gap-2">
-            <button
-              onClick={startGame}
-              className="flex-1 py-3 bg-rose-400 hover:bg-rose-500 border-4 border-slate-900 text-slate-955 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <RotateCcw className="w-4 h-4 stroke-[3]" /> {strings.start}
-            </button>
-            <button
-              onClick={() => {
-                stop();
-                onBackToHub();
-              }}
-              className="flex-1 py-3 bg-white hover:bg-slate-50 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl cursor-pointer"
-            >
-              Exit
-            </button>
+        <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
+          <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
+            
+            <span className="inline-flex items-center gap-1 bg-rose-400 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest">
+              {language === 'ru' ? 'ЗАЕЗД ЗАВЕРШЕН!' : 'SKATE SESSION OVER!'}
+            </span>
+
+            <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
+              {language === 'ru' ? 'КОНЕЦ ИГРЫ!' : 'GAME OVER!'}
+            </h2>
+            <p className="text-xs text-slate-500 leading-normal font-bold">
+              {language === 'ru' ? 'Твой отчет о трюках на скейтборде:' : 'Review your skateboard spelling stats below:'}
+            </p>
+
+            {/* Score logs */}
+            <div className="grid grid-cols-2 gap-3.5 my-6">
+              <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
+                <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest text-center">
+                  {language === 'ru' ? 'СОБРАНО ЗВЕЗД' : 'STARS COLLECTED'}
+                </span>
+                <span className="text-lg font-black text-sky-900 mt-1 font-mono">⭐️ {score}</span>
+              </div>
+              <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
+                <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
+                  {language === 'ru' ? 'РЕКОРД ПАРКА' : 'PARK RECORD'}
+                </span>
+                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} stars</span>
+              </div>
+            </div>
+
+            {/* Historic word review logs */}
+            <div className="bg-purple-100 border-4 border-slate-900 p-4 rounded-3xl text-left mb-6">
+              <div className="flex items-center gap-2 mb-2.5">
+                <BookOpen className="w-5 h-5 text-purple-700 stroke-[2.5]" />
+                <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">
+                  {language === 'ru' ? 'Словарь скейт-парка:' : 'Your Spelling Scorecard:'}
+                </h4>
+              </div>
+
+              <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+                {Object.keys(wordStudyStats).length === 0 ? (
+                  <div className="text-center py-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl">
+                    <p className="text-xs text-slate-500 font-extrabold leading-normal">
+                      {language === 'ru' ? 'Трюков со словами не выполнено. Попробуй еще раз!' : 'No words flipped yet. Start skating to practice!'}
+                    </p>
+                  </div>
+                ) : (
+                  Object.keys(wordStudyStats).map((word, idx) => {
+                    const spoken = wordStudyStats[word].spoken;
+                    const struggled = wordStudyStats[word].struggled;
+                    
+                    return (
+                      <div
+                        key={idx}
+                        className="bg-white border-2 border-slate-900 p-2 rounded-xl flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-slate-950 font-black text-xs bg-slate-100 px-2 py-0.5 rounded-md border border-slate-900 truncate">{word}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[8px] md:text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-1 rounded-full font-black border border-emerald-300">
+                            {language === 'ru' ? 'Трюков:' : 'Flips:'} {spoken}
+                          </span>
+                          {struggled > 0 && (
+                            <span className="text-[8px] md:text-[9px] text-amber-800 bg-amber-100 px-1.5 py-1 rounded-full font-black border border-amber-350">
+                              {language === 'ru' ? 'Подсказок:' : 'Clues:'} {struggled}
+                            </span>
+                          )}
+                          <button
+                            onClick={() => speakWord(word)}
+                            className="p-1 bg-yellow-50 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg cursor-pointer"
+                            aria-label={`Hear the word ${word}`}
+                          >
+                            <Volume2 className="w-3.5 h-3.5 text-slate-900" />
+                          </button>
+                          {(() => {
+                            const matchedObj = list.find(
+                              (item) => item.word.toLowerCase() === word.toLowerCase()
+                            );
+                            return matchedObj?.translationRu ? (
+                              <button
+                                onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
+                                className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
+                                aria-label="Listen in Russian"
+                              >
+                                RU
+                              </button>
+                            ) : null;
+                          })()}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Loop Controls */}
+            <div className="flex flex-col gap-2.5 w-full">
+              <button
+                onClick={startGame}
+                className="w-full bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 shadow-md uppercase"
+              >
+                <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {strings.start}
+              </button>
+              
+              <button
+                onClick={() => {
+                  stop();
+                  onBackToHub();
+                }}
+                className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-900 text-white font-black text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase"
+              >
+                🏰 {language === 'ru' ? 'ВЫЙТИ В ХАБ' : 'EXIT TO PORTAL'}
+              </button>
+            </div>
+
           </div>
         </div>
       )}

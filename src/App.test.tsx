@@ -14,10 +14,11 @@ describe('UI language toggle', () => {
       </UiLanguageProvider>,
     );
 
-    expect(screen.getByText('VOICE GAMES!')).toBeInTheDocument();
+    // Russian is the default interface language on launch (issue #84).
+    expect(screen.getByText('ГОЛОСОВЫЕ ИГРЫ!')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /switch interface language/i }));
 
-    expect(screen.getByText('ГОЛОСОВЫЕ ИГРЫ!')).toBeInTheDocument();
+    expect(screen.getByText('VOICE GAMES!')).toBeInTheDocument();
   });
 });

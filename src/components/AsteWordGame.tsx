@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Play, Pause, RotateCcw, Heart } from 'lucide-react';
+import { ArrowLeft, Play, Pause, RotateCcw, Heart, BookOpen, Volume2 } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
@@ -29,6 +29,10 @@ const LOCAL_LANG = {
     chooseSet: 'Choose Word Set',
     myWords: 'My Words',
     chooseTheme: 'CHOOSE SPACE SECTOR THEME:',
+    chooseDifficulty: 'CHOOSE DIFFICULTY LEVEL:',
+    easy: 'Easy 🟢',
+    medium: 'Medium 🟡',
+    hard: 'Hard 🔴',
   },
   ru: {
     title: 'АстеВорд Разрушитель',
@@ -43,6 +47,10 @@ const LOCAL_LANG = {
     chooseSet: 'Выбрать набор слов',
     myWords: 'Мои слова',
     chooseTheme: 'ВЫБЕРИ КОСМИЧЕСКИЙ СЕКТОР:',
+    chooseDifficulty: 'ВЫБЕРИ УРОВЕНЬ СЛОЖНОСТИ:',
+    easy: 'Легкий 🟢',
+    medium: 'Средний 🟡',
+    hard: 'Сложный 🔴',
   }
 };
 
@@ -95,8 +103,12 @@ export function AsteWordGame({
   const [phase, setPhase] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
   const [paused, setPaused] = useState(false);
   const [score, setScore] = useState(0);
+  const [wordStudyStats, setWordStudyStats] = useState<Record<string, { spoken: number; struggled: number }>>({});
   const [lives, setLives] = useState(3);
   const [theme, setTheme] = useState<SpaceTheme>('galaxy');
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [lastRecognized, setLastRecognized] = useState<string>('');
+  const [activeAsteroids, setActiveAsteroids] = useState<Asteroid[]>([]);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -106,6 +118,7 @@ export function AsteWordGame({
   const scoreRef = useRef(score);
   const livesRef = useRef(lives);
   const themeRef = useRef(theme);
+  const difficultyRef = useRef(difficulty);
 
   // Кулдаун двойного выстрела
   const lastTriggerTime = useRef(0);
@@ -124,6 +137,7 @@ export function AsteWordGame({
   useEffect(() => { scoreRef.current = score; }, [score]);
   useEffect(() => { livesRef.current = lives; }, [lives]);
   useEffect(() => { themeRef.current = theme; }, [theme]);
+  useEffect(() => { difficultyRef.current = difficulty; }, [difficulty]);
 
   // Безопасное обновление счета (без React-крашей)
   useEffect(() => {
@@ -167,16 +181,28 @@ export function AsteWordGame({
       });
     }
 
+    const destroyedWord = targetAst.word;
+    setWordStudyStats((prevStats) => ({
+      ...prevStats,
+      [destroyedWord]: {
+        spoken: (prevStats[destroyedWord]?.spoken || 0) + 1,
+        struggled: prevStats[destroyedWord]?.struggled || 0,
+      },
+    }));
+
     asteroids.current = asteroids.current.filter((a) => a.id !== targetAst.id);
+    setActiveAsteroids([...asteroids.current]);
     setScore((s) => s + 1);
   };
 
   const handleTranscript = useCallback(
     (text: string) => {
       if (phaseRef.current !== 'PLAYING' || pausedRef.current) return;
+      setLastRecognized(text); // Display what was heard!
 
       const now = Date.now();
-      if (now - lastTriggerTime.current < 1000) return;
+      // Lower cooldown (400ms) to allow rapid defense shooting
+      if (now - lastTriggerTime.current < 400) return;
 
       const matched = asteroids.current.find((ast) => {
         return matchesWord(text, ast.word, true) || checkLooseMatch(text, ast.word);
@@ -206,6 +232,7 @@ export function AsteWordGame({
       }, 0);
     }
     asteroids.current.splice(index, 1);
+    setActiveAsteroids([...asteroids.current]);
   }, [stop]);
 
   // Отрисовка тем космических фонов
@@ -298,9 +325,31 @@ export function AsteWordGame({
       if (!pausedRef.current) {
         // 1. Медленный плавный спавн
         spawnTimer.current++;
-        const spawnDelay = Math.max(140, 260 - scoreRef.current * 3);
 
-        if (spawnTimer.current >= spawnDelay) {
+        const diff = difficultyRef.current;
+        let spawnDelay = Math.max(150, 260 - scoreRef.current * 4);
+        let maxAsteroids = 4;
+        let baseSpeed = 0.85 + scoreRef.current * 0.02;
+        let speedRandomRange = 0.3;
+
+        if (diff === 'easy') {
+          spawnDelay = Math.max(300, 480 - scoreRef.current * 6);
+          maxAsteroids = 1; // Only 1 asteroid at a time for extremely relaxed play
+          baseSpeed = 0.25 + scoreRef.current * 0.005;
+          speedRandomRange = 0.1;
+        } else if (diff === 'medium') {
+          spawnDelay = Math.max(220, 360 - scoreRef.current * 5);
+          maxAsteroids = 2; // Old easy settings are now Medium
+          baseSpeed = 0.45 + scoreRef.current * 0.01;
+          speedRandomRange = 0.15;
+        } else if (diff === 'hard') {
+          spawnDelay = Math.max(150, 260 - scoreRef.current * 4);
+          maxAsteroids = 4; // Old medium settings are now Hard
+          baseSpeed = 0.85 + scoreRef.current * 0.02;
+          speedRandomRange = 0.3;
+        }
+
+        if (spawnTimer.current >= spawnDelay && asteroids.current.length < maxAsteroids) {
           spawnTimer.current = 0;
           const list = wordList();
           if (list.length > 0) {
@@ -309,10 +358,11 @@ export function AsteWordGame({
               id: astIdCounter.current++,
               x: 40 + Math.random() * (canvas.width - 80),
               y: -20,
-              speed: 0.11 + scoreRef.current * 0.005 + Math.random() * 0.08,
+              speed: baseSpeed + Math.random() * speedRandomRange,
               word: randomWord,
               size: 20,
             });
+            setActiveAsteroids([...asteroids.current]);
           }
         }
 
@@ -405,29 +455,29 @@ export function AsteWordGame({
         ctx.stroke();
       }
 
-      // Отрисовка астероидов
+      // Отрисовка астероидов (с увеличенным размером!)
       asteroids.current.forEach((ast) => {
-        ctx.font = '24px sans-serif';
-        ctx.fillText('☄️', ast.x - 12, ast.y + 6);
+        ctx.font = '42px sans-serif';
+        ctx.fillText('☄️', ast.x - 20, ast.y + 12);
 
-        ctx.font = 'bold 11px sans-serif';
+        ctx.font = 'bold 13px sans-serif';
         const textWidth = ctx.measureText(ast.word).width;
 
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 3.5;
 
-        const rx = ast.x - textWidth / 2 - 6;
-        const ry = ast.y - 24;
-        const rw = textWidth + 12;
-        const rh = 17;
+        const rx = ast.x - textWidth / 2 - 8;
+        const ry = ast.y - 34;
+        const rw = textWidth + 16;
+        const rh = 21;
 
-        drawRoundedRect(ctx, rx, ry, rw, rh, 5);
+        drawRoundedRect(ctx, rx, ry, rw, rh, 6);
         ctx.fill();
         ctx.stroke();
 
         ctx.fillStyle = '#0f172a';
-        ctx.fillText(ast.word, ast.x - textWidth / 2, ast.y - 12);
+        ctx.fillText(ast.word, ast.x - textWidth / 2, ast.y - 20);
       });
 
       // Светящийся щит на дне экрана (вспыхивает при падении астероидов)
@@ -515,17 +565,20 @@ export function AsteWordGame({
   const startGame = useCallback(() => {
     speakSound.playCoin();
     setScore(0);
+    setWordStudyStats({});
     setLives(3);
     livesRef.current = 3;
     setPhase('PLAYING');
     setPaused(false);
     pausedRef.current = false;
     asteroids.current = [];
+    setActiveAsteroids([]);
     particles.current = [];
     laser.current = null;
     shockwaves.current = [];
-    spawnTimer.current = 150; 
+    spawnTimer.current = 999; 
     lastTriggerTime.current = 0;
+    setLastRecognized('');
     start();
   }, [start]);
 
@@ -544,6 +597,8 @@ export function AsteWordGame({
       stop();
     };
   }, [stop]);
+
+  const list = wordList();
 
   return (
     <section className="max-w-md mx-auto py-4 px-2" aria-label="AsteWord game">
@@ -648,6 +703,31 @@ export function AsteWordGame({
             </div>
           </fieldset>
 
+          {/* CHOOSE DIFFICULTY */}
+          <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
+            <label className="block text-xs font-black text-indigo-500 uppercase tracking-widest ml-1">
+              {strings.chooseDifficulty}
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['easy', 'medium', 'hard'] as const).map((diffId) => (
+                <button
+                  key={diffId}
+                  onClick={() => {
+                    speakSound.playCoin();
+                    setDifficulty(diffId);
+                  }}
+                  className={`px-2 py-2 border-4 rounded-xl text-[9px] font-black uppercase transition-all tracking-wider cursor-pointer text-center ${
+                    difficulty === diffId
+                      ? 'bg-indigo-400 border-slate-900 text-slate-900 shadow-sm -translate-y-0.5'
+                      : 'bg-white border-slate-300 text-slate-650 hover:border-slate-900'
+                  }`}
+                >
+                  {strings[diffId]}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {!isSupported && (
             <p className="text-xs font-bold text-rose-600 text-center" role="alert">
               Voice control needs Google Chrome.
@@ -700,15 +780,88 @@ export function AsteWordGame({
             {paused && (
               <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center gap-1">
                 <span className="text-4xl" aria-hidden="true">⏸️</span>
-                <span className="text-lg font-black uppercase tracking-widest text-white">{strings.paused}</span>
+                <span className="text-lg font-black uppercase tracking-widest text-orange-400">{strings.paused}</span>
               </div>
             )}
           </div>
 
+          {/* Active Target Cards with Pronunciation */}
+          <div className="bg-slate-50 border-4 border-slate-900 rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
+            <span className="block text-xs font-black uppercase tracking-widest text-indigo-500 mb-2.5">
+              {language === 'ru' ? '🎯 ТЕКУЩИЕ ЦЕЛИ (НАЖМИ ДЛЯ ОЗВУЧКИ):' : '🎯 ACTIVE TARGETS (CLICK TO HEAR):'}
+            </span>
+            {activeAsteroids.length === 0 ? (
+              <p className="text-xs text-slate-500 font-bold py-1.5 text-center bg-white border-2 border-dashed border-slate-300 rounded-xl">
+                {language === 'ru' ? 'Ожидание появления астероидов...' : 'Waiting for asteroids to enter sector...'}
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-1">
+                {activeAsteroids.map((ast) => {
+                  const currentWordItem = list.find(
+                    (item) => item.word.toLowerCase() === ast.word.toLowerCase(),
+                  );
+                  const translation = currentWordItem?.translationRu || currentWordItem?.translation;
+                  return (
+                    <div
+                      key={ast.id}
+                      className="bg-white border-2 border-slate-900 p-2 rounded-xl flex items-center justify-between shadow-sm animate-scale-up"
+                    >
+                      <div className="min-w-0">
+                        <span className="text-sm font-black text-slate-900 block truncate">{ast.word}</span>
+                        {translation && (
+                          <span className="text-[10px] font-bold text-indigo-600 block truncate">{translation}</span>
+                        )}
+                      </div>
+
+                      <div className="flex gap-1.5 shrink-0">
+                        <button
+                          onClick={() => {
+                            speakWord(ast.word, 'en');
+                            setWordStudyStats((p) => ({
+                              ...p,
+                              [ast.word]: {
+                                spoken: p[ast.word]?.spoken || 0,
+                                struggled: (p[ast.word]?.struggled || 0) + 1,
+                              },
+                            }));
+                          }}
+                          className="px-2 py-1 bg-yellow-50 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg text-[10px] font-black uppercase inline-flex items-center gap-1 cursor-pointer shadow-sm active:translate-y-0.5"
+                        >
+                          EN 🔊
+                        </button>
+                        {currentWordItem?.translationRu && (
+                          <button
+                            onClick={() => {
+                              speakWord(currentWordItem.translationRu, 'ru');
+                            }}
+                            className="px-2 py-1 bg-blue-50 hover:bg-blue-200 border-2 border-slate-900 rounded-lg text-[10px] font-black uppercase inline-flex items-center gap-1 cursor-pointer shadow-sm active:translate-y-0.5"
+                          >
+                            RU 🔊
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {lastRecognized && (
+            <div className="bg-indigo-50 border-4 border-slate-900 rounded-2xl p-3 text-center shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] flex flex-col items-center justify-center gap-1">
+              <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">
+                {language === 'ru' ? 'Вы сказали / Слышу:' : 'You said / Heard:'}
+              </span>
+              <span className="text-sm font-black text-indigo-700 italic font-mono truncate max-w-xs">
+                "{lastRecognized}"
+              </span>
+            </div>
+          )}
+
           <button
             onClick={togglePause}
             className={`w-full py-3 border-4 border-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer ${
-              paused ? 'bg-emerald-400 hover:bg-emerald-500 text-slate-900' : 'bg-indigo-50 hover:bg-indigo-650 text-white'
+              paused ? 'bg-orange-400 hover:bg-orange-500 text-slate-900' : 'bg-orange-500 hover:bg-orange-600 text-white'
             }`}
           >
             {paused ? <Play className="w-4 h-4 fill-current stroke-[3]" /> : <Pause className="w-4 h-4 fill-current stroke-[3]" />}
@@ -724,26 +877,124 @@ export function AsteWordGame({
       )}
 
       {phase === 'GAMEOVER' && (
-        <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-slate-100 text-center shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
-          <span className="text-5xl" aria-hidden="true">💥</span>
-          <h2 className="text-3xl font-black uppercase tracking-wider text-slate-900">Shields Offline!</h2>
-          <p className="text-sm font-bold text-slate-600">The asteroids destroyed the planetary shield! Practice words to increase laser battery speed!</p>
-          <div className="flex gap-2">
-            <button
-              onClick={startGame}
-              className="flex-1 py-3 bg-indigo-500 hover:bg-indigo-650 text-white font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <RotateCcw className="w-4 h-4 stroke-[3]" /> {strings.start}
-            </button>
-            <button
-              onClick={() => {
-                stop();
-                onBackToHub();
-              }}
-              className="flex-1 py-3 bg-white hover:bg-slate-50 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl cursor-pointer"
-            >
-              Exit
-            </button>
+        <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
+          <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
+            
+            <span className="inline-flex items-center gap-1 bg-rose-400 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest">
+              {language === 'ru' ? 'СЕКТОР ЗАЩИЩЕН!' : 'SECTOR DEFENSE OVER!'}
+            </span>
+
+            <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
+              {language === 'ru' ? 'КОНЕЦ ИГРЫ!' : 'GAME OVER!'}
+            </h2>
+            <p className="text-xs text-slate-500 leading-normal font-bold">
+              {language === 'ru' ? 'Твой космический отчет по сбитым астероидам:' : 'Review your cosmic asteroid spelling stats below:'}
+            </p>
+
+            {/* Score logs */}
+            <div className="grid grid-cols-2 gap-3.5 my-6">
+              <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
+                <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest text-center">
+                  {language === 'ru' ? 'СБИТО АСТЕРОИДОВ' : 'ASTEROIDS CRUSHED'}
+                </span>
+                <span className="text-lg font-black text-sky-900 mt-1 font-mono">☄️ {score}</span>
+              </div>
+              <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
+                <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
+                  {language === 'ru' ? 'РЕКОРД ГАЛАКТИКИ' : 'GALAXY RECORD'}
+                </span>
+                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} lasers</span>
+              </div>
+            </div>
+
+            {/* Historic word review logs */}
+            <div className="bg-indigo-100 border-4 border-slate-900 p-4 rounded-3xl text-left mb-6">
+              <div className="flex items-center gap-2 mb-2.5">
+                <BookOpen className="w-5 h-5 text-indigo-700 stroke-[2.5]" />
+                <h4 className="text-xs font-black text-indigo-900 uppercase tracking-widest">
+                  {language === 'ru' ? 'Словарь космо-сектора:' : 'Your Spelling Scorecard:'}
+                </h4>
+              </div>
+
+              <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+                {Object.keys(wordStudyStats).length === 0 ? (
+                  <div className="text-center py-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl">
+                    <p className="text-xs text-slate-500 font-extrabold leading-normal">
+                      {language === 'ru' ? 'Астероидов не сбито. Защити планету в следующий раз!' : 'No asteroids destroyed yet. Fire those lasers!'}
+                    </p>
+                  </div>
+                ) : (
+                  Object.keys(wordStudyStats).map((word, idx) => {
+                    const spoken = wordStudyStats[word].spoken;
+                    const struggled = wordStudyStats[word].struggled;
+                    
+                    return (
+                      <div
+                        key={idx}
+                        className="bg-white border-2 border-slate-900 p-2 rounded-xl flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-slate-950 font-black text-xs bg-slate-100 px-2 py-0.5 rounded-md border border-slate-900 truncate">{word}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[8px] md:text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-1 rounded-full font-black border border-emerald-300">
+                            {language === 'ru' ? 'Сбито:' : 'Kills:'} {spoken}
+                          </span>
+                          {struggled > 0 && (
+                            <span className="text-[8px] md:text-[9px] text-amber-800 bg-amber-100 px-1.5 py-1 rounded-full font-black border border-amber-350">
+                              {language === 'ru' ? 'Подсказок:' : 'Clues:'} {struggled}
+                            </span>
+                          )}
+                          <button
+                            onClick={() => speakWord(word)}
+                            className="p-1 bg-yellow-50 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg cursor-pointer"
+                            aria-label={`Hear the word ${word}`}
+                          >
+                            <Volume2 className="w-3.5 h-3.5 text-slate-900" />
+                          </button>
+                          {(() => {
+                            const matchedObj = list.find(
+                              (item) => item.word.toLowerCase() === word.toLowerCase()
+                            );
+                            return matchedObj?.translationRu ? (
+                              <button
+                                onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
+                                className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
+                                aria-label="Listen in Russian"
+                              >
+                                RU
+                              </button>
+                            ) : null;
+                          })()}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Loop Controls */}
+            <div className="flex flex-col gap-2.5 w-full">
+              <button
+                onClick={startGame}
+                className="w-full bg-indigo-500 hover:bg-indigo-600 border-4 border-slate-900 text-white font-black text-xs py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 shadow-md uppercase"
+              >
+                <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {strings.start}
+              </button>
+              
+              <button
+                onClick={() => {
+                  stop();
+                  onBackToHub();
+                }}
+                className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-900 text-white font-black text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase"
+              >
+                🏰 {language === 'ru' ? 'ВЫЙТИ В ХАБ' : 'EXIT TO PORTAL'}
+              </button>
+            </div>
+
           </div>
         </div>
       )}

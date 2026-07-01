@@ -269,14 +269,14 @@ const UiLanguageContext = createContext<UiLanguageContextValue | undefined>(unde
 export function UiLanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<UiLanguage>(() => {
     if (typeof window === 'undefined') {
-      return 'en';
+      return 'ru';
     }
 
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
-      return saved === 'ru' ? 'ru' : 'en';
+      return saved === 'en' ? 'en' : 'ru';
     } catch {
-      return 'en';
+      return 'ru';
     }
   });
 
@@ -321,11 +321,11 @@ export function useUiLanguage() {
   }
 
   return {
-    language: 'en' as UiLanguage,
+    language: 'ru' as UiLanguage,
     setLanguage: () => undefined,
     t: (path: string) => {
       const keys = path.split('.');
-      let current: unknown = UI_TEXT.en;
+      let current: unknown = UI_TEXT.ru;
 
       for (const key of keys) {
         if (typeof current !== 'object' || current === null || !(key in current)) {

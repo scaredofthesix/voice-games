@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
+  BookOpen,
   Heart,
   Mic,
   Pause,
@@ -93,6 +94,7 @@ export function BossFightGame({
   const [paused, setPaused] = useState(false);
   const [target, setTarget] = useState('');
   const [score, setScore] = useState(0);
+  const [wordStudyStats, setWordStudyStats] = useState<Record<string, { spoken: number; struggled: number }>>({});
   const [timeLeft, setTimeLeft] = useState(WORD_TIME_SECONDS);
   const [hitNonce, setHitNonce] = useState(0);
   const [attackNonce, setAttackNonce] = useState(0);
@@ -155,7 +157,6 @@ export function BossFightGame({
     const word = list[idx].word;
     setTarget(word);
     setTimeLeft(WORD_TIME_SECONDS);
-    speakWord(word);
   }, [wordList]);
 
   useEffect(() => {
@@ -183,6 +184,14 @@ export function BossFightGame({
       const hit = bossHitByWord(prev);
       setScore((s) => s + 1);
       setHitNonce((n) => n + 1);
+
+      setWordStudyStats((prevStats) => ({
+        ...prevStats,
+        [current]: {
+          spoken: (prevStats[current]?.spoken || 0) + 1,
+          struggled: prevStats[current]?.struggled || 0,
+        },
+      }));
 
       if (hit.status === 'won') {
         // Endless mode: a defeated boss is immediately replaced by the next,
@@ -237,6 +246,7 @@ export function BossFightGame({
     fightRef.current = fresh;
     setFight(fresh);
     setScore(0);
+    setWordStudyStats({});
     setPaused(false);
     pausedRef.current = false;
     setPhase('PLAYING');
@@ -585,7 +595,7 @@ export function BossFightGame({
                 role="status"
               >
                 <span className="text-4xl" aria-hidden="true">⏸️</span>
-                <span className="text-lg font-black uppercase tracking-widest text-white">
+                <span className="text-lg font-black uppercase tracking-widest text-orange-400">
                   Paused
                 </span>
               </div>
@@ -600,8 +610,8 @@ export function BossFightGame({
               aria-label={paused ? 'Resume the fight' : 'Pause the fight'}
               className={`w-full py-3 border-4 border-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 ${
                 paused
-                  ? 'bg-emerald-400 hover:bg-emerald-500 text-slate-900'
-                  : 'bg-amber-400 hover:bg-amber-500 text-slate-900'
+                  ? 'bg-orange-400 hover:bg-orange-500 text-slate-900'
+                  : 'bg-orange-500 hover:bg-orange-600 text-white'
               }`}
             >
               {paused ? (
@@ -656,31 +666,124 @@ export function BossFightGame({
           </div>
 
           {isOver ? (
-            <div className="text-center space-y-4 py-4" role="status">
-              <h2 className="text-3xl font-black uppercase tracking-wider text-slate-900">
-                Game over
-              </h2>
-              <p className="text-sm font-bold text-slate-600">
-                You defeated {score} words across {bossLevel + 1}{' '}
-                {bossLevel + 1 === 1 ? 'boss' : 'bosses'}!
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={restart}
-                  className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 border-4 border-slate-900 text-white font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2"
-                  aria-label="Play again"
-                >
-                  <RotateCcw className="w-4 h-4 stroke-[3]" /> Again
-                </button>
-                <button
-                  onClick={() => {
-                    stop();
-                    onBackToHub();
-                  }}
-                  className="flex-1 py-3 bg-white hover:bg-slate-50 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl"
-                >
-                  {t('shared.backToHub')}
-                </button>
+            <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
+              <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
+                
+                <span className="inline-flex items-center gap-1 bg-yellow-300 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest">
+                  {language === 'ru' ? 'БИТВА ЗАВЕРШЕНА!' : 'BATTLE CONCLUDED!'}
+                </span>
+
+                <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
+                  {language === 'ru' ? 'БИТВА ЗАВЕРШЕНА!' : 'GAME OVER!'}
+                </h2>
+                <p className="text-xs text-slate-500 leading-normal font-bold">
+                  {language === 'ru' ? 'Твой боевой отчет по английским словам:' : 'Review your English combat stats below:'}
+                </p>
+
+                {/* Score logs */}
+                <div className="grid grid-cols-2 gap-3.5 my-6">
+                  <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
+                    <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest text-center">
+                      {language === 'ru' ? 'УДАРОВ НАНЕСЕНО' : 'WORDS SMASHED'}
+                    </span>
+                    <span className="text-lg font-black text-sky-900 mt-1 font-mono">{score} hits</span>
+                  </div>
+                  <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
+                    <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
+                      {language === 'ru' ? 'ЛИЧНЫЙ РЕКОРД' : 'PERSONAL HIGH'}
+                    </span>
+                    <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} hits</span>
+                  </div>
+                </div>
+
+                {/* Historic word review logs */}
+                <div className="bg-purple-100 border-4 border-slate-900 p-4 rounded-3xl text-left mb-6">
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <BookOpen className="w-5 h-5 text-purple-700 stroke-[2.5]" />
+                    <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">
+                      {language === 'ru' ? 'Твой боевой отчет:' : 'Your Spelling Scorecard:'}
+                    </h4>
+                  </div>
+
+                  <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+                    {Object.keys(wordStudyStats).length === 0 ? (
+                      <div className="text-center py-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl">
+                        <p className="text-xs text-slate-500 font-extrabold leading-normal">
+                          {language === 'ru' ? 'Слов ещё нет. Начни бой, чтобы потренироваться!' : 'No words registered yet. Start the fight to practice!'}
+                        </p>
+                      </div>
+                    ) : (
+                      Object.keys(wordStudyStats).map((word, idx) => {
+                        const spoken = wordStudyStats[word].spoken;
+                        const struggled = wordStudyStats[word].struggled;
+                        
+                        return (
+                          <div
+                            key={idx}
+                            className="bg-white border-2 border-slate-900 p-2 rounded-xl flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-slate-950 font-black text-xs bg-slate-100 px-2 py-0.5 rounded-md border border-slate-900 truncate">{word}</span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="text-[8px] md:text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-1 rounded-full font-black border border-emerald-300">
+                                {language === 'ru' ? 'Ударов:' : 'Hits:'} {spoken}
+                              </span>
+                              {struggled > 0 && (
+                                <span className="text-[8px] md:text-[9px] text-amber-800 bg-amber-100 px-1.5 py-1 rounded-full font-black border border-amber-350">
+                                  {language === 'ru' ? 'Подсказок:' : 'Clues:'} {struggled}
+                                </span>
+                              )}
+                              <button
+                                onClick={() => speakWord(word)}
+                                className="p-1 bg-yellow-50 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg cursor-pointer"
+                                aria-label={`Hear the word ${word}`}
+                              >
+                                <Volume2 className="w-3.5 h-3.5 text-slate-900" />
+                              </button>
+                              {(() => {
+                                const matchedObj = list.find(
+                                  (item) => item.word.toLowerCase() === word.toLowerCase()
+                                );
+                                return matchedObj?.translationRu ? (
+                                  <button
+                                    onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
+                                    className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
+                                    aria-label="Listen in Russian"
+                                  >
+                                    RU
+                                  </button>
+                                ) : null;
+                              })()}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {/* Loop Controls */}
+                <div className="flex flex-col gap-2.5 w-full">
+                  <button
+                    onClick={restart}
+                    className="w-full bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 shadow-md uppercase"
+                  >
+                    <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {language === 'ru' ? 'Сражаться снова!' : 'Fight Again!'}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      stop();
+                      onBackToHub();
+                    }}
+                    className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-900 text-white font-black text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase"
+                  >
+                    🏰 {language === 'ru' ? 'ВЫЙТИ В ХАБ' : 'EXIT TO PORTAL'}
+                  </button>
+                </div>
+
               </div>
             </div>
           ) : (
@@ -721,7 +824,16 @@ export function BossFightGame({
                       <div className="flex flex-wrap items-center justify-center gap-3 pt-2.5 border-t-2 border-dashed border-slate-200">
                         <button
                           type="button"
-                          onClick={() => speakWord(target)}
+                          onClick={() => {
+                            speakWord(target);
+                            setWordStudyStats((p) => ({
+                              ...p,
+                              [target]: {
+                                spoken: p[target]?.spoken || 0,
+                                struggled: (p[target]?.struggled || 0) + 1,
+                              },
+                            }));
+                          }}
                           className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-white border-2 border-slate-900 px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5"
                           aria-label={`Hear the word ${target}`}
                         >

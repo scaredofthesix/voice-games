@@ -29,7 +29,7 @@ import { BossFightGame } from './components/BossFightGame';
 import { WordLadderGame } from './components/WordLadderGame';
 import { SkateWordGame } from './components/SkateWordGame';
 import { AsteWordGame } from './components/AsteWordGame';
-import { speakWord, speakSound, matchesWord } from './utils';
+import { speakWord, speakSound, matchesWord, isSpeechSynthesisActive } from './utils';
 import { useUiLanguage } from './uiLanguage';
 
 export default function App() {
@@ -369,6 +369,10 @@ export default function App() {
       };
 
       rec.onresult = (event: any) => {
+        if (isSpeechSynthesisActive()) {
+          return;
+        }
+
         let textResult = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (typeof event.results[i][0].transcript === 'string') {
