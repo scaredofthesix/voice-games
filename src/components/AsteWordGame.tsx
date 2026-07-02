@@ -328,27 +328,29 @@ export function AsteWordGame({
         // 1. Медленный плавный спавн
         spawnTimer.current++;
 
+        // Pacing budget: a child needs ~3-4s per word including recognition
+        // latency, so even Hard must leave that much time per asteroid.
         const diff = difficultyRef.current;
-        let spawnDelay = Math.max(150, 260 - scoreRef.current * 4);
-        let maxAsteroids = 4;
-        let baseSpeed = 0.85 + scoreRef.current * 0.02;
-        let speedRandomRange = 0.3;
+        let spawnDelay = Math.max(280, 440 - scoreRef.current * 5);
+        let maxAsteroids = 2;
+        let baseSpeed = 0.35 + scoreRef.current * 0.007;
+        let speedRandomRange = 0.12;
 
         if (diff === 'easy') {
-          spawnDelay = Math.max(300, 480 - scoreRef.current * 6);
+          spawnDelay = Math.max(360, 540 - scoreRef.current * 5);
           maxAsteroids = 1; // Only 1 asteroid at a time for extremely relaxed play
-          baseSpeed = 0.25 + scoreRef.current * 0.005;
-          speedRandomRange = 0.1;
+          baseSpeed = 0.2 + scoreRef.current * 0.004;
+          speedRandomRange = 0.08;
         } else if (diff === 'medium') {
-          spawnDelay = Math.max(220, 360 - scoreRef.current * 5);
-          maxAsteroids = 2; // Old easy settings are now Medium
-          baseSpeed = 0.45 + scoreRef.current * 0.01;
-          speedRandomRange = 0.15;
+          spawnDelay = Math.max(280, 440 - scoreRef.current * 5);
+          maxAsteroids = 2;
+          baseSpeed = 0.35 + scoreRef.current * 0.007;
+          speedRandomRange = 0.12;
         } else if (diff === 'hard') {
-          spawnDelay = Math.max(150, 260 - scoreRef.current * 4);
-          maxAsteroids = 4; // Old medium settings are now Hard
-          baseSpeed = 0.85 + scoreRef.current * 0.02;
-          speedRandomRange = 0.3;
+          spawnDelay = Math.max(220, 340 - scoreRef.current * 4);
+          maxAsteroids = 3;
+          baseSpeed = 0.55 + scoreRef.current * 0.012;
+          speedRandomRange = 0.2;
         }
 
         if (spawnTimer.current >= spawnDelay && asteroids.current.length < maxAsteroids) {
