@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
@@ -301,6 +302,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
           struggled: prev[bubble.word]?.struggled || 0
         }
       }));
+      saveProgress(recordWordSpoken(loadProgress(), 'bubble-popper', bubble.word));
 
       // reset transcript so buffer parses next values cleanly
       setLastHeardTranscript('');
@@ -349,6 +351,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
         struggled: (prev[word]?.struggled || 0) + 1
       }
     }));
+    saveProgress(recordWordStruggled(loadProgress(), 'bubble-popper', word));
   };
 
   // Start active game state
@@ -378,6 +381,8 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 
     startVoiceEngine();
     speakSound.playCoin();
+    const updatedProgress = recordSessionPlayed(loadProgress(), 'bubble-popper');
+    saveProgress(updatedProgress);
   };
 
   // Pause/resume: freeze the bubbles and stop listening while paused.
