@@ -48,7 +48,7 @@ implementation, and the verification.
 | Deterministic Voice Racer movement ([#85](https://github.com/scaredofthesix/voice-games/issues/85)) | 3 | [#94](https://github.com/scaredofthesix/voice-games/pull/94) | flikspy -> MMavInno | `updateRacerMovement` in `src/voice/engine.ts` | unit tests on the movement update |
 | End-of-climb alien encounter ([#86](https://github.com/scaredofthesix/voice-games/issues/86)) | 3 | [#92](https://github.com/scaredofthesix/voice-games/pull/92) | MMavInno -> flikspy | `src/components/RocketClimb.tsx`, Rocket Climb win screen | win-screen integration test |
 | Progress view, US-10 ([#25](https://github.com/scaredofthesix/voice-games/issues/25)) | 8 | [#91](https://github.com/scaredofthesix/voice-games/pull/91) | Kotumbaa -> MMavInno | `src/progress.ts`, `src/components/ProgressView.tsx` | UAT-07; progress unit + integration tests |
-| Architecture, process docs, docs site, reports | 8 | TODO (this PR) | scaredofthesix -> flikspy | `docs/architecture/*`, `docs/development-process.md`, `mkdocs.yml`, `reports/week5/*` | link check CI; docs site build |
+| Architecture, process docs, docs site, reports | 8 | TODO (this PR) | scaredofthesix -> Kotumbaa | `docs/architecture/*`, `docs/development-process.md`, `mkdocs.yml`, `reports/week5/*` | link check CI; docs site build |
 
 ## Delivered product changes (MVP v2 over v0.2.1)
 
