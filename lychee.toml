@@ -31,6 +31,12 @@ exclude = [
   # MVP v0 deployment on the Innopolis VM: private IP + self-signed cert, not
   # reachable from GitHub CI; verified manually on the Innopolis network.
   "^https://10\\.93\\.26\\.180",
+  # Published at Sprint 3 close (Assignment 5): the hosted MkDocs docs site and
+  # the v0.3.0 release tag are linked from the docs ahead of publication.
+  # TODO remove both exclusions once the docs site is deployed and v0.3.0 is
+  # tagged, so lychee guards them like every other link.
+  "^https://scaredofthesix\\.github\\.io/voice-games/docs/",
+  "^https://github\\.com/scaredofthesix/voice-games/releases/tag/v0\\.3\\.0",
 ]
 
 # Check links inside fenced code blocks too? Keep code-block URLs out to avoid
