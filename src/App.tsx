@@ -30,7 +30,14 @@ import { WordLadderGame } from './components/WordLadderGame';
 import { SkateWordGame } from './components/SkateWordGame';
 import { AsteWordGame } from './components/AsteWordGame';
 import { ProgressView } from './components/ProgressView';
-import { speakWord, speakSound, matchesWord, isSpeechSynthesisActive } from './utils';
+import {
+  createInitialRacerMovementState,
+  speakWord,
+  speakSound,
+  matchesWord,
+  isSpeechSynthesisActive,
+  updateRacerMovement,
+} from './voice/engine';
 import { useUiLanguage } from './uiLanguage';
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, recordHighScore } from './progress';
 
@@ -209,6 +216,9 @@ export default function App() {
   const [bubbleLevel, setBubbleLevel] = useState(1);
   const [lives, setLives] = useState(3);
   const [playerLane, setPlayerLane] = useState<Lane>(1); // 1 = Center
+  const [racerMovementState, setRacerMovementState] = useState(() =>
+    createInitialRacerMovementState(1),
+  );
   const [vocabIndex, setVocabIndex] = useState(0);
   const [lastHeardTranscript, setLastHeardTranscript] = useState('');
   const [wordMatchFlash, setWordMatchFlash] = useState(false);
@@ -301,9 +311,21 @@ export default function App() {
 
   // Perform the lane change dynamically
   const performLaneShift = useCallback((newLane: Lane) => {
-    setPlayerLane(newLane);
+    setRacerMovementState((prev) => updateRacerMovement(prev, newLane, Date.now(), 180));
     setStruggleCounter({}); // Reset struggle help on any shift!
   }, []);
+
+  useEffect(() => {
+    setPlayerLane(racerMovementState.lane);
+  }, [racerMovementState.lane]);
+
+  useEffect(() => {
+    if (racerMovementState.pendingLane === null) return;
+    const tick = window.setInterval(() => {
+      setRacerMovementState((prev) => updateRacerMovement(prev, null, Date.now(), 180));
+    }, 50);
+    return () => window.clearInterval(tick);
+  }, [racerMovementState.pendingLane]);
 
   // Trigger words initialize on playing start
   useEffect(() => {
@@ -487,6 +509,7 @@ export default function App() {
     setLives(3);
     setLevel(1);
     setPlayerLane(1);
+    setRacerMovementState(createInitialRacerMovementState(1));
     setVocabIndex(0);
     setLastHeardTranscript('');
     setWordStudyStats({});
