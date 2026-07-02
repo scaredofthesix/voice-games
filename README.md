@@ -19,7 +19,10 @@ A browser-based **voice-controlled English learning portal for children**. The c
 - **User stories (SP + MVP + status):** [docs/user-stories.md](./docs/user-stories.md)
 - **Roadmap:** [docs/roadmap.md](./docs/roadmap.md) · **Definition of Done:** [docs/definition-of-done.md](./docs/definition-of-done.md)
 - **Quality:** [quality requirements](./docs/quality-requirements.md) · [quality requirement tests](./docs/quality-requirement-tests.md) · [testing strategy](./docs/testing.md) · [user acceptance tests](./docs/user-acceptance-tests.md)
-- **Sprint 1 milestone:** https://github.com/scaredofthesix/voice-games/milestone/1
+- **Architecture:** [overview + views](./docs/architecture/README.md) · [decision records (ADRs)](./docs/architecture/adr/README.md)
+- **Process:** [development process and configuration management](./docs/development-process.md)
+- **Docs site (MkDocs):** https://scaredofthesix.github.io/voice-games/docs/
+- **Milestones:** [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) · [Sprint 2](https://github.com/scaredofthesix/voice-games/milestone/2) · [Sprint 3 (MVP v2)](https://github.com/scaredofthesix/voice-games/milestone/3)
 
 ## Tech stack
 
@@ -123,7 +126,7 @@ Since the Web Speech API requires a secure context, modern browsers **block micr
 ├── index.html              # Vite entry -> src/main.tsx
 ├── package.json
 ├── vite.config.ts
-├── docs/                   # user stories, roadmap, DoD, quality requirements, QRTs, testing, UAT
+├── docs/                   # user stories, roadmap, DoD, quality docs, architecture + ADRs, dev process, UAT
 ├── vitest.config.ts        # test runner + coverage thresholds
 ├── lighthouserc.json       # accessibility audit config (additional QA check)
 ├── src/

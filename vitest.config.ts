@@ -33,6 +33,7 @@ export default defineConfig({
       // the gate that matters is the per-file floor on critical logic.
       thresholds: {
         'src/utils.ts': { lines: 30 },
+        'src/voice/engine.ts': { lines: 30 },
         'src/gameLogic.ts': { lines: 30 },
       },
     },

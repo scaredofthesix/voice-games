@@ -28,7 +28,7 @@ These requirements are maintained project assets introduced in Assignment 4
 - **Rationale:** Matching is the core of every game. A child loses trust in the
   game if a correct word is not accepted, or if any noise is accepted as
   correct. Correctness here directly drives learning value.
-- **Traceability:** Matcher in `src/utils.ts` (`matchesWord`); game rules in
+- **Traceability:** Matcher `matchesWord` in `src/voice/engine.ts`; game rules in
   `src/gameLogic.ts`. Relates to user stories US-04 and US-08.
 - **Verified by:** QRT-1 (`src/utils.test.ts`, `src/gameLogic.test.ts`, and the
   game integration tests).
@@ -43,7 +43,7 @@ These requirements are maintained project assets introduced in Assignment 4
 - **Rationale:** The matcher runs on every interim and final transcript while
   the microphone is live. If it were slow it would stutter the game and break
   the sense of voice control for a young player.
-- **Traceability:** `matchesWord` and `levenshteinDistance` in `src/utils.ts`.
+- **Traceability:** `matchesWord` and `levenshteinDistance` in `src/voice/engine.ts`.
 - **Verified by:** QRT-2 (`src/utils.perf.test.ts`).
 
 ## QR-3 Operable, accessible game controls
