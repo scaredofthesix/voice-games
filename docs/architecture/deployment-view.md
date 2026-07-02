@@ -8,7 +8,7 @@ Google's speech service.
 ## Deployment diagram
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph Dev["Developer machine / CI"]
         Src["GitHub repo<br/>scaredofthesix/voice-games<br/>(protected main)"]
         CI["GitHub Actions CI<br/>type check, tests, build,<br/>Lighthouse a11y"]

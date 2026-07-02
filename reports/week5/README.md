@@ -30,8 +30,9 @@ the target English word out loud (Web Speech API, Chrome only).
 - **Sprint milestone (authoritative scope):** [Assignment 5 - Sprint 3 (MVP v2)](https://github.com/scaredofthesix/voice-games/milestone/3).
 - **Product Backlog board:** [GitHub Project - Product Backlog view](https://github.com/users/scaredofthesix/projects/1).
 - **Sprint Backlog board/table:** [GitHub Project - Sprint Backlog view](https://github.com/users/scaredofthesix/projects/1) (filter Sprint = "Sprint 3").
-- **Total Sprint size (Story Points):** 45 SP across 8 PBIs.
-- **Release:** MVP v2 = [v0.3.0](https://github.com/scaredofthesix/voice-games/releases/tag/v0.3.0) (TODO: tag at sprint close). MVP v1 = v0.1.0; v0.2.x were Sprint 2 increments toward MVP v2.
+- **Total Sprint size (Story Points):** 45 SP planned across 8 PBIs, plus 5 SP
+  of emergent work accepted mid-sprint (#97, #101, #102) = 50 SP delivered.
+- **Release:** MVP v2 = [v0.3.0](https://github.com/scaredofthesix/voice-games/releases/tag/v0.3.0) (tagged 2026-07-03, marked Latest). MVP v1 = v0.1.0; v0.2.x were Sprint 2 increments toward MVP v2.
 
 ## Sprint scope and traceability
 
@@ -48,14 +49,17 @@ implementation, and the verification.
 | Deterministic Voice Racer movement ([#85](https://github.com/scaredofthesix/voice-games/issues/85)) | 3 | [#94](https://github.com/scaredofthesix/voice-games/pull/94) | flikspy -> MMavInno | `updateRacerMovement` in `src/voice/engine.ts` | unit tests on the movement update |
 | End-of-climb alien encounter ([#86](https://github.com/scaredofthesix/voice-games/issues/86)) | 3 | [#92](https://github.com/scaredofthesix/voice-games/pull/92) | MMavInno -> flikspy | `src/components/RocketClimb.tsx`, Rocket Climb win screen | win-screen integration test |
 | Progress view, US-10 ([#25](https://github.com/scaredofthesix/voice-games/issues/25)) | 8 | [#91](https://github.com/scaredofthesix/voice-games/pull/91) | Kotumbaa -> MMavInno | `src/progress.ts`, `src/components/ProgressView.tsx` | UAT-07; progress unit + integration tests |
-| Architecture, process docs, docs site, reports | 8 | TODO (this PR) | scaredofthesix -> Kotumbaa | `docs/architecture/*`, `docs/development-process.md`, `mkdocs.yml`, `reports/week5/*` | link check CI; docs site build |
+| Architecture, process docs, docs site, reports ([#95](https://github.com/scaredofthesix/voice-games/issues/95)) | 8 | [#96](https://github.com/scaredofthesix/voice-games/pull/96), [#100](https://github.com/scaredofthesix/voice-games/pull/100) | scaredofthesix -> Kotumbaa | `docs/architecture/*`, `docs/development-process.md`, `mkdocs.yml`, `reports/week5/*` | link check CI; docs site build |
+| Strict voice matching, no false accepts ([#97](https://github.com/scaredofthesix/voice-games/issues/97)) - emergent, from user testing | 3 | [#98](https://github.com/scaredofthesix/voice-games/pull/98), [#99](https://github.com/scaredofthesix/voice-games/pull/99) | scaredofthesix -> TeraloToxin | `matchesWord` in `src/voice/engine.ts` | no-false-accepts unit suite; local playtest |
+| Aste difficulty rebalance ([#101](https://github.com/scaredofthesix/voice-games/issues/101)) + version footer ([#102](https://github.com/scaredofthesix/voice-games/issues/102)) - emergent, follow-up to #97 | 2 | [#99](https://github.com/scaredofthesix/voice-games/pull/99) | scaredofthesix -> TeraloToxin | `src/components/AsteWordGame.tsx` levels; `__APP_VERSION__` footer in `src/App.tsx` | playtest of all levels; footer visible on the live build |
 
 ## Delivered product changes (MVP v2 over v0.2.1)
 
 - **Two new games:** Skate Word and Aste Word Destroyer - six voice games total.
 - **Voice reliability:** the app no longer scores its own spoken hints
-  (anti-feedback gate), and the matcher handles Russian transcripts and small
-  pronunciation slips (Cyrillic normalization + Levenshtein tolerance).
+  (anti-feedback gate), the matcher handles Russian transcripts and small
+  pronunciation slips (Cyrillic normalization + Levenshtein tolerance), and
+  false accepts were eliminated with strict per-token matching (#97).
 - **Russian-first UI** with an RU/EN toggle.
 - **Boss Fight modes:** finite runs (10/20/30) plus an unlockable Endless mode
   (direct Sprint 2 customer request).
@@ -77,7 +81,7 @@ implementation, and the verification.
   (Scrum cadence, protected-trunk Git workflow with a gitGraph, quality gates,
   SemVer releases).
 - Hosted docs site: https://scaredofthesix.github.io/voice-games/docs/
-  (MkDocs Material, `mkdocs.yml`; TODO: publish at sprint close).
+  (MkDocs Material, `mkdocs.yml`; published 2026-07-03).
 - Definition of Done extended with the architecture documentation gate
   ([docs/definition-of-done.md](../../docs/definition-of-done.md), item 12).
 - Four new UAT scenarios UAT-05..08

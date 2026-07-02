@@ -16,10 +16,10 @@ voice slightly differently and miss a fix.
 
 Consolidate all voice concerns into a **single cohesive module `src/voice/`**:
 
-- `engine.ts` - pure logic: `matchesWord` (RU/EN normalization, consonant and
-  Levenshtein tolerance), `speakWord`/`speakSound` with the anti-feedback
-  bookkeeping, `isSpeechSynthesisActive`, and the deterministic racer movement
-  update.
+- `engine.ts` - pure logic: `matchesWord` (RU/EN normalization with a
+  Levenshtein tolerance; tightened to strict per-token matching in issue #97),
+  `speakWord`/`speakSound` with the anti-feedback bookkeeping,
+  `isSpeechSynthesisActive`, and the deterministic racer movement update.
 - `useVoiceGame.ts` - the `useSpeechRecognition` React hook owning the
   `SpeechRecognition` lifecycle (start/stop, auto-restart, error mapping).
 

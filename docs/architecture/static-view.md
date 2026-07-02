@@ -5,64 +5,48 @@ way the dependencies point. The guiding rule is that **dependencies point from
 UI toward pure logic**: React components may import pure modules, pure modules
 never import React or any component.
 
-## Component diagram
+## Layer diagram
+
+The big picture first: five layers, dependencies always point downward. The
+per-component detail (which game uses which module) lives in the
+[responsibilities table](#component-responsibilities) below instead of edges,
+so the diagram stays readable.
 
 ```mermaid
 flowchart TB
-    subgraph Shell["Application shell"]
-        App["App.tsx<br/>view router + hub + Voice Racer"]
-        Lang["uiLanguage.tsx<br/>RU/EN UI language context"]
-    end
+    App["<b>Application shell</b><br/>App.tsx - view router, hub, Voice Racer state<br/>uiLanguage.tsx - RU/EN language context"]
+    Games["<b>Game components</b> - src/components/<br/>Voice Racer scene, Bubble Popper, Boss Fight,<br/>Voice Rocket Climb, Skate Word, Aste Word Destroyer,<br/>Progress view, custom words manager, audio visualizer"]
+    Voice["<b>Voice module</b> - src/voice/<br/>engine.ts (matching, TTS, anti-feedback gate)<br/>useVoiceGame.ts (recognition lifecycle hook)"]
+    Logic["<b>Pure logic and data</b><br/>gameLogic.ts, progress.ts, data.ts, types.ts"]
+    Browser["<b>Browser platform APIs</b><br/>Web Speech (SpeechRecognition + speechSynthesis),<br/>Canvas 2D, localStorage"]
 
-    subgraph Games["Game components (src/components/)"]
-        Racer["GameCanvas.tsx<br/>Voice Racer scene"]
-        Bubble["BubblePopperGame.tsx"]
-        Boss["BossFightGame.tsx + BossArena.tsx"]
-        Ladder["WordLadderGame.tsx + RocketClimb.tsx<br/>Voice Rocket Climb"]
-        Skate["SkateWordGame.tsx"]
-        Aste["AsteWordGame.tsx"]
-        Progress["ProgressView.tsx<br/>per-game stats screen"]
-        Custom["CustomWordsManager.tsx"]
-        Visual["AudioVisualizer.tsx"]
-    end
+    App --> Games
+    Games --> Voice
+    Games --> Logic
+    Voice --> Browser
+    Games -->|canvas rendering| Browser
+    Logic -->|localStorage| Browser
+```
 
-    subgraph Voice["Voice module (src/voice/)"]
-        Engine["engine.ts<br/>matchesWord, speakWord, speakSound,<br/>isSpeechSynthesisActive, racer movement"]
-        Hook["useVoiceGame.ts<br/>useSpeechRecognition hook<br/>(Web Speech lifecycle)"]
-    end
+## Voice path detail
 
-    subgraph Logic["Pure logic and data"]
-        GameLogic["gameLogic.ts<br/>boss roster, game rules"]
-        ProgressStore["progress.ts<br/>localStorage progress store"]
-        Data["data.ts<br/>built-in word categories"]
-        Types["types.ts"]
-    end
+The architecturally most important slice - how any game gets voice input and
+output. Every game goes through the same two files, which is what makes the
+anti-feedback gate and the strict matcher apply everywhere at once:
 
-    subgraph Browser["Browser platform APIs"]
-        SR["SpeechRecognition<br/>(Web Speech API)"]
-        TTS["speechSynthesis<br/>(Web Speech API)"]
-        Canvas["Canvas 2D"]
-        LS["localStorage"]
-    end
+```mermaid
+flowchart TB
+    Game["Any game component"]
+    Hook["useVoiceGame.ts<br/>start/stop, restart on silence,<br/>drops transcripts while TTS speaks"]
+    Engine["engine.ts<br/>matchesWord (strict token match),<br/>speakWord / speakSound,<br/>isSpeechSynthesisActive"]
+    SR["SpeechRecognition"]
+    TTS["speechSynthesis"]
 
-    App --> Lang
-    App --> Racer & Bubble & Boss & Ladder & Skate & Aste & Progress & Custom & Visual
-    App --> Engine
-    App --> Hook
-    App --> ProgressStore
-    App --> Data
-
-    Bubble & Boss & Ladder & Skate & Aste --> Engine
-    Bubble & Boss & Ladder & Skate & Aste --> Hook
-    Boss & Ladder --> GameLogic
-    Progress --> ProgressStore
-
-    Hook --> Engine
+    Game -->|"transcripts in"| Hook
+    Game -->|"match + speak"| Engine
+    Hook -->|"anti-feedback check"| Engine
     Hook --> SR
     Engine --> TTS
-    Racer & Boss & Ladder & Skate & Aste --> Canvas
-    ProgressStore --> LS
-    Custom --> LS
 ```
 
 ## Component responsibilities

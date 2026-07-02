@@ -32,43 +32,31 @@ all later work.
   accessibility audit. These gates and tests are maintained assets and continue to apply to
   every later sprint per the updated Definition of Done.
 
-## Next - from the Sprint 2 review and UAT (next release, after v0.2.1)
+## Done - Sprint 3 (MVP v2 complete, release v0.3.0, 29 Jun - 5 Jul 2026)
 
-Raised by the customer at the recorded Sprint Review / UAT on 2026-06-27. The
-demonstrated build v0.2.1 is not changed; these are scheduled for the next
-release.
+MVP v2 shipped as [release v0.3.0](https://github.com/scaredofthesix/voice-games/releases/tag/v0.3.0).
+Every Sprint 2 customer review finding was addressed.
 
-- Fix the speech engine self-trigger (audio-loop false positive): mute the
-  microphone while text-to-speech plays and / or drop the auto hint, and
-  recalibrate the matching tolerance lowered after v0.1.0 - issue #81.
-- Extract a shared voice-processing module reused by all games for uniform
-  accuracy - issue #82.
-- Boss Fight: finite difficulty modes (10 / 20 / 30 words) plus an unlockable
-  Infinite Mode, with the design documented - issue #83.
-- Default the interface to Russian on launch, keeping the RU/EN toggle - issue #84.
-- Smooth Voice Racer movement physics under live streaming - issue #85.
-- Later polish: an interactive end-of-climb event (meet an alien) in Voice Rocket
-  Climb - issue #86.
+- **Two more games** completing the customer "four more games" request (issue #54,
+  closed): Skate Word and Aste Word Destroyer (PR #88).
+- **US-10 Progress view**: per-game words practised, high scores and sessions,
+  stored on the device - issue #25.
+- **Anti-feedback gate**: the app no longer scores its own spoken hints - issue #81.
+- **Shared voice module** (`src/voice/`) reused by all six games - issue #82.
+- **Boss Fight difficulty modes**: 10 / 20 / 30 bosses plus unlockable Endless -
+  issue #83 (also closes US-12 together with the Aste difficulty levels).
+- **Russian-first interface** with the RU/EN toggle kept - issue #84.
+- **Deterministic Voice Racer movement** (fixed timestep, de-jittered input) - issue #85.
+- **Alien encounter** on the Rocket Climb win screen - issue #86.
+- **Strict voice matching**: false accepts eliminated - issue #97; Aste difficulty
+  rebalanced for it (#101) and a version footer added (#102).
+- **Architecture, process and docs site**: Mermaid views, 5 ADRs,
+  development-process doc, hosted MkDocs site - issue #95.
 
-## Next - MVP v2 (remaining post-review scope)
+## Next - MVP v3 candidates
 
-Confirmed with the customer at the Sprint 1 review.
-
-- **More games:** the customer asked for about four more games; two shipped in Sprint 2,
-  more to follow - idea collection in issue #54.
-- US-15 / US-09 Bilingual support: Russian translation shown and read aloud (understanding),
-  English word clickable for pronunciation (imitation) - issues #36, #37.
-- US-17 Localized (Russian) interface with a language toggle.
-- US-16 Pause button that also stops the microphone.
-- US-10 Parent progress: per-word statistics pooled across all lists and all games,
-  with a CSV export for teachers (US-19).
-- US-11 Upload custom word lists; US-18 play with built-in words without any setup.
-- US-03 / US-05 in-game word visibility and easy microphone access.
-- US-06 Immediate in-game feedback so a child can retry mispronounced words.
-
-## Later - MVP v3 and beyond
-
+- US-19 Download the word list with stats as CSV for teachers - issue #52.
 - US-20 Phrase-based translation game: build an English phrase word by word, with a
-  Russian-to-English "translate the phrase" mode (Doodle Jump style platforms).
-- US-12 Difficulty levels (largely driven by the chosen word list).
-- Progress saving across sessions and an accessibility pass (keyboard fallback, captions).
+  Russian-to-English "translate the phrase" mode - issue #53 (phrase word sets
+  already shipped in v0.2.1; the assembly mechanic remains).
+- An accessibility pass (keyboard fallback, captions).

@@ -26,10 +26,10 @@ npm run build       # production build
 
 - **Unit tests** for critical product logic:
   - `src/voice/voiceEngine.test.ts` and `src/utils.test.ts` - the shared voice
-    engine (`src/voice/engine.ts`, see ADR-005): the matcher (`matchesWord`,
-    `levenshteinDistance`, `consonantsOnly`, `cleanWord`, RU/EN
-    normalization), the TTS anti-feedback gate, and the deterministic racer
-    movement update.
+    engine (`src/voice/engine.ts`, see ADR-005): the strict matcher
+    (`matchesWord`, `levenshteinDistance`, `cleanWord`, RU/EN normalization,
+    plus a no-false-accepts suite for issue #97), the TTS anti-feedback gate,
+    and the deterministic racer movement update.
   - `src/gameLogic.test.ts` and `src/gameLogic.gauntlet.test.ts` - pure game
     rules, including the Boss Fight finite modes and the Endless roster.
   - `src/data.test.ts` - built-in word-list integrity.

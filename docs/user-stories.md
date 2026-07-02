@@ -10,32 +10,32 @@ Authoritative current registry of stable user-story IDs and current membership. 
 
 | ID | Short title | MoSCoW | SP | MVP | Issue | Work Status | Sprint |
 |---|---|---|---|---|---|---|---|
-| US-01 | Start a game from the home screen | Must Have | 2 | v1 | [#16](https://github.com/scaredofthesix/voice-games/issues/16) | To Do | [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) |
-| US-02 | Choose which word game to play | Must Have | 8 | v1 | [#17](https://github.com/scaredofthesix/voice-games/issues/17) | To Do | [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) |
-| US-04 | Pronounce a word to trigger the in-game action | Must Have | 8 | v1 | [#19](https://github.com/scaredofthesix/voice-games/issues/19) | To Do | [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) |
-| US-07 | See my results at the end of a round | Must Have | 3 | v1 | [#22](https://github.com/scaredofthesix/voice-games/issues/22) | To Do | [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) |
-| US-08 | Retry a word until it is recognized | Must Have | 5 | v1 | [#23](https://github.com/scaredofthesix/voice-games/issues/23) | To Do | [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) |
-| US-03 | See the target word clearly | Must Have | 2 | v2 | [#18](https://github.com/scaredofthesix/voice-games/issues/18) | To Do | - |
-| US-05 | Grant microphone access easily | Must Have | 2 | v2 | [#20](https://github.com/scaredofthesix/voice-games/issues/20) | To Do | - |
-| US-09 | Hear how the English word should sound | Must Have | 2 | v2 | [#24](https://github.com/scaredofthesix/voice-games/issues/24) | To Do | - |
-| US-10 | Review my child's progress | Must Have | 8 | v2 | [#25](https://github.com/scaredofthesix/voice-games/issues/25) | To Do | - |
-| US-11 | Upload a custom word list | Must Have | 5 | v2 | [#26](https://github.com/scaredofthesix/voice-games/issues/26) | To Do | - |
-| US-18 | Play with built-in words without uploading a list | Must Have | 3 | v2 | [#51](https://github.com/scaredofthesix/voice-games/issues/51) | To Do | - |
-| US-06 | Get immediate feedback on each attempt | Should Have | 3 | v2 | [#21](https://github.com/scaredofthesix/voice-games/issues/21) | To Do | - |
-| US-15 | See and hear the word's translation | Should Have | 5 | v2 | [#29](https://github.com/scaredofthesix/voice-games/issues/29) | To Do | - |
-| US-17 | Localized interface with a language toggle | Should Have | 5 | v2 | [#32](https://github.com/scaredofthesix/voice-games/issues/32) | To Do | - |
-| US-12 | Adjust difficulty level | Could Have | 3 | v2 | [#27](https://github.com/scaredofthesix/voice-games/issues/27) | To Do | - |
-| US-16 | Pause the game | Could Have | 2 | v2 | [#30](https://github.com/scaredofthesix/voice-games/issues/30) | To Do | - |
+| US-01 | Start a game from the home screen | Must Have | 2 | v1 | [#16](https://github.com/scaredofthesix/voice-games/issues/16) | Done | [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) |
+| US-02 | Choose which word game to play | Must Have | 8 | v1 | [#17](https://github.com/scaredofthesix/voice-games/issues/17) | Done | [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) |
+| US-04 | Pronounce a word to trigger the in-game action | Must Have | 8 | v1 | [#19](https://github.com/scaredofthesix/voice-games/issues/19) | Done | [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) |
+| US-07 | See my results at the end of a round | Must Have | 3 | v1 | [#22](https://github.com/scaredofthesix/voice-games/issues/22) | Done | [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) |
+| US-08 | Retry a word until it is recognized | Must Have | 5 | v1 | [#23](https://github.com/scaredofthesix/voice-games/issues/23) | Done | [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) |
+| US-03 | See the target word clearly | Must Have | 2 | v2 | [#18](https://github.com/scaredofthesix/voice-games/issues/18) | Done | - |
+| US-05 | Grant microphone access easily | Must Have | 2 | v2 | [#20](https://github.com/scaredofthesix/voice-games/issues/20) | Done | - |
+| US-09 | Hear how the English word should sound | Must Have | 2 | v2 | [#24](https://github.com/scaredofthesix/voice-games/issues/24) | Done | - |
+| US-10 | Review my child's progress | Must Have | 8 | v2 | [#25](https://github.com/scaredofthesix/voice-games/issues/25) | Done | [Sprint 3](https://github.com/scaredofthesix/voice-games/milestone/3) |
+| US-11 | Upload a custom word list | Must Have | 5 | v2 | [#26](https://github.com/scaredofthesix/voice-games/issues/26) | Done | - |
+| US-18 | Play with built-in words without uploading a list | Must Have | 3 | v2 | [#51](https://github.com/scaredofthesix/voice-games/issues/51) | Done | - |
+| US-06 | Get immediate feedback on each attempt | Should Have | 3 | v2 | [#21](https://github.com/scaredofthesix/voice-games/issues/21) | Done | - |
+| US-15 | See and hear the word's translation | Should Have | 5 | v2 | [#29](https://github.com/scaredofthesix/voice-games/issues/29) | Done | - |
+| US-17 | Localized interface with a language toggle | Should Have | 5 | v2 | [#32](https://github.com/scaredofthesix/voice-games/issues/32) | Done | - |
+| US-12 | Adjust difficulty level | Could Have | 3 | v2 | [#27](https://github.com/scaredofthesix/voice-games/issues/27) | Done | - |
+| US-16 | Pause the game | Could Have | 2 | v2 | [#30](https://github.com/scaredofthesix/voice-games/issues/30) | Done | [Sprint 2](https://github.com/scaredofthesix/voice-games/milestone/2) |
 | US-19 | Download the word list with stats as CSV | Could Have | 3 | v2 | [#52](https://github.com/scaredofthesix/voice-games/issues/52) | To Do | - |
 | US-20 | Phrase-based translation game | Could Have | 13 | v3 | [#53](https://github.com/scaredofthesix/voice-games/issues/53) | To Do | - |
-| US-13 | Play on any browser | Won't Have | - | - | [#28](https://github.com/scaredofthesix/voice-games/issues/28) | To Do | - |
+| US-13 | Play on any browser | Won't Have | - | - | [#28](https://github.com/scaredofthesix/voice-games/issues/28) | - | - |
 | US-14 | Real-time multiplayer voice race | - | - | - | [#31](https://github.com/scaredofthesix/voice-games/issues/31) | - | - |
 
 ## Estimation summary
 
-- **MVP v1 (Sprint 1) committed:** 26 SP (US-01 2, US-02 8, US-04 8, US-07 3, US-08 5).
-- **Total active user-story backlog:** 82 SP (excludes the Won't-Have US-13 and the removed US-14).
-- **MVP v2 selected so far:** 43 SP across 12 stories, plus four new games still to be scoped (issue [#54](https://github.com/scaredofthesix/voice-games/issues/54)).
+- **MVP v1 (Sprint 1) committed:** 26 SP (US-01 2, US-02 8, US-04 8, US-07 3, US-08 5) - delivered as release v0.1.0.
+- **Delivered through v0.3.0 (MVP v2):** 66 SP - every active story except US-19 and US-20. The four extra games requested by the customer were also delivered (issue [#54](https://github.com/scaredofthesix/voice-games/issues/54), closed).
+- **Remaining active backlog:** 16 SP (US-19 CSV export 3 SP, US-20 phrase game 13 SP - MVP v3 candidate).
 
 ## MVP v1 scope (Sprint 1)
 
