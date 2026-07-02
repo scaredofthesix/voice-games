@@ -1,8 +1,9 @@
 # Definition of Done (Team 40)
 
 A Product Backlog Item (user story or supporting PBI) is **Done** only when all of the
-following are true. This is the team's shared quality bar, first agreed for Assignment 3
-and extended in Assignment 4 with automated quality gates. It applies from Sprint 1 onward
+following are true. This is the team's shared quality bar, first agreed for Assignment 3,
+extended in Assignment 4 with automated quality gates, and extended in
+Assignment 5 with the architecture documentation gate. It applies from Sprint 1 onward
 and stays in force for later sprints unless a later requirement explicitly supersedes it.
 
 1. All of the item's **acceptance criteria** are met and manually verified in Google Chrome
@@ -28,6 +29,10 @@ and stays in force for later sprints unless a later requirement explicitly super
 11. Any new behavior is reflected in the relevant docs (`docs/user-stories.md`,
     `docs/roadmap.md`, and the quality docs when applicable) and the issue is moved to
     **Work Status = Done**.
+12. Any change that alters a **component boundary, a runtime flow, or the deployment
+    shape updates the architecture documentation** (`docs/architecture/` views), and any
+    significant design decision or a reversal of one is recorded as an **ADR** in
+    `docs/architecture/adr/`.
 
 If later project work changes the product stack, quality requirements, critical modules, or
 CI configuration, this Definition of Done and the testing evidence are updated to match

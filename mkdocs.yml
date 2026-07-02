@@ -1,0 +1,66 @@
+site_name: Voice Games - Team 40
+site_description: Documentation for Voice Games, browser voice-controlled English word games for children
+site_url: https://scaredofthesix.github.io/voice-games/docs/
+repo_url: https://github.com/scaredofthesix/voice-games
+repo_name: scaredofthesix/voice-games
+edit_uri: blob/main/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Architecture:
+      - Overview: architecture/README.md
+      - Static view: architecture/static-view.md
+      - Dynamic view: architecture/dynamic-view.md
+      - Deployment view: architecture/deployment-view.md
+      - ADRs:
+          - Index: architecture/adr/README.md
+          - ADR-001 Client-only Web Speech: architecture/adr/ADR-001-client-only-web-speech.md
+          - ADR-002 Canvas rendering: architecture/adr/ADR-002-canvas-rendering.md
+          - ADR-003 Static SPA on GitHub Pages: architecture/adr/ADR-003-static-spa-github-pages.md
+          - ADR-004 TTS anti-feedback gate: architecture/adr/ADR-004-tts-anti-feedback-gate.md
+          - ADR-005 Shared voice module: architecture/adr/ADR-005-shared-voice-module.md
+  - Process:
+      - Development process: development-process.md
+      - Definition of Done: definition-of-done.md
+      - Roadmap: roadmap.md
+  - Quality:
+      - Quality requirements: quality-requirements.md
+      - Quality requirement tests: quality-requirement-tests.md
+      - Testing strategy: testing.md
+      - User acceptance tests: user-acceptance-tests.md
+  - Product:
+      - User stories: user-stories.md

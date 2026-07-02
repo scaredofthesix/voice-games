@@ -6,20 +6,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned (from the Sprint 2 customer review / UAT, 2026-06-27)
+Sprint 3 (MVP v2) scope, to be released as v0.3.0. Every Sprint 2 customer
+review finding from 2026-06-27 is addressed below.
 
-Feedback from the recorded review is scheduled for the next release. The
-demonstrated build v0.2.1 is unchanged.
+### Added
 
-- Fix the speech engine self-triggering from its own spoken hint (audio-loop
-  false positive): mute the microphone while text-to-speech plays and / or drop
-  the auto hint, and recalibrate the matching tolerance (#81).
-- Extract a shared voice-processing module reused by all games (#82).
-- Boss Fight finite difficulty modes (10 / 20 / 30 words) plus an unlockable
-  Infinite Mode, with the design documented (#83).
-- Default the interface to Russian on launch, keeping the RU/EN toggle (#84).
-- Smooth Voice Racer movement physics under live streaming (#85).
-- Later polish: an interactive end-of-climb event in Voice Rocket Climb (#86).
+- Two new games: **Skate Word** (keep the skater rolling by pronouncing words)
+  and **Aste Word Destroyer** (destroy asteroids by saying their words) (#88).
+- **Boss Fight difficulty modes**: finite runs of 10 / 20 / 30 bosses plus an
+  **Endless mode unlocked** by completing a finite run (#83).
+- **Progress view**: per-game words practised, high scores, and sessions
+  played, stored on the device and reachable from the hub (US-10, #25).
+- A friendly **alien encounter** on the Voice Rocket Climb win screen (#86).
+- **Architecture documentation**: static, dynamic, and deployment views with
+  Mermaid diagrams and five architecture decision records under
+  `docs/architecture/`.
+- **Development process and configuration management** documentation
+  (`docs/development-process.md`) and a hosted MkDocs documentation site.
+
+### Changed
+
+- The interface now **defaults to Russian** with the RU/EN toggle kept (#84).
+- Voice handling consolidated into a **shared `src/voice/` module** (engine +
+  recognition hook) used by all six games (#82).
+- **Voice Racer movement is deterministic**: lane changes apply on a fixed
+  timestep with de-jittered voice input instead of frame-dependent updates
+  (#85).
+- The recognition matcher normalizes **Cyrillic transcripts** and tolerates
+  small pronunciation slips via Levenshtein distance.
+- Definition of Done extended with an architecture documentation gate.
+
+### Fixed
+
+- The speech engine **no longer scores its own spoken hints**: recognition
+  results are dropped while text-to-speech is playing (anti-feedback gate)
+  (#81).
 
 ## [0.2.1] - 2026-06-27
 

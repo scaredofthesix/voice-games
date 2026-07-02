@@ -25,15 +25,20 @@ npm run build       # production build
 ## Test types
 
 - **Unit tests** for critical product logic:
-  - `src/utils.test.ts` - speech recognition matcher (`matchesWord`,
-    `levenshteinDistance`, `consonantsOnly`, `cleanWord`).
-  - `src/gameLogic.test.ts` - pure game rules for the two new games.
+  - `src/voice/voiceEngine.test.ts` and `src/utils.test.ts` - the shared voice
+    engine (`src/voice/engine.ts`, see ADR-005): the matcher (`matchesWord`,
+    `levenshteinDistance`, `consonantsOnly`, `cleanWord`, RU/EN
+    normalization), the TTS anti-feedback gate, and the deterministic racer
+    movement update.
+  - `src/gameLogic.test.ts` and `src/gameLogic.gauntlet.test.ts` - pure game
+    rules, including the Boss Fight finite modes and the Endless roster.
   - `src/data.test.ts` - built-in word-list integrity.
 - **Integration tests** for important component interactions:
   - `src/components/WordLadderGame.test.tsx` and
     `src/components/BossFightGame.test.tsx` render the game, drive a fake
     `SpeechRecognition` (`src/test/mockSpeechRecognition.ts`), and verify the
     full flow from spoken word to game state, including accessibility roles.
+  - `src/App.test.tsx` covers hub-level rendering and navigation.
 - **Performance test** (time behaviour QRT): `src/utils.perf.test.ts`.
 
 ## Manual smoke test (voice-triggered gameplay outcome)
@@ -80,12 +85,17 @@ enforced by per-file thresholds in `vitest.config.ts`.
 | Critical module | Line coverage | Threshold |
 |-----------------|---------------|-----------|
 | `src/gameLogic.ts` | 100% | 30% |
-| `src/utils.ts` | ~62% | 30% |
+| `src/voice/engine.ts` | ~62% | 30% |
+| `src/utils.ts` (re-export shim over the voice engine) | 100% | 30% |
 | `src/components/WordLadderGame.tsx` | ~92% | - |
 | `src/components/BossFightGame.tsx` | ~91% | - |
 | `src/data.ts` | 100% | - |
 
-Global repository coverage is intentionally lower (around 23 percent) because
+The matcher and voice logic moved from `src/utils.ts` into `src/voice/engine.ts`
+in Sprint 3 (issue #82, ADR-005); the threshold now guards the real module and
+the shim alike.
+
+Global repository coverage is intentionally lower (around 30 percent) because
 the legacy canvas-and-voice UI (`App.tsx`, `GameCanvas.tsx`,
 `BubblePopperGame.tsx`) renders to an animated `<canvas>` with the live Web
 Speech and Web Audio APIs, which are not meaningfully unit testable in `jsdom`.

@@ -35,3 +35,6 @@ Thumbs.db
 
 # Course material (kept out of the product repo)
 *.pdf
+
+# MkDocs build output
+site/
