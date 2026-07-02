@@ -115,59 +115,86 @@ export function cleanWord(word: string): string {
   return word.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+// Targets shorter than this are matched exactly: 2-3 letter words have too
+// many one-edit neighbors (cat/cut/cap/car) for any fuzziness to be safe.
+const FUZZY_MIN_TARGET_LENGTH = 4;
+
+function normalizeToTokens(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(Boolean);
+}
+
+function fuzzyTolerance(targetLength: number, easeMode: boolean): number {
+  if (targetLength < FUZZY_MIN_TARGET_LENGTH) return 0;
+  if (targetLength <= (easeMode ? 5 : 6)) return 1;
+  return 2;
+}
+
+function matchesSingleToken(
+  spokenToken: string,
+  target: string,
+  easeMode: boolean,
+): boolean {
+  if (spokenToken === target) return true;
+
+  const tolerance = fuzzyTolerance(target.length, easeMode);
+  if (tolerance === 0) return false;
+  // The leading sound is what the recognizer gets right most reliably;
+  // requiring it keeps near-neighbor words (hat/cat, map/nap) from scoring.
+  if (spokenToken[0] !== target[0]) return false;
+  if (Math.abs(spokenToken.length - target.length) > tolerance) return false;
+
+  return levenshteinDistance(spokenToken, target) <= tolerance;
+}
+
+// A false accept teaches a child that a wrong word was right, so this matcher
+// prefers a false reject over a false accept: no substring matching, no
+// consonant-skeleton matching, and fuzziness only on whole tokens with a
+// tight, length-scaled edit budget.
 export function matchesWord(
   spoken: string,
   target: string,
   easeMode: boolean = false,
 ): boolean {
-  const sSpoken = spoken.toLowerCase().trim();
-  const sTarget = target.toLowerCase().trim();
+  const spokenTokens = normalizeToTokens(spoken);
+  const targetTokens = normalizeToTokens(target);
+  if (spokenTokens.length === 0 || targetTokens.length === 0) return false;
 
-  if (!sSpoken || !sTarget) return false;
-
-  if (sSpoken.includes(' ')) {
-    const tokens = sSpoken.split(/\s+/).filter(Boolean);
-    for (const token of tokens) {
-      if (token !== sSpoken && matchesWord(token, sTarget, easeMode)) {
-        return true;
-      }
-    }
+  if (targetTokens.length === 1) {
+    const targetToken = targetTokens[0];
+    return spokenTokens.some((token) =>
+      matchesSingleToken(token, targetToken, easeMode),
+    );
   }
 
-  if (sSpoken === sTarget) return true;
-
-  if (sSpoken.includes(sTarget) || sTarget.includes(sSpoken)) {
+  // Multi-word target (phrase vocabulary): the recognizer may glue the phrase
+  // into one token or keep it as separate words inside surrounding chatter.
+  const joinedTarget = targetTokens.join('');
+  if (
+    spokenTokens.some((token) =>
+      matchesSingleToken(token, joinedTarget, easeMode),
+    )
+  ) {
     return true;
   }
-
-  const cSpoken = cleanWord(sSpoken);
-  const cTarget = cleanWord(sTarget);
-  if (cSpoken === cTarget || cSpoken.includes(cTarget) || cTarget.includes(cSpoken)) {
-    return true;
-  }
-
-  const consSpoken = consonantsOnly(sSpoken);
-  const consTarget = consonantsOnly(sTarget);
-  if (consSpoken && consTarget) {
+  for (let i = 0; i + targetTokens.length <= spokenTokens.length; i++) {
+    const window = spokenTokens.slice(i, i + targetTokens.length);
     if (
-      consSpoken === consTarget ||
-      consSpoken.includes(consTarget) ||
-      consTarget.includes(consSpoken)
+      window.every((token, j) =>
+        matchesSingleToken(token, targetTokens[j], easeMode),
+      )
     ) {
       return true;
     }
-
-    const consDist = levenshteinDistance(consSpoken, consTarget);
-    if (consDist <= (easeMode ? 2 : 1)) {
+    if (matchesSingleToken(window.join(''), joinedTarget, easeMode)) {
       return true;
     }
   }
-
-  const fullDist = levenshteinDistance(cSpoken, cTarget);
-  const tolerance = easeMode
-    ? Math.max(1, Math.floor(cTarget.length * 0.4))
-    : Math.max(1, Math.floor(cTarget.length * 0.25));
-  return fullDist <= tolerance;
+  return false;
 }
 
 export function updateRacerMovement(
