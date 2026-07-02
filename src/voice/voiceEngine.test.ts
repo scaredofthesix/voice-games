@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchesWord, updateRacerMovement } from './engine';
+import { createInitialRacerMovementState, matchesWord, updateRacerMovement } from './engine';
 
 describe('voice engine helpers', () => {
   it('matches spoken input with tolerant word matching', () => {
@@ -8,6 +8,16 @@ describe('voice engine helpers', () => {
     expect(matchesWord('panda', 'panda', true)).toBe(true);
     expect(matchesWord('panta', 'panda', true)).toBe(true);
     expect(matchesWord('banana', 'apple', true)).toBe(false);
+  });
+
+  it('keeps the current lane stable when duplicate lane requests arrive before the cadence', () => {
+    const state = createInitialRacerMovementState(1);
+
+    const queued = updateRacerMovement(state, 2, 100, 120);
+    const duplicate = updateRacerMovement(queued, 2, 110, 120);
+
+    expect(duplicate.lane).toBe(1);
+    expect(duplicate.pendingLane).toBe(2);
   });
 
   it('applies lane changes on a fixed cadence and ignores duplicate jitter', () => {

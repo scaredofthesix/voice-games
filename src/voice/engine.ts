@@ -17,6 +17,14 @@ export interface RacerMovementState {
   lastAppliedAt: number;
 }
 
+export function createInitialRacerMovementState(lane: 0 | 1 | 2 = 1): RacerMovementState {
+  return {
+    lane,
+    pendingLane: null,
+    lastAppliedAt: 0,
+  };
+}
+
 export function isSpeechSynthesisActive(): boolean {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     return false;
@@ -185,7 +193,7 @@ export function updateRacerMovement(
   if (requestedLane === state.lane) {
     return {
       lane: state.lane,
-      pendingLane: null,
+      pendingLane: state.pendingLane,
       lastAppliedAt: now,
     };
   }
