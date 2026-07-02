@@ -1571,6 +1571,10 @@ export default function App() {
           <ProgressView onBackToHub={() => setCurrentView('HUB')} />
         )}
       </main>
+
+      <footer className="relative z-10 pb-3 text-center text-xs font-bold text-slate-400 select-none">
+        Voice Games v{__APP_VERSION__}
+      </footer>
     </div>
   );
 }
