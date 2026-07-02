@@ -36,8 +36,8 @@ flowchart LR
     SPA --> LS
     WS -.->|audio stream| GSpeech
 
-    VM["Legacy: Innopolis VM<br/>https://10.93.26.180:8085/<br/>Docker + python http.server<br/>(internal network only)"]
-    Src -.->|MVP v0 deploy, kept for history| VM
+    VM["Innopolis VM (internal mirror)<br/>https://10.93.26.180:8085/<br/>Docker + python http.server<br/>(internal network only)"]
+    Src -.->|manual deploy of tagged builds| VM
 ```
 
 ## Environments
@@ -47,7 +47,7 @@ flowchart LR
 | Production | https://scaredofthesix.github.io/voice-games/ | Public deployment used by the customer and for UAT | Manual publish of `dist/` to the `gh-pages` branch |
 | Docs site | https://scaredofthesix.github.io/voice-games/docs/ | Hosted project documentation (MkDocs Material) | `mkdocs build` published into the `docs/` folder of `gh-pages` |
 | Local dev | http://localhost:3000 | Development (`npm run dev`) | - |
-| Legacy VM | https://10.93.26.180:8085/ | MVP v0 demo host, reachable only inside the Innopolis network | Frozen |
+| Innopolis VM (internal mirror) | https://10.93.26.180:8085/ | Internal mirror of released builds (originally the MVP v0 host, now running v0.3.0); reachable only inside the Innopolis network | Manual deploy of tagged builds |
 
 ## Why HTTPS matters here
 

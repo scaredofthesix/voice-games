@@ -4,10 +4,10 @@ All notable changes to Voice Games are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.0] - 2026-07-03
 
-Sprint 3 (MVP v2) scope, to be released as v0.3.0. Every Sprint 2 customer
-review finding from 2026-06-27 is addressed below.
+Sprint 3 (MVP v2) release. Every Sprint 2 customer review finding from
+2026-06-27 is addressed below.
 
 ### Added
 
@@ -23,6 +23,8 @@ review finding from 2026-06-27 is addressed below.
   `docs/architecture/`.
 - **Development process and configuration management** documentation
   (`docs/development-process.md`) and a hosted MkDocs documentation site.
+- The app version is shown in a footer on every view, so the deployed build
+  is identifiable during customer sessions.
 
 ### Changed
 
@@ -35,12 +37,19 @@ review finding from 2026-06-27 is addressed below.
 - The recognition matcher normalizes **Cyrillic transcripts** and tolerates
   small pronunciation slips via Levenshtein distance.
 - Definition of Done extended with an architecture documentation gate.
+- **Aste Word Destroyer difficulty rebalanced** for the stricter matcher:
+  fewer and slower asteroids per level, leaving realistic time to pronounce
+  each word including recognition latency.
 
 ### Fixed
 
 - The speech engine **no longer scores its own spoken hints**: recognition
   results are dropped while text-to-speech is playing (anti-feedback gate)
   (#81).
+- **False-positive voice matches eliminated**: the matcher now requires a
+  strict token match with a tight, length-scaled edit-distance budget instead
+  of substring and consonant-skeleton heuristics that accepted almost any
+  speech (#97).
 
 ## [0.2.1] - 2026-06-27
 
@@ -123,7 +132,7 @@ review finding from 2026-06-27 is addressed below.
 - This is the MVP v1 release for the Sprint 1 customer review.
 - Voice input requires Google Chrome (Web Speech API).
 
-[Unreleased]: https://github.com/scaredofthesix/voice-games/compare/v0.2.1...HEAD
+[0.3.0]: https://github.com/scaredofthesix/voice-games/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/scaredofthesix/voice-games/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/scaredofthesix/voice-games/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/scaredofthesix/voice-games/releases/tag/v0.1.0
