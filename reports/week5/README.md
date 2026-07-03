@@ -61,7 +61,7 @@ implementation, and the verification.
   pronunciation slips (Cyrillic normalization + Levenshtein tolerance), and
   false accepts were eliminated with strict per-token matching (#97).
 - **Russian-first UI** with an RU/EN toggle.
-- **Boss Fight modes:** finite runs (10/20/30) plus an unlockable Endless mode
+- **Boss Fight modes:** finite runs (3/5/10 bosses) plus an unlockable Endless mode
   (direct Sprint 2 customer request).
 - **Deterministic Voice Racer movement** under live speech streaming.
 - **Rocket Climb alien encounter** on the win screen.
@@ -91,12 +91,34 @@ implementation, and the verification.
 
 - Sprint planning: milestone #3 scoped 2026-06-29 with implementer/reviewer
   assignment per PBI (see the table above).
-- Customer Sprint Review + UAT session: TODO (recorded session; summary in
-  [customer-review-summary.md](./customer-review-summary.md), sanitized
-  transcript alongside it; private links and timecodes in the Moodle PDF).
+- Customer Sprint Review + UAT session: held 2026-07-03 (recorded, permissions
+  granted; customer executed UAT-05..08 on the live v0.3.0 build - all passed).
+  Summary: [customer-review-summary.md](./customer-review-summary.md),
+  sanitized transcript:
+  [customer-review-transcript.md](./customer-review-transcript.md); private
+  links and timecodes in the Moodle PDF.
 - Retrospective: [retrospective.md](./retrospective.md).
+- Customer verdict: increment accepted as MVP v2; all feedback targets the
+  final version, which the customer expects **by 2026-07-19** (end of the week
+  preceding the demo day).
 - Reflection: [reflection.md](./reflection.md).
 - LLM usage report: [llm-report.md](./llm-report.md).
+
+## Customer feedback -> response (Sprint 3 review, 2026-07-03)
+
+| # | Customer feedback | Response |
+|---|---|---|
+| 1 | Progress view lost per-game sessions/words counters while records persisted (bug found live) | [#103](https://github.com/scaredofthesix/voice-games/issues/103) - fix in the next sprint |
+| 2 | Progress CSV export needs readable columns | [#104](https://github.com/scaredofthesix/voice-games/issues/104) - next sprint |
+| 3 | Use progress statistics to select the next word in the games (repeat struggled words, add unseen ones, de-prioritize mastered ones) | [#105](https://github.com/scaredofthesix/voice-games/issues/105) - committed for the final version |
+| 4 | Skate Word skater floats above the road; jump should clear obstacles | [#106](https://github.com/scaredofthesix/voice-games/issues/106) - next sprint |
+| 5 | Aste Word Destroyer should show Russian translations | [#107](https://github.com/scaredofthesix/voice-games/issues/107) - next sprint |
+| 6 | Boss Fight hit counter too small and ambiguous; duplicated health bar questioned | [#108](https://github.com/scaredofthesix/voice-games/issues/108) - next sprint |
+| 7 | Rename "Help" to "EN"/flag; one consistent hear-the-word control in all games | [#109](https://github.com/scaredofthesix/voice-games/issues/109) - committed for the final version |
+| 8 | Architecture diagrams need a notation legend; deployment HTTPS GET arrow direction was wrong | [#110](https://github.com/scaredofthesix/voice-games/issues/110) - fixed in this docs update |
+
+Agreed deadline: final version ready by **2026-07-19** (four more games plus
+the fixes above).
 
 ## Evidence checklist (screenshots in ./images/, added at sprint close)
 

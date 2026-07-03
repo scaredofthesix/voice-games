@@ -5,6 +5,20 @@ server: after the bundle is downloaded, everything happens on the child's
 device, except speech recognition itself, which Chrome may delegate to
 Google's speech service.
 
+## Notation
+
+The diagram below is a [Mermaid flowchart](https://mermaid.js.org/syntax/flowchart.html),
+not strict UML (customer feedback, issue #110):
+
+- a **rounded rectangle** is a deployment node or artifact (a service, a
+  stored bundle, a running process);
+- a **large labeled box (subgraph)** groups nodes that live on the same
+  machine or environment;
+- a **solid arrow** is a runtime request or data flow, drawn **from the
+  initiator to the responder** (client to server);
+- a **dotted arrow** is a build-time or publish-time flow that happens only
+  when the team ships something, not while a child plays.
+
 ## Deployment diagram
 
 ```mermaid
@@ -31,7 +45,7 @@ flowchart TB
     Src --> CI
     Src --> Build --> Pages
     Src -.->|mkdocs build| DocsSite
-    Pages -->|HTTPS GET| SPA
+    SPA -->|"HTTPS GET (fetch app bundle)"| Pages
     SPA --> WS
     SPA --> LS
     WS -.->|audio stream| GSpeech
