@@ -457,54 +457,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#main-flow-one-spoken-word" class="md-nav__link">
+  <a href="#notation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Main flow: one spoken word
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#anti-feedback-gate-issue-81-adr-004" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Anti-feedback gate (issue #81, ADR-004)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#recognition-lifecycle-and-recovery" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Recognition lifecycle and recovery
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#strict-word-matching-issue-97" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Strict word matching (issue #97)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#deterministic-racer-movement-issue-85" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deterministic racer movement (issue #85)
+        Notation
       
     </span>
   </a>
@@ -1208,54 +1164,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#main-flow-one-spoken-word" class="md-nav__link">
+  <a href="#notation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Main flow: one spoken word
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#anti-feedback-gate-issue-81-adr-004" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Anti-feedback gate (issue #81, ADR-004)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#recognition-lifecycle-and-recovery" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Recognition lifecycle and recovery
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#strict-word-matching-issue-97" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Strict word matching (issue #97)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#deterministic-racer-movement-issue-85" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deterministic racer movement (issue #85)
+        Notation
       
     </span>
   </a>
@@ -1286,6 +1198,16 @@
 <p>The dynamic view shows what happens at runtime for the flow every game shares:
 <strong>a child speaks a word and the game reacts</strong>. It also covers the two edge
 cases that shaped the design: the anti-feedback gate and recognition restarts.</p>
+<h2 id="notation">Notation<a class="headerlink" href="#notation" title="Permanent link">&para;</a></h2>
+<p>The first diagram is a <a href="https://mermaid.js.org/syntax/sequenceDiagram.html">Mermaid sequence diagram</a>
+(UML-style: vertical lifelines are components, horizontal arrows are calls in
+the direction of the caller, dashed arrows are returns). The second is a
+<a href="https://mermaid.js.org/syntax/stateDiagram.html">Mermaid state diagram</a>
+(rounded boxes are recognizer states, arrows are transitions labeled with
+their trigger). See also the notation notes in the
+<a href="../static-view/#notation">static</a> and
+<a href="../deployment-view/#notation">deployment</a> views (customer feedback, issue</p>
+<h1 id="110">110).<a class="headerlink" href="#110" title="Permanent link">&para;</a></h1>
 <h2 id="main-flow-one-spoken-word">Main flow: one spoken word<a class="headerlink" href="#main-flow-one-spoken-word" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     autonumber
@@ -1337,18 +1259,22 @@ closes this loop:</p>
 the same two functions.</p>
 <h2 id="recognition-lifecycle-and-recovery">Recognition lifecycle and recovery<a class="headerlink" href="#recognition-lifecycle-and-recovery" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>stateDiagram-v2
+    direction LR
     [*] --&gt; idle
     idle --&gt; listening: start()
-    listening --&gt; listening: onend and wantActive&lt;br/&gt;(auto-restart)
-    listening --&gt; idle: stop() (user or game over)
-    listening --&gt; error: onerror (denied mic,&lt;br/&gt;no speech, network)
-    error --&gt; listening: auto-retry when recoverable
-    error --&gt; idle: unrecoverable (mic denied)
+    listening --&gt; listening: auto restart
+    listening --&gt; idle: stop()
+    listening --&gt; error: onerror
+    error --&gt; listening: retry if recoverable
+    error --&gt; idle: mic denied
     idle --&gt; [*]</code></pre>
-<p>Chrome ends a continuous recognition session on silence. The hook keeps a
-<code>wantActive</code> flag: while the game wants the microphone on, every <code>onend</code>
-triggers a restart, so a quiet child does not silently lose voice control.
-Errors are mapped to child-friendly status messages shown next to the
+<p>Chrome ends a continuous recognition session on silence (<code>onend</code>). The hook
+keeps a <code>wantActive</code> flag: while the game wants the microphone on, every
+<code>onend</code> triggers the <strong>auto restart</strong> transition, so a quiet child does not
+silently lose voice control. <code>stop()</code> comes from the user or from game over.
+<code>onerror</code> covers a denied microphone, no speech, and network failures; the
+hook retries the recoverable ones and gives up only when the microphone is
+denied. Errors are mapped to child-friendly status messages shown next to the
 microphone indicator.</p>
 <h2 id="strict-word-matching-issue-97">Strict word matching (issue #97)<a class="headerlink" href="#strict-word-matching-issue-97" title="Permanent link">&para;</a></h2>
 <p>The original matcher accepted substrings and consonant skeletons, which let

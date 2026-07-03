@@ -429,6 +429,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#layer-diagram" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1208,6 +1219,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#layer-diagram" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1287,6 +1309,17 @@
 way the dependencies point. The guiding rule is that <strong>dependencies point from
 UI toward pure logic</strong>: React components may import pure modules, pure modules
 never import React or any component.</p>
+<h2 id="notation">Notation<a class="headerlink" href="#notation" title="Permanent link">&para;</a></h2>
+<p>The diagrams on this page are <a href="https://mermaid.js.org/syntax/flowchart.html">Mermaid flowcharts</a>,
+not strict UML (customer feedback, issue #110):</p>
+<ul>
+<li>a <strong>rectangle</strong> is a code component: one source module or a cohesive group
+  of modules (a layer);</li>
+<li>an <strong>arrow</strong> <code>A --&gt; B</code> means "A depends on B": A imports B at compile time
+  and calls it at runtime; arrows never mean data flow direction here;</li>
+<li>an <strong>edge label</strong> narrows the dependency down to the specific capability
+  used (for example "localStorage").</li>
+</ul>
 <h2 id="layer-diagram">Layer diagram<a class="headerlink" href="#layer-diagram" title="Permanent link">&para;</a></h2>
 <p>The big picture first: five layers, dependencies always point downward. The
 per-component detail (which game uses which module) lives in the

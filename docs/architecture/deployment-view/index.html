@@ -485,6 +485,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#deployment-diagram" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1208,6 +1219,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#deployment-diagram" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1287,6 +1309,19 @@
 server: after the bundle is downloaded, everything happens on the child's
 device, except speech recognition itself, which Chrome may delegate to
 Google's speech service.</p>
+<h2 id="notation">Notation<a class="headerlink" href="#notation" title="Permanent link">&para;</a></h2>
+<p>The diagram below is a <a href="https://mermaid.js.org/syntax/flowchart.html">Mermaid flowchart</a>,
+not strict UML (customer feedback, issue #110):</p>
+<ul>
+<li>a <strong>rounded rectangle</strong> is a deployment node or artifact (a service, a
+  stored bundle, a running process);</li>
+<li>a <strong>large labeled box (subgraph)</strong> groups nodes that live on the same
+  machine or environment;</li>
+<li>a <strong>solid arrow</strong> is a runtime request or data flow, drawn <strong>from the
+  initiator to the responder</strong> (client to server);</li>
+<li>a <strong>dotted arrow</strong> is a build-time or publish-time flow that happens only
+  when the team ships something, not while a child plays.</li>
+</ul>
 <h2 id="deployment-diagram">Deployment diagram<a class="headerlink" href="#deployment-diagram" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart TB
     subgraph Dev["Developer machine / CI"]
@@ -1311,7 +1346,7 @@ Google's speech service.</p>
     Src --&gt; CI
     Src --&gt; Build --&gt; Pages
     Src -.-&gt;|mkdocs build| DocsSite
-    Pages --&gt;|HTTPS GET| SPA
+    SPA --&gt;|"HTTPS GET (fetch app bundle)"| Pages
     SPA --&gt; WS
     SPA --&gt; LS
     WS -.-&gt;|audio stream| GSpeech
