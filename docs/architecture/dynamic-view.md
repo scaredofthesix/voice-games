@@ -63,20 +63,24 @@ the same two functions.
 
 ```mermaid
 stateDiagram-v2
+    direction LR
     [*] --> idle
     idle --> listening: start()
-    listening --> listening: onend and wantActive<br/>(auto-restart)
-    listening --> idle: stop() (user or game over)
-    listening --> error: onerror (denied mic,<br/>no speech, network)
-    error --> listening: auto-retry when recoverable
-    error --> idle: unrecoverable (mic denied)
+    listening --> listening: auto restart
+    listening --> idle: stop()
+    listening --> error: onerror
+    error --> listening: retry if recoverable
+    error --> idle: mic denied
     idle --> [*]
 ```
 
-Chrome ends a continuous recognition session on silence. The hook keeps a
-`wantActive` flag: while the game wants the microphone on, every `onend`
-triggers a restart, so a quiet child does not silently lose voice control.
-Errors are mapped to child-friendly status messages shown next to the
+Chrome ends a continuous recognition session on silence (`onend`). The hook
+keeps a `wantActive` flag: while the game wants the microphone on, every
+`onend` triggers the **auto restart** transition, so a quiet child does not
+silently lose voice control. `stop()` comes from the user or from game over.
+`onerror` covers a denied microphone, no speech, and network failures; the
+hook retries the recoverable ones and gives up only when the microphone is
+denied. Errors are mapped to child-friendly status messages shown next to the
 microphone indicator.
 
 ## Strict word matching (issue #97)
