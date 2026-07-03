@@ -13,7 +13,7 @@ Sprint 3 (MVP v2) release. Every Sprint 2 customer review finding from
 
 - Two new games: **Skate Word** (keep the skater rolling by pronouncing words)
   and **Aste Word Destroyer** (destroy asteroids by saying their words) (#88).
-- **Boss Fight difficulty modes**: finite runs of 10 / 20 / 30 bosses plus an
+- **Boss Fight difficulty modes**: finite runs of 3 / 5 / 10 bosses plus an
   **Endless mode unlocked** by completing a finite run (#83).
 - **Progress view**: per-game words practised, high scores, and sessions
   played, stored on the device and reachable from the hub (US-10, #25).

@@ -120,12 +120,39 @@ implementation, and the verification.
 Agreed deadline: final version ready by **2026-07-19** (four more games plus
 the fixes above).
 
-## Evidence checklist (screenshots in ./images/, added at sprint close)
+## Evidence checklist (screenshots in ./images/)
 
-- [ ] Milestone #3 with all issues closed - TODO
-- [ ] Sprint 3 board view (Work Status = Done) - TODO
-- [ ] Green CI run on main after the last merge - TODO
-- [ ] v0.3.0 release page - TODO
-- [ ] A reviewed PR showing approval by the assigned reviewer - TODO
-- [ ] Docs site home page - TODO
+- [x] Milestone #3 with all issues closed - [milestone-3-closed.png](./images/milestone-3-closed.png)
+- [x] Sprint 3 board view (Work Status = Done) - [sprint3-board-done.png](./images/sprint3-board-done.png)
+- [x] Green CI run on main after the last merge - [ci-main-green.png](./images/ci-main-green.png)
+- [x] v0.3.0 release page - [release-v0.3.0.png](./images/release-v0.3.0.png)
+- [x] A reviewed PR showing approval by the assigned reviewer - [pr-111-approved.png](./images/pr-111-approved.png)
+- [x] Docs site home page - [docs-site-home.png](./images/docs-site-home.png)
 - [ ] Public demo video (under 2 minutes) - TODO
+
+## Embedded screenshots (reports/week5/images/)
+
+Milestone #3 at 100 percent with 0 open / 17 closed issues:
+
+![Milestone 3 complete](./images/milestone-3-closed.png)
+
+Project board filtered to Sprint 3: 13 items, all Done, with linked PRs:
+
+![Sprint 3 board all Done](./images/sprint3-board-done.png)
+
+Green CI run on main after the PR #111 merge (type check, tests, coverage,
+build, Lighthouse accessibility audit):
+
+![Green CI run on main](./images/ci-main-green.png)
+
+Release v0.3.0 marked Latest:
+
+![Release v0.3.0](./images/release-v0.3.0.png)
+
+Reviewed PR #111, merged with the assigned reviewer's approval:
+
+![PR 111 approved and merged](./images/pr-111-approved.png)
+
+Hosted documentation site home page:
+
+![Docs site home](./images/docs-site-home.png)
