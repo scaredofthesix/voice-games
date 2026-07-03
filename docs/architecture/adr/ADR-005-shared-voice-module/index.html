@@ -1277,10 +1277,10 @@ voice slightly differently and miss a fix.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
 <p>Consolidate all voice concerns into a <strong>single cohesive module <code>src/voice/</code></strong>:</p>
 <ul>
-<li><code>engine.ts</code> - pure logic: <code>matchesWord</code> (RU/EN normalization, consonant and
-  Levenshtein tolerance), <code>speakWord</code>/<code>speakSound</code> with the anti-feedback
-  bookkeeping, <code>isSpeechSynthesisActive</code>, and the deterministic racer movement
-  update.</li>
+<li><code>engine.ts</code> - pure logic: <code>matchesWord</code> (RU/EN normalization with a
+  Levenshtein tolerance; tightened to strict per-token matching in issue #97),
+  <code>speakWord</code>/<code>speakSound</code> with the anti-feedback bookkeeping,
+  <code>isSpeechSynthesisActive</code>, and the deterministic racer movement update.</li>
 <li><code>useVoiceGame.ts</code> - the <code>useSpeechRecognition</code> React hook owning the
   <code>SpeechRecognition</code> lifecycle (start/stop, auto-restart, error mapping).</li>
 </ul>

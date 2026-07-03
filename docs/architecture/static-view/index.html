@@ -429,10 +429,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#component-diagram" class="md-nav__link">
+  <a href="#layer-diagram" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Component diagram
+        Layer diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voice-path-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voice path detail
       
     </span>
   </a>
@@ -1197,10 +1208,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#component-diagram" class="md-nav__link">
+  <a href="#layer-diagram" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Component diagram
+        Layer diagram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voice-path-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voice path detail
       
     </span>
   </a>
@@ -1265,62 +1287,40 @@
 way the dependencies point. The guiding rule is that <strong>dependencies point from
 UI toward pure logic</strong>: React components may import pure modules, pure modules
 never import React or any component.</p>
-<h2 id="component-diagram">Component diagram<a class="headerlink" href="#component-diagram" title="Permanent link">&para;</a></h2>
+<h2 id="layer-diagram">Layer diagram<a class="headerlink" href="#layer-diagram" title="Permanent link">&para;</a></h2>
+<p>The big picture first: five layers, dependencies always point downward. The
+per-component detail (which game uses which module) lives in the
+<a href="#component-responsibilities">responsibilities table</a> below instead of edges,
+so the diagram stays readable.</p>
 <pre class="mermaid"><code>flowchart TB
-    subgraph Shell["Application shell"]
-        App["App.tsx&lt;br/&gt;view router + hub + Voice Racer"]
-        Lang["uiLanguage.tsx&lt;br/&gt;RU/EN UI language context"]
-    end
+    App["&lt;b&gt;Application shell&lt;/b&gt;&lt;br/&gt;App.tsx - view router, hub, Voice Racer state&lt;br/&gt;uiLanguage.tsx - RU/EN language context"]
+    Games["&lt;b&gt;Game components&lt;/b&gt; - src/components/&lt;br/&gt;Voice Racer scene, Bubble Popper, Boss Fight,&lt;br/&gt;Voice Rocket Climb, Skate Word, Aste Word Destroyer,&lt;br/&gt;Progress view, custom words manager, audio visualizer"]
+    Voice["&lt;b&gt;Voice module&lt;/b&gt; - src/voice/&lt;br/&gt;engine.ts (matching, TTS, anti-feedback gate)&lt;br/&gt;useVoiceGame.ts (recognition lifecycle hook)"]
+    Logic["&lt;b&gt;Pure logic and data&lt;/b&gt;&lt;br/&gt;gameLogic.ts, progress.ts, data.ts, types.ts"]
+    Browser["&lt;b&gt;Browser platform APIs&lt;/b&gt;&lt;br/&gt;Web Speech (SpeechRecognition + speechSynthesis),&lt;br/&gt;Canvas 2D, localStorage"]
 
-    subgraph Games["Game components (src/components/)"]
-        Racer["GameCanvas.tsx&lt;br/&gt;Voice Racer scene"]
-        Bubble["BubblePopperGame.tsx"]
-        Boss["BossFightGame.tsx + BossArena.tsx"]
-        Ladder["WordLadderGame.tsx + RocketClimb.tsx&lt;br/&gt;Voice Rocket Climb"]
-        Skate["SkateWordGame.tsx"]
-        Aste["AsteWordGame.tsx"]
-        Progress["ProgressView.tsx&lt;br/&gt;per-game stats screen"]
-        Custom["CustomWordsManager.tsx"]
-        Visual["AudioVisualizer.tsx"]
-    end
+    App --&gt; Games
+    Games --&gt; Voice
+    Games --&gt; Logic
+    Voice --&gt; Browser
+    Games --&gt;|canvas rendering| Browser
+    Logic --&gt;|localStorage| Browser</code></pre>
+<h2 id="voice-path-detail">Voice path detail<a class="headerlink" href="#voice-path-detail" title="Permanent link">&para;</a></h2>
+<p>The architecturally most important slice - how any game gets voice input and
+output. Every game goes through the same two files, which is what makes the
+anti-feedback gate and the strict matcher apply everywhere at once:</p>
+<pre class="mermaid"><code>flowchart TB
+    Game["Any game component"]
+    Hook["useVoiceGame.ts&lt;br/&gt;start/stop, restart on silence,&lt;br/&gt;drops transcripts while TTS speaks"]
+    Engine["engine.ts&lt;br/&gt;matchesWord (strict token match),&lt;br/&gt;speakWord / speakSound,&lt;br/&gt;isSpeechSynthesisActive"]
+    SR["SpeechRecognition"]
+    TTS["speechSynthesis"]
 
-    subgraph Voice["Voice module (src/voice/)"]
-        Engine["engine.ts&lt;br/&gt;matchesWord, speakWord, speakSound,&lt;br/&gt;isSpeechSynthesisActive, racer movement"]
-        Hook["useVoiceGame.ts&lt;br/&gt;useSpeechRecognition hook&lt;br/&gt;(Web Speech lifecycle)"]
-    end
-
-    subgraph Logic["Pure logic and data"]
-        GameLogic["gameLogic.ts&lt;br/&gt;boss roster, game rules"]
-        ProgressStore["progress.ts&lt;br/&gt;localStorage progress store"]
-        Data["data.ts&lt;br/&gt;built-in word categories"]
-        Types["types.ts"]
-    end
-
-    subgraph Browser["Browser platform APIs"]
-        SR["SpeechRecognition&lt;br/&gt;(Web Speech API)"]
-        TTS["speechSynthesis&lt;br/&gt;(Web Speech API)"]
-        Canvas["Canvas 2D"]
-        LS["localStorage"]
-    end
-
-    App --&gt; Lang
-    App --&gt; Racer &amp; Bubble &amp; Boss &amp; Ladder &amp; Skate &amp; Aste &amp; Progress &amp; Custom &amp; Visual
-    App --&gt; Engine
-    App --&gt; Hook
-    App --&gt; ProgressStore
-    App --&gt; Data
-
-    Bubble &amp; Boss &amp; Ladder &amp; Skate &amp; Aste --&gt; Engine
-    Bubble &amp; Boss &amp; Ladder &amp; Skate &amp; Aste --&gt; Hook
-    Boss &amp; Ladder --&gt; GameLogic
-    Progress --&gt; ProgressStore
-
-    Hook --&gt; Engine
+    Game --&gt;|"transcripts in"| Hook
+    Game --&gt;|"match + speak"| Engine
+    Hook --&gt;|"anti-feedback check"| Engine
     Hook --&gt; SR
-    Engine --&gt; TTS
-    Racer &amp; Boss &amp; Ladder &amp; Skate &amp; Aste --&gt; Canvas
-    ProgressStore --&gt; LS
-    Custom --&gt; LS</code></pre>
+    Engine --&gt; TTS</code></pre>
 <h2 id="component-responsibilities">Component responsibilities<a class="headerlink" href="#component-responsibilities" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

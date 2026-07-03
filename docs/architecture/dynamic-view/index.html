@@ -490,6 +490,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#strict-word-matching-issue-97" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strict word matching (issue #97)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#deterministic-racer-movement-issue-85" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1230,6 +1241,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#strict-word-matching-issue-97" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strict word matching (issue #97)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#deterministic-racer-movement-issue-85" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1289,7 +1311,7 @@ cases that shaped the design: the anti-feedback gate and recognition restarts.</
         Engine--&gt;&gt;Hook: false
         Hook--&gt;&gt;Game: onTranscript("dolphin")
         Game-&gt;&gt;Engine: matchesWord(transcript, target)
-        Note over Engine: clean + normalize (EN/RU),&lt;br/&gt;exact, contains, consonant,&lt;br/&gt;Levenshtein-tolerance checks
+        Note over Engine: normalize (EN + Cyrillic),&lt;br/&gt;strict per-token match with a&lt;br/&gt;length-scaled edit-distance budget&lt;br/&gt;(issue #97: no substring accepts)
         alt match
             Engine--&gt;&gt;Game: true
             Game-&gt;&gt;Game: advance game state&lt;br/&gt;(score, boss HP, rocket step…)
@@ -1328,6 +1350,14 @@ the same two functions.</p>
 triggers a restart, so a quiet child does not silently lose voice control.
 Errors are mapped to child-friendly status messages shown next to the
 microphone indicator.</p>
+<h2 id="strict-word-matching-issue-97">Strict word matching (issue #97)<a class="headerlink" href="#strict-word-matching-issue-97" title="Permanent link">&para;</a></h2>
+<p>The original matcher accepted substrings and consonant skeletons, which let
+almost any speech score ("bird" matched "bread"). Since v0.3.0 <code>matchesWord</code>
+requires an exact token match after normalization, with a small edit-distance
+tolerance that scales with word length (short words must match exactly), the
+same first letter for fuzzy accepts, and a sliding window for multi-word
+phrases. The no-false-accepts suite in <code>src/voice/voiceEngine.test.ts</code> locks
+this behavior in.</p>
 <h2 id="deterministic-racer-movement-issue-85">Deterministic racer movement (issue #85)<a class="headerlink" href="#deterministic-racer-movement-issue-85" title="Permanent link">&para;</a></h2>
 <p>Voice Racer's lane changes go through a pure <code>updateRacerMovement</code> state
 machine in <code>engine.ts</code>: recognized commands set a pending lane, and the update

@@ -1288,7 +1288,7 @@ server: after the bundle is downloaded, everything happens on the child's
 device, except speech recognition itself, which Chrome may delegate to
 Google's speech service.</p>
 <h2 id="deployment-diagram">Deployment diagram<a class="headerlink" href="#deployment-diagram" title="Permanent link">&para;</a></h2>
-<pre class="mermaid"><code>flowchart LR
+<pre class="mermaid"><code>flowchart TB
     subgraph Dev["Developer machine / CI"]
         Src["GitHub repo&lt;br/&gt;scaredofthesix/voice-games&lt;br/&gt;(protected main)"]
         CI["GitHub Actions CI&lt;br/&gt;type check, tests, build,&lt;br/&gt;Lighthouse a11y"]
@@ -1316,8 +1316,8 @@ Google's speech service.</p>
     SPA --&gt; LS
     WS -.-&gt;|audio stream| GSpeech
 
-    VM["Legacy: Innopolis VM&lt;br/&gt;https://10.93.26.180:8085/&lt;br/&gt;Docker + python http.server&lt;br/&gt;(internal network only)"]
-    Src -.-&gt;|MVP v0 deploy, kept for history| VM</code></pre>
+    VM["Innopolis VM (internal mirror)&lt;br/&gt;https://10.93.26.180:8085/&lt;br/&gt;Docker + python http.server&lt;br/&gt;(internal network only)"]
+    Src -.-&gt;|manual deploy of tagged builds| VM</code></pre>
 <h2 id="environments">Environments<a class="headerlink" href="#environments" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1348,10 +1348,10 @@ Google's speech service.</p>
 <td>-</td>
 </tr>
 <tr>
-<td>Legacy VM</td>
+<td>Innopolis VM (internal mirror)</td>
 <td>https://10.93.26.180:8085/</td>
-<td>MVP v0 demo host, reachable only inside the Innopolis network</td>
-<td>Frozen</td>
+<td>Internal mirror of released builds (originally the MVP v0 host, now running v0.3.0); reachable only inside the Innopolis network</td>
+<td>Manual deploy of tagged builds</td>
 </tr>
 </tbody>
 </table>

@@ -875,10 +875,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-from-the-sprint-2-review-and-uat-next-release-after-v021" class="md-nav__link">
+  <a href="#done-sprint-3-mvp-v2-complete-release-v030-29-jun-5-jul-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next - from the Sprint 2 review and UAT (next release, after v0.2.1)
+        Done - Sprint 3 (MVP v2 complete, release v0.3.0, 29 Jun - 5 Jul 2026)
       
     </span>
   </a>
@@ -886,21 +886,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-mvp-v2-remaining-post-review-scope" class="md-nav__link">
+  <a href="#next-mvp-v3-candidates" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next - MVP v2 (remaining post-review scope)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#later-mvp-v3-and-beyond" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Later - MVP v3 and beyond
+        Next - MVP v3 candidates
       
     </span>
   </a>
@@ -1230,10 +1219,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-from-the-sprint-2-review-and-uat-next-release-after-v021" class="md-nav__link">
+  <a href="#done-sprint-3-mvp-v2-complete-release-v030-29-jun-5-jul-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next - from the Sprint 2 review and UAT (next release, after v0.2.1)
+        Done - Sprint 3 (MVP v2 complete, release v0.3.0, 29 Jun - 5 Jul 2026)
       
     </span>
   </a>
@@ -1241,21 +1230,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-mvp-v2-remaining-post-review-scope" class="md-nav__link">
+  <a href="#next-mvp-v3-candidates" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next - MVP v2 (remaining post-review scope)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#later-mvp-v3-and-beyond" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Later - MVP v3 and beyond
+        Next - MVP v3 candidates
       
     </span>
   </a>
@@ -1312,44 +1290,33 @@ all later work.</p>
   accessibility audit. These gates and tests are maintained assets and continue to apply to
   every later sprint per the updated Definition of Done.</li>
 </ul>
-<h2 id="next-from-the-sprint-2-review-and-uat-next-release-after-v021">Next - from the Sprint 2 review and UAT (next release, after v0.2.1)<a class="headerlink" href="#next-from-the-sprint-2-review-and-uat-next-release-after-v021" title="Permanent link">&para;</a></h2>
-<p>Raised by the customer at the recorded Sprint Review / UAT on 2026-06-27. The
-demonstrated build v0.2.1 is not changed; these are scheduled for the next
-release.</p>
+<h2 id="done-sprint-3-mvp-v2-complete-release-v030-29-jun-5-jul-2026">Done - Sprint 3 (MVP v2 complete, release v0.3.0, 29 Jun - 5 Jul 2026)<a class="headerlink" href="#done-sprint-3-mvp-v2-complete-release-v030-29-jun-5-jul-2026" title="Permanent link">&para;</a></h2>
+<p>MVP v2 shipped as <a href="https://github.com/scaredofthesix/voice-games/releases/tag/v0.3.0">release v0.3.0</a>.
+Every Sprint 2 customer review finding was addressed.</p>
 <ul>
-<li>Fix the speech engine self-trigger (audio-loop false positive): mute the
-  microphone while text-to-speech plays and / or drop the auto hint, and
-  recalibrate the matching tolerance lowered after v0.1.0 - issue #81.</li>
-<li>Extract a shared voice-processing module reused by all games for uniform
-  accuracy - issue #82.</li>
-<li>Boss Fight: finite difficulty modes (10 / 20 / 30 words) plus an unlockable
-  Infinite Mode, with the design documented - issue #83.</li>
-<li>Default the interface to Russian on launch, keeping the RU/EN toggle - issue #84.</li>
-<li>Smooth Voice Racer movement physics under live streaming - issue #85.</li>
-<li>Later polish: an interactive end-of-climb event (meet an alien) in Voice Rocket
-  Climb - issue #86.</li>
+<li><strong>Two more games</strong> completing the customer "four more games" request (issue #54,
+  closed): Skate Word and Aste Word Destroyer (PR #88).</li>
+<li><strong>US-10 Progress view</strong>: per-game words practised, high scores and sessions,
+  stored on the device - issue #25.</li>
+<li><strong>Anti-feedback gate</strong>: the app no longer scores its own spoken hints - issue #81.</li>
+<li><strong>Shared voice module</strong> (<code>src/voice/</code>) reused by all six games - issue #82.</li>
+<li><strong>Boss Fight difficulty modes</strong>: 10 / 20 / 30 bosses plus unlockable Endless -
+  issue #83 (also closes US-12 together with the Aste difficulty levels).</li>
+<li><strong>Russian-first interface</strong> with the RU/EN toggle kept - issue #84.</li>
+<li><strong>Deterministic Voice Racer movement</strong> (fixed timestep, de-jittered input) - issue #85.</li>
+<li><strong>Alien encounter</strong> on the Rocket Climb win screen - issue #86.</li>
+<li><strong>Strict voice matching</strong>: false accepts eliminated - issue #97; Aste difficulty
+  rebalanced for it (#101) and a version footer added (#102).</li>
+<li><strong>Architecture, process and docs site</strong>: Mermaid views, 5 ADRs,
+  development-process doc, hosted MkDocs site - issue #95.</li>
 </ul>
-<h2 id="next-mvp-v2-remaining-post-review-scope">Next - MVP v2 (remaining post-review scope)<a class="headerlink" href="#next-mvp-v2-remaining-post-review-scope" title="Permanent link">&para;</a></h2>
-<p>Confirmed with the customer at the Sprint 1 review.</p>
+<h2 id="next-mvp-v3-candidates">Next - MVP v3 candidates<a class="headerlink" href="#next-mvp-v3-candidates" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>More games:</strong> the customer asked for about four more games; two shipped in Sprint 2,
-  more to follow - idea collection in issue #54.</li>
-<li>US-15 / US-09 Bilingual support: Russian translation shown and read aloud (understanding),
-  English word clickable for pronunciation (imitation) - issues #36, #37.</li>
-<li>US-17 Localized (Russian) interface with a language toggle.</li>
-<li>US-16 Pause button that also stops the microphone.</li>
-<li>US-10 Parent progress: per-word statistics pooled across all lists and all games,
-  with a CSV export for teachers (US-19).</li>
-<li>US-11 Upload custom word lists; US-18 play with built-in words without any setup.</li>
-<li>US-03 / US-05 in-game word visibility and easy microphone access.</li>
-<li>US-06 Immediate in-game feedback so a child can retry mispronounced words.</li>
-</ul>
-<h2 id="later-mvp-v3-and-beyond">Later - MVP v3 and beyond<a class="headerlink" href="#later-mvp-v3-and-beyond" title="Permanent link">&para;</a></h2>
-<ul>
+<li>US-19 Download the word list with stats as CSV for teachers - issue #52.</li>
 <li>US-20 Phrase-based translation game: build an English phrase word by word, with a
-  Russian-to-English "translate the phrase" mode (Doodle Jump style platforms).</li>
-<li>US-12 Difficulty levels (largely driven by the chosen word list).</li>
-<li>Progress saving across sessions and an accessibility pass (keyboard fallback, captions).</li>
+  Russian-to-English "translate the phrase" mode - issue #53 (phrase word sets
+  already shipped in v0.2.1; the assembly mechanic remains).</li>
+<li>An accessibility pass (keyboard fallback, captions).</li>
 </ul>
 
 

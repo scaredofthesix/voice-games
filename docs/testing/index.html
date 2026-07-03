@@ -1349,10 +1349,10 @@ npm<span class="w"> </span>run<span class="w"> </span>build<span class="w">     
 <ul>
 <li><strong>Unit tests</strong> for critical product logic:</li>
 <li><code>src/voice/voiceEngine.test.ts</code> and <code>src/utils.test.ts</code> - the shared voice
-    engine (<code>src/voice/engine.ts</code>, see ADR-005): the matcher (<code>matchesWord</code>,
-    <code>levenshteinDistance</code>, <code>consonantsOnly</code>, <code>cleanWord</code>, RU/EN
-    normalization), the TTS anti-feedback gate, and the deterministic racer
-    movement update.</li>
+    engine (<code>src/voice/engine.ts</code>, see ADR-005): the strict matcher
+    (<code>matchesWord</code>, <code>levenshteinDistance</code>, <code>cleanWord</code>, RU/EN normalization,
+    plus a no-false-accepts suite for issue #97), the TTS anti-feedback gate,
+    and the deterministic racer movement update.</li>
 <li><code>src/gameLogic.test.ts</code> and <code>src/gameLogic.gauntlet.test.ts</code> - pure game
     rules, including the Boss Fight finite modes and the Endless roster.</li>
 <li><code>src/data.test.ts</code> - built-in word-list integrity.</li>
