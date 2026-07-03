@@ -5,6 +5,18 @@ way the dependencies point. The guiding rule is that **dependencies point from
 UI toward pure logic**: React components may import pure modules, pure modules
 never import React or any component.
 
+## Notation
+
+The diagrams on this page are [Mermaid flowcharts](https://mermaid.js.org/syntax/flowchart.html),
+not strict UML (customer feedback, issue #110):
+
+- a **rectangle** is a code component: one source module or a cohesive group
+  of modules (a layer);
+- an **arrow** `A --> B` means "A depends on B": A imports B at compile time
+  and calls it at runtime; arrows never mean data flow direction here;
+- an **edge label** narrows the dependency down to the specific capability
+  used (for example "localStorage").
+
 ## Layer diagram
 
 The big picture first: five layers, dependencies always point downward. The

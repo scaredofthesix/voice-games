@@ -43,7 +43,7 @@ Every Sprint 2 customer review finding was addressed.
   stored on the device - issue #25.
 - **Anti-feedback gate**: the app no longer scores its own spoken hints - issue #81.
 - **Shared voice module** (`src/voice/`) reused by all six games - issue #82.
-- **Boss Fight difficulty modes**: 10 / 20 / 30 bosses plus unlockable Endless -
+- **Boss Fight difficulty modes**: 3 / 5 / 10 bosses plus unlockable Endless -
   issue #83 (also closes US-12 together with the Aste difficulty levels).
 - **Russian-first interface** with the RU/EN toggle kept - issue #84.
 - **Deterministic Voice Racer movement** (fixed timestep, de-jittered input) - issue #85.
@@ -53,9 +53,22 @@ Every Sprint 2 customer review finding was addressed.
 - **Architecture, process and docs site**: Mermaid views, 5 ADRs,
   development-process doc, hosted MkDocs site - issue #95.
 
-## Next - MVP v3 candidates
+## Next - final version (MVP v3), due 2026-07-19
 
-- US-19 Download the word list with stats as CSV for teachers - issue #52.
+Scope agreed at the Sprint 3 customer review (2026-07-03): the final version
+must be ready by the end of the week preceding the demo day, 2026-07-19.
+
+- **Four more games** (ten games total in the final version) - customer request.
+- **Adaptive word selection driven by progress statistics**: repeat struggled
+  words, introduce unseen ones, de-prioritize mastered ones, in all games -
+  issue #105 (customer's main feature request).
+- **One consistent hear-the-word control across games**, "Help" renamed to
+  "EN"/flag - issue #109.
+- Progress view fixes: lost sessions/words counters - issue #103; CSV export in
+  readable columns - issue #104 (relates to US-19, issue #52).
+- Game polish from the review: Skate Word ground/jump - issue #106; Aste Word
+  Destroyer Russian translations - issue #107; Boss Fight HUD (hit counter,
+  duplicated health bar) - issue #108.
 - US-20 Phrase-based translation game: build an English phrase word by word, with a
   Russian-to-English "translate the phrase" mode - issue #53 (phrase word sets
   already shipped in v0.2.1; the assembly mechanic remains).
