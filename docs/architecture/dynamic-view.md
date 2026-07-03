@@ -31,7 +31,7 @@ sequenceDiagram
         Engine-->>Hook: false
         Hook-->>Game: onTranscript("dolphin")
         Game->>Engine: matchesWord(transcript, target)
-        Note over Engine: clean + normalize (EN/RU),<br/>exact, contains, consonant,<br/>Levenshtein-tolerance checks
+        Note over Engine: normalize (EN + Cyrillic),<br/>strict per-token match with a<br/>length-scaled edit-distance budget<br/>(issue #97: no substring accepts)
         alt match
             Engine-->>Game: true
             Game->>Game: advance game state<br/>(score, boss HP, rocket step…)
@@ -78,6 +78,16 @@ Chrome ends a continuous recognition session on silence. The hook keeps a
 triggers a restart, so a quiet child does not silently lose voice control.
 Errors are mapped to child-friendly status messages shown next to the
 microphone indicator.
+
+## Strict word matching (issue #97)
+
+The original matcher accepted substrings and consonant skeletons, which let
+almost any speech score ("bird" matched "bread"). Since v0.3.0 `matchesWord`
+requires an exact token match after normalization, with a small edit-distance
+tolerance that scales with word length (short words must match exactly), the
+same first letter for fuzzy accepts, and a sliding window for multi-word
+phrases. The no-false-accepts suite in `src/voice/voiceEngine.test.ts` locks
+this behavior in.
 
 ## Deterministic racer movement (issue #85)
 

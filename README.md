@@ -4,12 +4,13 @@ A browser-based **voice-controlled English learning portal for children**. The c
 
 - **Live (public, HTTPS):** https://scaredofthesix.github.io/voice-games/ - works in Google Chrome; allow microphone access when prompted.
   > Note: the GitHub Pages link may not open from some networks or regions without a VPN. This is an external GitHub availability restriction outside the team's control; the same build can always be run locally from this repository (see "Local development setup" below).
-- **Release:** [v0.1.0 - MVP v1 (Sprint 1)](https://github.com/scaredofthesix/voice-games/releases/tag/v0.1.0) · [CHANGELOG](./CHANGELOG.md)
+- **Release:** [v0.3.0 - MVP v2 (Sprint 3)](https://github.com/scaredofthesix/voice-games/releases/tag/v0.3.0) · [CHANGELOG](./CHANGELOG.md)
+- **Assignment 5 submission index:** [reports/week5/README.md](./reports/week5/README.md)
 - **Assignment 4 submission index:** [reports/week4/README.md](./reports/week4/README.md)
 - **Assignment 3 submission index:** [reports/week3/README.md](./reports/week3/README.md)
 - **Assignment 2 submission index:** [reports/week2/README.md](./reports/week2/README.md)
 - **License:** [MIT](./LICENSE)
-- Earlier internal MVP v0 (Innopolis network/VPN only): https://10.93.26.180:8085/ - see the [MVP v0 report](./reports/week2/mvp-v0-report.md).
+- Internal mirror on the Innopolis VM (network/VPN only, runs the released build, currently v0.3.0): https://10.93.26.180:8085/ - see the [MVP v0 report](./reports/week2/mvp-v0-report.md) for the original setup.
 
 > **Browser support:** voice recognition uses the Web Speech API and works only in **Google Chrome**; other browsers are not supported.
 
