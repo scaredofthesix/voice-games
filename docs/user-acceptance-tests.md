@@ -123,7 +123,7 @@ https://scaredofthesix.github.io/voice-games/.
 Results were recorded during the recorded Sprint Review / UAT sessions of
 2026-06-27 and 2026-07-03 and are summarized (without private customer details)
 in [`reports/week4/customer-review-summary.md`](../reports/week4/customer-review-summary.md)
-and [`reports/week5/customer-review-summary.md`](../reports/week5/customer-review-summary.md).
+and [`reports/week5/sprint-review-summary.md`](../reports/week5/sprint-review-summary.md).
 All executed scenarios passed; the observations above are tracked as
 next-release backlog items and the demonstrated builds (v0.2.1, v0.3.0) are not
 changed in response.

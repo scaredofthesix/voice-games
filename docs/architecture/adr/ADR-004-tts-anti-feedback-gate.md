@@ -2,6 +2,7 @@
 
 - **Status:** Accepted (Sprint 3, issue #81)
 - **Deciders:** Team 40
+- **Quality requirements addressed:** [QR-1](../../quality-requirements.md#qr-1-functional-correctness-of-speech-matching) (the app must not accept its own speech as the child's answer)
 
 ## Context
 

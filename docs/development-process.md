@@ -84,7 +84,7 @@ gitGraph
   coverage thresholds), `tsconfig.json` (strict TypeScript). Production Pages
   builds add `--base=/voice-games/`.
 - **Environments:** see the
-  [deployment view](./architecture/deployment-view.md) - production on GitHub
+  [deployment view](./architecture/deployment-view/README.md) - production on GitHub
   Pages (`gh-pages` branch), hosted docs under `/docs/` on the same branch,
   local dev server, and the frozen legacy VM.
 - **Documentation as configuration:** the quality bar itself is versioned in

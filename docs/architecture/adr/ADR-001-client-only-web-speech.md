@@ -2,6 +2,7 @@
 
 - **Status:** Accepted (Sprint 1, documented in Sprint 3)
 - **Deciders:** Team 40
+- **Quality requirements addressed:** [QR-1](../../quality-requirements.md#qr-1-functional-correctness-of-speech-matching) (recognition quality is compensated in our own matching layer), [QR-2](../../quality-requirements.md#qr-2-response-time-of-speech-matching) (recognition and matching run in the browser with no team-controlled network hop)
 
 ## Context
 

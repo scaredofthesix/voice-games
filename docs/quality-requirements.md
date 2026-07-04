@@ -9,11 +9,14 @@ verifies it in [quality-requirement-tests.md](./quality-requirement-tests.md).
 These requirements are maintained project assets introduced in Assignment 4
 (Sprint 2). Later sprints must keep them satisfied or supersede them explicitly.
 
-| ID | Sub-characteristic (ISO/IEC 25010) | Verified by |
-|----|------------------------------------|-------------|
-| QR-1 | Functional correctness | QRT-1 |
-| QR-2 | Performance efficiency - time behaviour | QRT-2 |
-| QR-3 | Usability - operability (accessibility) | QRT-3 |
+Since Assignment 5, each requirement also links the architecture decision
+records (ADRs) in [architecture/adr/](./architecture/adr/) that address it.
+
+| ID | Sub-characteristic (ISO/IEC 25010) | Verified by | Related ADRs |
+|----|------------------------------------|-------------|--------------|
+| QR-1 | Functional correctness | QRT-1 | ADR-001, ADR-003, ADR-004, ADR-005 |
+| QR-2 | Performance efficiency - time behaviour | QRT-2 | ADR-001, ADR-002, ADR-005 |
+| QR-3 | Usability - operability (accessibility) | QRT-3 | ADR-002 |
 
 ---
 
@@ -32,6 +35,15 @@ These requirements are maintained project assets introduced in Assignment 4
   `src/gameLogic.ts`. Relates to user stories US-04 and US-08.
 - **Verified by:** QRT-1 (`src/utils.test.ts`, `src/gameLogic.test.ts`, and the
   game integration tests).
+- **Related ADRs:**
+  [ADR-001](./architecture/adr/ADR-001-client-only-web-speech.md) (the matcher
+  compensates for browser recognition quality),
+  [ADR-003](./architecture/adr/ADR-003-static-spa-github-pages.md) (HTTPS
+  microphone permission as the precondition),
+  [ADR-004](./architecture/adr/ADR-004-tts-anti-feedback-gate.md) (the app
+  never scores its own speech),
+  [ADR-005](./architecture/adr/ADR-005-shared-voice-module.md) (one strict
+  matcher shared by all games).
 
 ## QR-2 Response time of speech matching
 
@@ -45,6 +57,13 @@ These requirements are maintained project assets introduced in Assignment 4
   the sense of voice control for a young player.
 - **Traceability:** `matchesWord` and `levenshteinDistance` in `src/voice/engine.ts`.
 - **Verified by:** QRT-2 (`src/utils.perf.test.ts`).
+- **Related ADRs:**
+  [ADR-001](./architecture/adr/ADR-001-client-only-web-speech.md) (matching is
+  a synchronous in-browser call with no team-controlled network hop),
+  [ADR-002](./architecture/adr/ADR-002-canvas-rendering.md) (the render loop
+  stays smooth while transcripts stream in),
+  [ADR-005](./architecture/adr/ADR-005-shared-voice-module.md) (one
+  perf-tested matcher implementation).
 
 ## QR-3 Operable, accessible game controls
 
@@ -62,3 +81,8 @@ These requirements are maintained project assets introduced in Assignment 4
   semantics).
 - **Verified by:** QRT-3 (accessibility assertions in the game integration
   tests) and the Lighthouse accessibility audit additional QA check in CI.
+- **Related ADRs:**
+  [ADR-002](./architecture/adr/ADR-002-canvas-rendering.md) (canvas scenes are
+  invisible to assistive technology, so the accessible surface lives in the
+  DOM chrome around them; this ADR is the reason QR-3 exists as a maintained
+  commitment).

@@ -13,7 +13,7 @@ identity, recording link, exact timecodes) go to the Moodle PDF only.
 - **Build demonstrated:** MVP v2 = v0.3.0 on the public deployment
   https://scaredofthesix.github.io/voice-games/ (version footer visible in the
   recording as build evidence).
-- **Transcript:** [customer-review-transcript.md](./customer-review-transcript.md).
+- **Transcript:** [sprint-review-transcript.md](./sprint-review-transcript.md).
 
 ## What was shown
 

@@ -2,6 +2,7 @@
 
 - **Status:** Accepted (Sprint 2/3; replaces the VM as the primary deployment)
 - **Deciders:** Team 40
+- **Quality requirements addressed:** [QR-1](../../quality-requirements.md#qr-1-functional-correctness-of-speech-matching) (real HTTPS gives persistent microphone permission, the precondition for speech matching to work in customer sessions)
 
 ## Context
 
@@ -38,7 +39,7 @@ artifact.
 - Project-page hosting requires building with `--base=/voice-games/` and an
   SPA 404 fallback; on Git Bash for Windows the base flag must be protected
   from MSYS path mangling (`MSYS_NO_PATHCONV=1`). Documented in the
-  [deployment view](../deployment-view.md).
+  [deployment view](../deployment-view/README.md).
 - Publishing is currently a manual command; a Pages deploy workflow in GitHub
   Actions is a known improvement candidate.
 - Regional note: github.io can require a VPN in some regions; recorded in the

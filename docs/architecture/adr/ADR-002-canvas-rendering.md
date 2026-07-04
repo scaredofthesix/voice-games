@@ -2,6 +2,7 @@
 
 - **Status:** Accepted (Sprint 1, documented in Sprint 3)
 - **Deciders:** Team 40
+- **Quality requirements addressed:** [QR-2](../../quality-requirements.md#qr-2-response-time-of-speech-matching) (scenes stay smooth at animation frame rate), [QR-3](../../quality-requirements.md#qr-3-operable-accessible-game-controls) (canvas is invisible to assistive technology, so accessible names, roles, and live regions are provided in the DOM chrome)
 
 ## Context
 
