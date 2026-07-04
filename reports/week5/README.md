@@ -134,7 +134,7 @@ ADR-002 makes the DOM chrome the only accessible surface).
 - CI pipeline definition: [.github/workflows/ci.yml](../../.github/workflows/ci.yml)
   ([all runs](https://github.com/scaredofthesix/voice-games/actions/workflows/ci.yml)).
 - Latest protected-default-branch CI run (green):
-  https://github.com/scaredofthesix/voice-games/actions/runs/28700955299
+  https://github.com/scaredofthesix/voice-games/actions/runs/28709278005
 
 ## UAT results (executed with the customer on live v0.3.0, 2026-07-03)
 

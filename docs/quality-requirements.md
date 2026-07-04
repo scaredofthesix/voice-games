@@ -10,7 +10,7 @@ These requirements are maintained project assets introduced in Assignment 4
 (Sprint 2). Later sprints must keep them satisfied or supersede them explicitly.
 
 Since Assignment 5, each requirement also links the architecture decision
-records (ADRs) in [architecture/adr/](./architecture/adr/) that address it.
+records (ADRs) in [architecture/adr/](./architecture/adr/README.md) that address it.
 
 | ID | Sub-characteristic (ISO/IEC 25010) | Verified by | Related ADRs |
 |----|------------------------------------|-------------|--------------|
