@@ -69,7 +69,7 @@ Chrome only grants persistent microphone access to secure origins. GitHub
 Pages provides HTTPS for free, which is what makes the public URL usable for
 voice control; the old VM deployment used a self-signed certificate and an
 internal address, which blocked the customer from testing at home
-([ADR-003](./adr/ADR-003-static-spa-github-pages.md)).
+([ADR-003](../adr/ADR-003-static-spa-github-pages.md)).
 
 ## Publish procedure (production app)
 

@@ -12,8 +12,8 @@ the direction of the caller, dashed arrows are returns). The second is a
 [Mermaid state diagram](https://mermaid.js.org/syntax/stateDiagram.html)
 (rounded boxes are recognizer states, arrows are transitions labeled with
 their trigger). See also the notation notes in the
-[static](./static-view.md#notation) and
-[deployment](./deployment-view.md#notation) views (customer feedback, issue
+[static](../static-view/README.md#notation) and
+[deployment](../deployment-view/README.md#notation) views (customer feedback, issue
 #110).
 
 ## Main flow: one spoken word

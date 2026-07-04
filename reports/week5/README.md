@@ -4,8 +4,8 @@ Canonical public report and submission index for Assignment 5 (Sprint 3,
 MVP v2). All public evidence is linked from here. Private identity,
 recordings, and credentials live only in the Moodle PDF.
 
-> Status: sprint in progress. Items marked TODO are completed at sprint close
-> (customer session, release tag, screenshots) and filled in before submission.
+> Status: sprint closed. All evidence collected; the increment was accepted
+> by the customer as MVP v2 and released as v0.3.0.
 
 ## Project
 
@@ -70,10 +70,30 @@ implementation, and the verification.
 
 ## Architecture and process documentation (new in Assignment 5)
 
+**Architecture in one paragraph:** Voice Games is a client-only single-page
+application: React renders the UI, the Web Speech API turns the child's voice
+into text and reads words aloud, a pure matching engine decides whether the
+spoken text matches the target word, and each game renders on a canvas or DOM
+scene. There is no backend and no account system; persistence is
+`localStorage` only, and the production build is a static bundle on GitHub
+Pages over HTTPS. This structure is what lets five students ship a
+customer-testable increment every sprint: no servers to operate, no secrets to
+manage, and one shared voice module through which every reliability fix
+reaches all six games at once.
+
+**Quality requirements and architecture decisions are linked both ways:**
+each ADR names the quality requirement(s) it addresses, and each quality
+requirement in [docs/quality-requirements.md](../../docs/quality-requirements.md)
+lists its related ADRs (for example, QR-1 "no false accepts" is addressed by
+the anti-feedback gate ADR-004 and the shared strict matcher ADR-005, while
+QR-3 accessibility exists as a maintained commitment because canvas rendering
+ADR-002 makes the DOM chrome the only accessible surface).
+
 - [Architecture overview](../../docs/architecture/README.md) with
-  [static](../../docs/architecture/static-view.md),
-  [dynamic](../../docs/architecture/dynamic-view.md), and
-  [deployment](../../docs/architecture/deployment-view.md) views (Mermaid).
+  [static](../../docs/architecture/static-view/README.md),
+  [dynamic](../../docs/architecture/dynamic-view/README.md), and
+  [deployment](../../docs/architecture/deployment-view/README.md) views
+  (Mermaid, diagrams-as-code stored in per-view directories).
 - [Five ADRs](../../docs/architecture/adr/README.md) recording the significant
   decisions (client-only Web Speech, canvas rendering, GitHub Pages, the
   anti-feedback gate, the shared voice module).
@@ -87,15 +107,58 @@ implementation, and the verification.
 - Four new UAT scenarios UAT-05..08
   ([docs/user-acceptance-tests.md](../../docs/user-acceptance-tests.md)).
 
+## Maintained project documentation
+
+- [docs/roadmap.md](../../docs/roadmap.md) - product direction, current
+  sprint, MVP v2, and the next expected increment.
+- [docs/definition-of-done.md](../../docs/definition-of-done.md)
+- [docs/testing.md](../../docs/testing.md)
+- [docs/quality-requirements.md](../../docs/quality-requirements.md)
+- [docs/quality-requirement-tests.md](../../docs/quality-requirement-tests.md)
+- [docs/user-acceptance-tests.md](../../docs/user-acceptance-tests.md)
+- [docs/development-process.md](../../docs/development-process.md)
+- [docs/architecture/README.md](../../docs/architecture/README.md) and
+  [ADR index](../../docs/architecture/adr/README.md)
+- [docs/user-stories.md](../../docs/user-stories.md)
+- [CHANGELOG.md](../../CHANGELOG.md)
+
+## Testing and CI status for the delivered increment
+
+- All Assignment 4 gates stayed active the whole sprint: type check, the
+  Vitest suite with coverage thresholds, production build, link check, and the
+  Lighthouse accessibility audit.
+- The suite grew with the increment: 80 tests at v0.3.0, including the new
+  no-false-accepts matcher suite, voice-engine unit tests, Boss mode tests,
+  and Progress view unit + integration tests. Coverage thresholds include a
+  per-file gate on `src/voice/engine.ts`.
+- CI pipeline definition: [.github/workflows/ci.yml](../../.github/workflows/ci.yml)
+  ([all runs](https://github.com/scaredofthesix/voice-games/actions/workflows/ci.yml)).
+- Latest protected-default-branch CI run (green):
+  https://github.com/scaredofthesix/voice-games/actions/runs/28700955299
+
+## UAT results (executed with the customer on live v0.3.0, 2026-07-03)
+
+| UAT | Scenario | Result |
+|---|---|---|
+| UAT-05 | Skate Word and Aste Word Destroyer are playable by voice | Pass |
+| UAT-06 | Boss Fight finite modes and unlockable Endless | Pass |
+| UAT-07 | Progress view records and shows practised words and scores | Pass |
+| UAT-08 | Russian-first UI and no self-scoring of app speech | Pass |
+
+No executed scenario failed. Product improvements the customer still wants
+are tracked as issues #103-#109 in the feedback table below; execution
+evidence rows live in
+[docs/user-acceptance-tests.md](../../docs/user-acceptance-tests.md).
+
 ## Scrum events and evidence
 
 - Sprint planning: milestone #3 scoped 2026-06-29 with implementer/reviewer
   assignment per PBI (see the table above).
 - Customer Sprint Review + UAT session: held 2026-07-03 (recorded, permissions
   granted; customer executed UAT-05..08 on the live v0.3.0 build - all passed).
-  Summary: [customer-review-summary.md](./customer-review-summary.md),
+  Summary: [sprint-review-summary.md](./sprint-review-summary.md),
   sanitized transcript:
-  [customer-review-transcript.md](./customer-review-transcript.md); private
+  [sprint-review-transcript.md](./sprint-review-transcript.md); private
   links and timecodes in the Moodle PDF.
 - Retrospective: [retrospective.md](./retrospective.md).
 - Customer verdict: increment accepted as MVP v2; all feedback targets the
@@ -103,6 +166,8 @@ implementation, and the verification.
   preceding the demo day).
 - Reflection: [reflection.md](./reflection.md).
 - LLM usage report: [llm-report.md](./llm-report.md).
+- Public demo video of the MVP v2 increment (gameplay of the released
+  v0.3.0 build): https://disk.yandex.ru/i/STwQZSAFWQPaGg
 
 ## Customer feedback -> response (Sprint 3 review, 2026-07-03)
 
@@ -120,6 +185,41 @@ implementation, and the verification.
 Agreed deadline: final version ready by **2026-07-19** (four more games plus
 the fixes above).
 
+Feedback points 1-7 are intentionally not fixed inside Sprint 3: they were
+raised at the Sprint 3 review itself (2026-07-03, two days before the sprint
+end), so the team triaged each into a linked backlog issue and scheduled them
+for the final-version sprint instead of rushing unreviewed changes into the
+released increment. Point 8 (documentation) was safe to fix immediately and
+was delivered in PR #111.
+
+## Contribution traceability (Sprint 3)
+
+| Member | Implemented (issue-linked PRs) | Reviewed | Other work |
+|---|---|---|---|
+| @scaredofthesix (Scrum Master) | [#89](https://github.com/scaredofthesix/voice-games/pull/89) anti-feedback gate #81 + Russian-first UI #84; [#98](https://github.com/scaredofthesix/voice-games/pull/98)/[#99](https://github.com/scaredofthesix/voice-games/pull/99) strict matcher #97, Aste rebalance #101, version footer #102; docs PRs [#96](https://github.com/scaredofthesix/voice-games/pull/96), [#100](https://github.com/scaredofthesix/voice-games/pull/100), [#111](https://github.com/scaredofthesix/voice-games/pull/111), [#112](https://github.com/scaredofthesix/voice-games/pull/112) | [#88](https://github.com/scaredofthesix/voice-games/pull/88) | Architecture docs + 5 ADRs, development-process doc, MkDocs site, v0.3.0 release and deployment, week5 report |
+| @flikspy (Developer) | [#93](https://github.com/scaredofthesix/voice-games/pull/93) shared voice module #82; [#94](https://github.com/scaredofthesix/voice-games/pull/94) deterministic Racer movement #85 | [#90](https://github.com/scaredofthesix/voice-games/pull/90), [#92](https://github.com/scaredofthesix/voice-games/pull/92) | Voice-engine unit tests |
+| @Kotumbaa (Developer) | [#90](https://github.com/scaredofthesix/voice-games/pull/90) Boss Fight modes #83; [#91](https://github.com/scaredofthesix/voice-games/pull/91) Progress view #25 | [#89](https://github.com/scaredofthesix/voice-games/pull/89), [#96](https://github.com/scaredofthesix/voice-games/pull/96), [#100](https://github.com/scaredofthesix/voice-games/pull/100) | Boss roster + Progress unit/integration tests |
+| @MMavInno (Product Owner) | [#92](https://github.com/scaredofthesix/voice-games/pull/92) Rocket Climb alien encounter #86 | [#94](https://github.com/scaredofthesix/voice-games/pull/94), [#91](https://github.com/scaredofthesix/voice-games/pull/91) | Backlog refinement and prioritization for Sprint 3 and the final version |
+| @TeraloToxin (Developer) | [#88](https://github.com/scaredofthesix/voice-games/pull/88) two new games (Skate Word, Aste Word Destroyer) | [#93](https://github.com/scaredofthesix/voice-games/pull/93), [#98](https://github.com/scaredofthesix/voice-games/pull/98), [#99](https://github.com/scaredofthesix/voice-games/pull/99), [#111](https://github.com/scaredofthesix/voice-games/pull/111), [#112](https://github.com/scaredofthesix/voice-games/pull/112) | Facilitated the customer Sprint Review + UAT session |
+
+Every member authored at least one issue-linked, reviewed PR and reviewed at
+least one other member's PR; implementer and reviewer always differ.
+
+## Product status and next steps
+
+**Status:** MVP v2 is released as v0.3.0 (Latest) and publicly deployed. Six
+voice-controlled games, Russian-first UI with an RU/EN toggle, a strict
+no-false-accepts matcher, an anti-feedback gate, a device-local Progress view,
+architecture + process documentation with a hosted docs site, and a green CI
+gate on the protected default branch. The customer accepted the increment at
+the Sprint 3 review.
+
+**Next steps (final version, expected by 2026-07-19):** four more games and
+the review follow-ups [#103](https://github.com/scaredofthesix/voice-games/issues/103)-[#109](https://github.com/scaredofthesix/voice-games/issues/109),
+with adaptive word selection from progress statistics (#105) and the
+consistent hear-the-word control (#109) as the customer's priorities. Later
+maintainability work is listed in [docs/roadmap.md](../../docs/roadmap.md).
+
 ## Evidence checklist (screenshots in ./images/)
 
 - [x] Milestone #3 with all issues closed - [milestone-3-closed.png](./images/milestone-3-closed.png)
@@ -128,7 +228,8 @@ the fixes above).
 - [x] v0.3.0 release page - [release-v0.3.0.png](./images/release-v0.3.0.png)
 - [x] A reviewed PR showing approval by the assigned reviewer - [pr-111-approved.png](./images/pr-111-approved.png)
 - [x] Docs site home page - [docs-site-home.png](./images/docs-site-home.png)
-- [ ] Public demo video (under 2 minutes) - TODO
+- [x] Deployed product view - [app-hub-v0.3.0.png](./images/app-hub-v0.3.0.png)
+- [x] Public demo video - https://disk.yandex.ru/i/STwQZSAFWQPaGg
 
 ## Embedded screenshots (reports/week5/images/)
 
@@ -156,3 +257,8 @@ Reviewed PR #111, merged with the assigned reviewer's approval:
 Hosted documentation site home page:
 
 ![Docs site home](./images/docs-site-home.png)
+
+Deployed product (game hub, Russian-first UI, v0.3.0 footer) - included
+because the public GitHub Pages link may need a VPN in some regions:
+
+![Deployed v0.3.0 game hub](./images/app-hub-v0.3.0.png)

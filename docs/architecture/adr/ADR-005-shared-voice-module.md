@@ -2,6 +2,7 @@
 
 - **Status:** Accepted (Sprint 3, issue #82)
 - **Deciders:** Team 40
+- **Quality requirements addressed:** [QR-1](../../quality-requirements.md#qr-1-functional-correctness-of-speech-matching) (one strict matcher shared by all games), [QR-2](../../quality-requirements.md#qr-2-response-time-of-speech-matching) (one perf-tested implementation instead of per-game copies)
 
 ## Context
 

@@ -87,7 +87,7 @@ be removed once no imports remain.
    `src/data.ts` are pure modules: no React imports, no component imports.
 2. Game components never talk to `SpeechRecognition` or `speechSynthesis`
    directly; they go through the voice module. This is what makes the
-   anti-feedback gate ([ADR-004](./adr/ADR-004-tts-anti-feedback-gate.md))
+   anti-feedback gate ([ADR-004](../adr/ADR-004-tts-anti-feedback-gate.md))
    apply everywhere at once.
 3. Persistence is isolated: only `src/progress.ts`, the custom-words manager,
    and the high-score handlers in `App.tsx` touch `localStorage`.

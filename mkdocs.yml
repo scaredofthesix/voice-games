@@ -43,9 +43,9 @@ nav:
   - Home: index.md
   - Architecture:
       - Overview: architecture/README.md
-      - Static view: architecture/static-view.md
-      - Dynamic view: architecture/dynamic-view.md
-      - Deployment view: architecture/deployment-view.md
+      - Static view: architecture/static-view/README.md
+      - Dynamic view: architecture/dynamic-view/README.md
+      - Deployment view: architecture/deployment-view/README.md
       - ADRs:
           - Index: architecture/adr/README.md
           - ADR-001 Client-only Web Speech: architecture/adr/ADR-001-client-only-web-speech.md
