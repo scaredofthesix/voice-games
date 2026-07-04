@@ -4,8 +4,8 @@ Canonical public report and submission index for Assignment 5 (Sprint 3,
 MVP v2). All public evidence is linked from here. Private identity,
 recordings, and credentials live only in the Moodle PDF.
 
-> Status: sprint in progress. Items marked TODO are completed at sprint close
-> (customer session, release tag, screenshots) and filled in before submission.
+> Status: sprint closed. All evidence collected; the increment was accepted
+> by the customer as MVP v2 and released as v0.3.0.
 
 ## Project
 
@@ -103,6 +103,8 @@ implementation, and the verification.
   preceding the demo day).
 - Reflection: [reflection.md](./reflection.md).
 - LLM usage report: [llm-report.md](./llm-report.md).
+- Public demo video of the MVP v2 increment (gameplay of the released
+  v0.3.0 build): https://disk.yandex.ru/i/STwQZSAFWQPaGg
 
 ## Customer feedback -> response (Sprint 3 review, 2026-07-03)
 
@@ -128,7 +130,7 @@ the fixes above).
 - [x] v0.3.0 release page - [release-v0.3.0.png](./images/release-v0.3.0.png)
 - [x] A reviewed PR showing approval by the assigned reviewer - [pr-111-approved.png](./images/pr-111-approved.png)
 - [x] Docs site home page - [docs-site-home.png](./images/docs-site-home.png)
-- [ ] Public demo video (under 2 minutes) - TODO
+- [x] Public demo video - https://disk.yandex.ru/i/STwQZSAFWQPaGg
 
 ## Embedded screenshots (reports/week5/images/)
 
