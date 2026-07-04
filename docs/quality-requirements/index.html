@@ -1246,12 +1246,15 @@ rationale, and a link to the automated quality requirement test (QRT) that
 verifies it in <a href="../quality-requirement-tests/">quality-requirement-tests.md</a>.</p>
 <p>These requirements are maintained project assets introduced in Assignment 4
 (Sprint 2). Later sprints must keep them satisfied or supersede them explicitly.</p>
+<p>Since Assignment 5, each requirement also links the architecture decision
+records (ADRs) in <a href="./architecture/adr/">architecture/adr/</a> that address it.</p>
 <table>
 <thead>
 <tr>
 <th>ID</th>
 <th>Sub-characteristic (ISO/IEC 25010)</th>
 <th>Verified by</th>
+<th>Related ADRs</th>
 </tr>
 </thead>
 <tbody>
@@ -1259,16 +1262,19 @@ verifies it in <a href="../quality-requirement-tests/">quality-requirement-tests
 <td>QR-1</td>
 <td>Functional correctness</td>
 <td>QRT-1</td>
+<td>ADR-001, ADR-003, ADR-004, ADR-005</td>
 </tr>
 <tr>
 <td>QR-2</td>
 <td>Performance efficiency - time behaviour</td>
 <td>QRT-2</td>
+<td>ADR-001, ADR-002, ADR-005</td>
 </tr>
 <tr>
 <td>QR-3</td>
 <td>Usability - operability (accessibility)</td>
 <td>QRT-3</td>
+<td>ADR-002</td>
 </tr>
 </tbody>
 </table>
@@ -1288,6 +1294,15 @@ verifies it in <a href="../quality-requirement-tests/">quality-requirement-tests
   <code>src/gameLogic.ts</code>. Relates to user stories US-04 and US-08.</li>
 <li><strong>Verified by:</strong> QRT-1 (<code>src/utils.test.ts</code>, <code>src/gameLogic.test.ts</code>, and the
   game integration tests).</li>
+<li><strong>Related ADRs:</strong>
+  <a href="../architecture/adr/ADR-001-client-only-web-speech/">ADR-001</a> (the matcher
+  compensates for browser recognition quality),
+  <a href="../architecture/adr/ADR-003-static-spa-github-pages/">ADR-003</a> (HTTPS
+  microphone permission as the precondition),
+  <a href="../architecture/adr/ADR-004-tts-anti-feedback-gate/">ADR-004</a> (the app
+  never scores its own speech),
+  <a href="../architecture/adr/ADR-005-shared-voice-module/">ADR-005</a> (one strict
+  matcher shared by all games).</li>
 </ul>
 <h2 id="qr-2-response-time-of-speech-matching">QR-2 Response time of speech matching<a class="headerlink" href="#qr-2-response-time-of-speech-matching" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1301,6 +1316,13 @@ verifies it in <a href="../quality-requirement-tests/">quality-requirement-tests
   the sense of voice control for a young player.</li>
 <li><strong>Traceability:</strong> <code>matchesWord</code> and <code>levenshteinDistance</code> in <code>src/voice/engine.ts</code>.</li>
 <li><strong>Verified by:</strong> QRT-2 (<code>src/utils.perf.test.ts</code>).</li>
+<li><strong>Related ADRs:</strong>
+  <a href="../architecture/adr/ADR-001-client-only-web-speech/">ADR-001</a> (matching is
+  a synchronous in-browser call with no team-controlled network hop),
+  <a href="../architecture/adr/ADR-002-canvas-rendering/">ADR-002</a> (the render loop
+  stays smooth while transcripts stream in),
+  <a href="../architecture/adr/ADR-005-shared-voice-module/">ADR-005</a> (one
+  perf-tested matcher implementation).</li>
 </ul>
 <h2 id="qr-3-operable-accessible-game-controls">QR-3 Operable, accessible game controls<a class="headerlink" href="#qr-3-operable-accessible-game-controls" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1318,6 +1340,11 @@ verifies it in <a href="../quality-requirement-tests/">quality-requirement-tests
   semantics).</li>
 <li><strong>Verified by:</strong> QRT-3 (accessibility assertions in the game integration
   tests) and the Lighthouse accessibility audit additional QA check in CI.</li>
+<li><strong>Related ADRs:</strong>
+  <a href="../architecture/adr/ADR-002-canvas-rendering/">ADR-002</a> (canvas scenes are
+  invisible to assistive technology, so the accessible surface lives in the
+  DOM chrome around them; this ADR is the reason QR-3 exists as a maintained
+  commitment).</li>
 </ul>
 
 
