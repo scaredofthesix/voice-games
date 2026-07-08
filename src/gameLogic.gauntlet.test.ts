@@ -39,6 +39,19 @@ describe('boss roster', () => {
     expect(isFinalBoss(BOSS_ROSTER.length - 1)).toBe(true);
     expect(isFinalBoss(999)).toBe(true);
   });
+
+  test('isFinalBoss respects totalBosses parameter', () => {
+    expect(isFinalBoss(2, 3)).toBe(true);
+    expect(isFinalBoss(1, 3)).toBe(false);
+    expect(isFinalBoss(4, 5)).toBe(true);
+    expect(isFinalBoss(3, 5)).toBe(false);
+  });
+
+  test('isFinalBoss returns false for Endless mode (totalBosses = -1)', () => {
+    expect(isFinalBoss(0, -1)).toBe(false);
+    expect(isFinalBoss(14, -1)).toBe(false);
+    expect(isFinalBoss(999, -1)).toBe(false);
+  });
 });
 
 describe('endlessBossAtLevel', () => {

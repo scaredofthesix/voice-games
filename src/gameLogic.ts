@@ -102,8 +102,9 @@ export function bossAtLevel(level: number): BossKind {
 }
 
 /** True when the given level is the last boss of the gauntlet. */
-export function isFinalBoss(level: number): boolean {
-  return Math.floor(level) >= BOSS_ROSTER.length - 1;
+export function isFinalBoss(level: number, totalBosses: number = BOSS_ROSTER.length): boolean {
+  if (totalBosses === -1) return false;
+  return Math.floor(level) >= totalBosses - 1;
 }
 
 /** Extra HP added to a looped boss for every full pass through the roster. */

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { WordData } from '../types';
-import { speakWord } from '../utils';
+import { speakWord } from '../voice/engine';
 import { Plus, Trash2, Volume2, AlertCircle } from 'lucide-react';
 
 interface CustomWordsManagerProps {

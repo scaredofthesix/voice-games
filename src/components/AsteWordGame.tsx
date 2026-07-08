@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
 import { ArrowLeft, Play, Pause, RotateCcw, Heart, BookOpen, Volume2 } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
@@ -189,6 +190,7 @@ export function AsteWordGame({
         struggled: prevStats[destroyedWord]?.struggled || 0,
       },
     }));
+    saveProgress(recordWordSpoken(loadProgress(), 'aste-word', destroyedWord));
 
     asteroids.current = asteroids.current.filter((a) => a.id !== targetAst.id);
     setActiveAsteroids([...asteroids.current]);
@@ -205,7 +207,7 @@ export function AsteWordGame({
       if (now - lastTriggerTime.current < 400) return;
 
       const matched = asteroids.current.find((ast) => {
-        return matchesWord(text, ast.word, true) || checkLooseMatch(text, ast.word);
+        return matchesWord(text, ast.word, true);
       });
 
       if (matched) {
@@ -326,27 +328,29 @@ export function AsteWordGame({
         // 1. Медленный плавный спавн
         spawnTimer.current++;
 
+        // Pacing budget: a child needs ~3-4s per word including recognition
+        // latency, so even Hard must leave that much time per asteroid.
         const diff = difficultyRef.current;
-        let spawnDelay = Math.max(150, 260 - scoreRef.current * 4);
-        let maxAsteroids = 4;
-        let baseSpeed = 0.85 + scoreRef.current * 0.02;
-        let speedRandomRange = 0.3;
+        let spawnDelay = Math.max(280, 440 - scoreRef.current * 5);
+        let maxAsteroids = 2;
+        let baseSpeed = 0.35 + scoreRef.current * 0.007;
+        let speedRandomRange = 0.12;
 
         if (diff === 'easy') {
-          spawnDelay = Math.max(300, 480 - scoreRef.current * 6);
+          spawnDelay = Math.max(360, 540 - scoreRef.current * 5);
           maxAsteroids = 1; // Only 1 asteroid at a time for extremely relaxed play
-          baseSpeed = 0.25 + scoreRef.current * 0.005;
-          speedRandomRange = 0.1;
+          baseSpeed = 0.2 + scoreRef.current * 0.004;
+          speedRandomRange = 0.08;
         } else if (diff === 'medium') {
-          spawnDelay = Math.max(220, 360 - scoreRef.current * 5);
-          maxAsteroids = 2; // Old easy settings are now Medium
-          baseSpeed = 0.45 + scoreRef.current * 0.01;
-          speedRandomRange = 0.15;
+          spawnDelay = Math.max(280, 440 - scoreRef.current * 5);
+          maxAsteroids = 2;
+          baseSpeed = 0.35 + scoreRef.current * 0.007;
+          speedRandomRange = 0.12;
         } else if (diff === 'hard') {
-          spawnDelay = Math.max(150, 260 - scoreRef.current * 4);
-          maxAsteroids = 4; // Old medium settings are now Hard
-          baseSpeed = 0.85 + scoreRef.current * 0.02;
-          speedRandomRange = 0.3;
+          spawnDelay = Math.max(220, 340 - scoreRef.current * 4);
+          maxAsteroids = 3;
+          baseSpeed = 0.55 + scoreRef.current * 0.012;
+          speedRandomRange = 0.2;
         }
 
         if (spawnTimer.current >= spawnDelay && asteroids.current.length < maxAsteroids) {
@@ -564,6 +568,8 @@ export function AsteWordGame({
 
   const startGame = useCallback(() => {
     speakSound.playCoin();
+    const updatedProgress = recordSessionPlayed(loadProgress(), 'aste-word');
+    saveProgress(updatedProgress);
     setScore(0);
     setWordStudyStats({});
     setLives(3);
@@ -824,6 +830,7 @@ export function AsteWordGame({
                                 struggled: (p[ast.word]?.struggled || 0) + 1,
                               },
                             }));
+                            saveProgress(recordWordStruggled(loadProgress(), 'aste-word', ast.word));
                           }}
                           className="px-2 py-1 bg-yellow-50 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg text-[10px] font-black uppercase inline-flex items-center gap-1 cursor-pointer shadow-sm active:translate-y-0.5"
                         >
@@ -1017,65 +1024,3 @@ function drawRoundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, wi
   ctx.closePath();
 }
 
-// Хелперы нечеткого пословного сравнения
-function checkLooseMatch(transcript: string, target: string): boolean {
-  const cleanT = transcript.toLowerCase().replace(/[^a-z0-9]/g, ' ').trim();
-  const cleanTar = target.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
-  
-  // 1. Полное совпадение без пробелов
-  if (cleanT === cleanTar || cleanT.includes(cleanTar) || cleanTar.includes(cleanT)) {
-    if (cleanTar.length > 2 && cleanT.length >= cleanTar.length - 1) {
-      return true;
-    }
-  }
-
-  // 2. Расстояние Левенштейна для всей фразы целиком
-  const fullDist = getLevenshteinDistance(cleanT, cleanTar);
-  if (cleanTar.length <= 4) {
-    if (fullDist <= 1 && cleanT.length >= cleanTar.length - 1) return true;
-  } else {
-    if (fullDist <= 2 && cleanT.length >= cleanTar.length - 2) return true;
-  }
-
-  // 3. Пословное совпадение для длинных предложений
-  const words = cleanT.split(/\s+/);
-  for (const w of words) {
-    if (w === cleanTar) return true;
-    if (w.includes(cleanTar) || cleanTar.includes(w)) {
-      if (cleanTar.length > 2 && w.length >= cleanTar.length - 1) {
-        return true;
-      }
-    }
-    const dist = getLevenshteinDistance(w, cleanTar);
-    if (cleanTar.length <= 4) {
-      if (dist <= 1 && w.length >= cleanTar.length - 1) return true;
-    } else {
-      if (dist <= 2 && w.length >= cleanTar.length - 2) return true;
-    }
-  }
-  return false;
-}
-
-function getLevenshteinDistance(a: string, b: string): number {
-  const matrix = [];
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
-  }
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j;
-  }
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j] + 1
-        );
-      }
-    }
-  }
-  return matrix[b.length][a.length];
-}

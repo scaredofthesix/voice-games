@@ -4,12 +4,13 @@ A browser-based **voice-controlled English learning portal for children**. The c
 
 - **Live (public, HTTPS):** https://scaredofthesix.github.io/voice-games/ - works in Google Chrome; allow microphone access when prompted.
   > Note: the GitHub Pages link may not open from some networks or regions without a VPN. This is an external GitHub availability restriction outside the team's control; the same build can always be run locally from this repository (see "Local development setup" below).
-- **Release:** [v0.1.0 - MVP v1 (Sprint 1)](https://github.com/scaredofthesix/voice-games/releases/tag/v0.1.0) · [CHANGELOG](./CHANGELOG.md)
+- **Release:** [v0.3.0 - MVP v2 (Sprint 3)](https://github.com/scaredofthesix/voice-games/releases/tag/v0.3.0) · [CHANGELOG](./CHANGELOG.md)
+- **Assignment 5 submission index:** [reports/week5/README.md](./reports/week5/README.md)
 - **Assignment 4 submission index:** [reports/week4/README.md](./reports/week4/README.md)
 - **Assignment 3 submission index:** [reports/week3/README.md](./reports/week3/README.md)
 - **Assignment 2 submission index:** [reports/week2/README.md](./reports/week2/README.md)
 - **License:** [MIT](./LICENSE)
-- Earlier internal MVP v0 (Innopolis network/VPN only): https://10.93.26.180:8085/ - see the [MVP v0 report](./reports/week2/mvp-v0-report.md).
+- Internal mirror on the Innopolis VM (network/VPN only, runs the released build, currently v0.3.0): https://10.93.26.180:8085/ - see the [MVP v0 report](./reports/week2/mvp-v0-report.md) for the original setup.
 
 > **Browser support:** voice recognition uses the Web Speech API and works only in **Google Chrome**; other browsers are not supported.
 
@@ -19,7 +20,10 @@ A browser-based **voice-controlled English learning portal for children**. The c
 - **User stories (SP + MVP + status):** [docs/user-stories.md](./docs/user-stories.md)
 - **Roadmap:** [docs/roadmap.md](./docs/roadmap.md) · **Definition of Done:** [docs/definition-of-done.md](./docs/definition-of-done.md)
 - **Quality:** [quality requirements](./docs/quality-requirements.md) · [quality requirement tests](./docs/quality-requirement-tests.md) · [testing strategy](./docs/testing.md) · [user acceptance tests](./docs/user-acceptance-tests.md)
-- **Sprint 1 milestone:** https://github.com/scaredofthesix/voice-games/milestone/1
+- **Architecture:** [overview + views](./docs/architecture/README.md) · [decision records (ADRs)](./docs/architecture/adr/README.md)
+- **Process:** [development process and configuration management](./docs/development-process.md)
+- **Docs site (MkDocs):** https://scaredofthesix.github.io/voice-games/docs/
+- **Milestones:** [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) · [Sprint 2](https://github.com/scaredofthesix/voice-games/milestone/2) · [Sprint 3 (MVP v2)](https://github.com/scaredofthesix/voice-games/milestone/3)
 
 ## Tech stack
 
@@ -123,7 +127,7 @@ Since the Web Speech API requires a secure context, modern browsers **block micr
 ├── index.html              # Vite entry -> src/main.tsx
 ├── package.json
 ├── vite.config.ts
-├── docs/                   # user stories, roadmap, DoD, quality requirements, QRTs, testing, UAT
+├── docs/                   # user stories, roadmap, DoD, quality docs, architecture + ADRs, dev process, UAT
 ├── vitest.config.ts        # test runner + coverage thresholds
 ├── lighthouserc.json       # accessibility audit config (additional QA check)
 ├── src/

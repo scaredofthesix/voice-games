@@ -30,12 +30,21 @@ import { WordLadderGame } from './components/WordLadderGame';
 import { SkateWordGame } from './components/SkateWordGame';
 import { AsteWordGame } from './components/AsteWordGame';
 import { TreasureHunterGame } from './components/TreasureHunterGame';
-import { speakWord, speakSound, matchesWord, isSpeechSynthesisActive } from './utils';
+import { ProgressView } from './components/ProgressView';
+import {
+  createInitialRacerMovementState,
+  speakWord,
+  speakSound,
+  matchesWord,
+  isSpeechSynthesisActive,
+  updateRacerMovement,
+} from './voice/engine';
 import { useUiLanguage } from './uiLanguage';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, recordHighScore } from './progress';
 
 export default function App() {
   const { language, setLanguage, t } = useUiLanguage();
-  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD' | 'TREASURE_HUNTER'>('HUB');
+  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD' | 'TREASURE_HUNTER' | 'PROGRESS'>('HUB');
 
   // Game states
   const [gameState, setGameState] = useState<GameState>('START_SCREEN');
@@ -77,6 +86,7 @@ export default function App() {
   const handleUpdateBubbleHighScore = (newScore: number) => {
     setBubbleHighScore(newScore);
     localStorage.setItem('bubble_popper_highscore', newScore.toString());
+    saveProgress(recordHighScore(loadProgress(), 'bubble-popper', newScore));
   };
 
   const [bossFightHighScore, setBossFightHighScore] = useState<number>(() => {
@@ -91,6 +101,7 @@ export default function App() {
   const handleUpdateBossFightHighScore = (newScore: number) => {
     setBossFightHighScore(newScore);
     localStorage.setItem('boss_fight_highscore', newScore.toString());
+    saveProgress(recordHighScore(loadProgress(), 'boss-fight', newScore));
   };
 
   const [wordLadderHighScore, setWordLadderHighScore] = useState<number>(() => {
@@ -105,6 +116,7 @@ export default function App() {
   const handleUpdateWordLadderHighScore = (newScore: number) => {
     setWordLadderHighScore(newScore);
     localStorage.setItem('word_ladder_highscore', newScore.toString());
+    saveProgress(recordHighScore(loadProgress(), 'word-ladder', newScore));
   };
 
   const [skateWordHighScore, setSkateWordHighScore] = useState<number>(() => {
@@ -119,6 +131,7 @@ export default function App() {
   const handleUpdateSkateWordHighScore = (newScore: number) => {
     setSkateWordHighScore(newScore);
     localStorage.setItem('skate_word_highscore', newScore.toString());
+    saveProgress(recordHighScore(loadProgress(), 'skate-word', newScore));
   };
 
   const [asteWordHighScore, setAsteWordHighScore] = useState<number>(() => {
@@ -133,6 +146,7 @@ export default function App() {
   const handleUpdateAsteWordHighScore = (newScore: number) => {
     setAsteWordHighScore(newScore);
     localStorage.setItem('aste_word_highscore', newScore.toString());
+    saveProgress(recordHighScore(loadProgress(), 'aste-word', newScore));
   };
 
   const [treasureHunterHighScore, setTreasureHunterHighScore] = useState<number>(() => {
@@ -228,6 +242,9 @@ export default function App() {
   const [bubbleLevel, setBubbleLevel] = useState(1);
   const [lives, setLives] = useState(3);
   const [playerLane, setPlayerLane] = useState<Lane>(1); // 1 = Center
+  const [racerMovementState, setRacerMovementState] = useState(() =>
+    createInitialRacerMovementState(1),
+  );
   const [vocabIndex, setVocabIndex] = useState(0);
   const [lastHeardTranscript, setLastHeardTranscript] = useState('');
   const [wordMatchFlash, setWordMatchFlash] = useState(false);
@@ -320,9 +337,21 @@ export default function App() {
 
   // Perform the lane change dynamically
   const performLaneShift = useCallback((newLane: Lane) => {
-    setPlayerLane(newLane);
+    setRacerMovementState((prev) => updateRacerMovement(prev, newLane, Date.now(), 180));
     setStruggleCounter({}); // Reset struggle help on any shift!
   }, []);
+
+  useEffect(() => {
+    setPlayerLane(racerMovementState.lane);
+  }, [racerMovementState.lane]);
+
+  useEffect(() => {
+    if (racerMovementState.pendingLane === null) return;
+    const tick = window.setInterval(() => {
+      setRacerMovementState((prev) => updateRacerMovement(prev, null, Date.now(), 180));
+    }, 50);
+    return () => window.clearInterval(tick);
+  }, [racerMovementState.pendingLane]);
 
   // Trigger words initialize on playing start
   useEffect(() => {
@@ -450,6 +479,7 @@ export default function App() {
             struggled: prev[target]?.struggled || 0
           }
         }));
+        saveProgress(recordWordSpoken(loadProgress(), 'voice-racer', target));
 
         speakSound.playAccelerate();
         setLastHeardTranscript('');
@@ -463,6 +493,7 @@ export default function App() {
     if (score > highScore) {
       setHighScore(score);
       localStorage.setItem('voice_racer_highscore', score.toString());
+      saveProgress(recordHighScore(loadProgress(), 'voice-racer', score));
     }
     
     // Level Up Progression calculation: Every 12 successful dodges (180 points)
@@ -504,12 +535,14 @@ export default function App() {
     setLives(3);
     setLevel(1);
     setPlayerLane(1);
+    setRacerMovementState(createInitialRacerMovementState(1));
     setVocabIndex(0);
     setLastHeardTranscript('');
     setWordStudyStats({});
     setRacerPaused(false);
     racerPausedRef.current = false;
     startVoiceEngine();
+    saveProgress(recordSessionPlayed(loadProgress(), 'voice-racer'));
     speakSound.playCoin();
   };
 
@@ -598,6 +631,7 @@ export default function App() {
         struggled: (prev[word]?.struggled || 0) + 1
       }
     }));
+    saveProgress(recordWordStruggled(loadProgress(), 'voice-racer', word));
   };
 
   // Clean elements on exit
@@ -621,8 +655,8 @@ export default function App() {
       <div className="absolute top-28 right-[10%] w-32 h-12 bg-white rounded-full opacity-60 blur-[1px] pointer-events-none animate-pulse" />
       <div className="absolute bottom-20 left-[4%] w-28 h-10 bg-white rounded-full opacity-40 blur-[1px] pointer-events-none" />
 
-      {/* HEADER BAR - hidden for the self-contained Sprint 2 games (Boss Fight, Word Ladder, SkateWord, AsteWord, TreasureHunter) */}
-      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && currentView !== 'TREASURE_HUNTER' && (
+      {/* HEADER BAR - hidden for the self-contained Sprint 2 games (Boss Fight, Word Ladder, SkateWord, AsteWord, TreasureHunter) and Progress */}
+      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && currentView !== 'TREASURE_HUNTER' && currentView !== 'PROGRESS' && (
       <header className="bg-yellow-400 border-b-8 border-slate-900 py-3.5 px-6 md:px-12 sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
         {currentView === 'HUB' ? (
           <>
@@ -655,6 +689,15 @@ export default function App() {
                   <span className="text-xs font-black">{t('header.totalRecord')}</span>
                   <span className="font-black text-sm text-yellow-700 font-mono tracking-tight">{totalRecordSum}</span>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setCurrentView('PROGRESS')}
+                  className="bg-purple-100 border-4 border-slate-900 text-slate-900 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-md hover:scale-105 transition-transform cursor-pointer"
+                  aria-label={language === 'ru' ? 'Открыть прогресс' : 'Open progress'}
+                >
+                  <span className="text-sm">📊</span>
+                  <span className="text-xs font-black uppercase tracking-wider">{language === 'ru' ? 'Прогресс' : 'Progress'}</span>
+                </button>
               </div>
             </div>
           </>
@@ -1552,15 +1595,21 @@ export default function App() {
             highScore={treasureHunterHighScore}
             onUpdateHighScore={handleUpdateTreasureHunterHighScore}
           />
-        ) : (
+        ) : currentView === 'ASTE_WORD' ? (
           <AsteWordGame
             onBackToHub={() => setCurrentView('HUB')}
             customWords={customWords}
             highScore={asteWordHighScore}
             onUpdateHighScore={handleUpdateAsteWordHighScore}
           />
+        ) : (
+          <ProgressView onBackToHub={() => setCurrentView('HUB')} />
         )}
       </main>
+
+      <footer className="relative z-10 pb-3 text-center text-xs font-bold text-slate-400 select-none">
+        Voice Games v{__APP_VERSION__}
+      </footer>
     </div>
   );
 }

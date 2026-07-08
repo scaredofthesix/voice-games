@@ -4,22 +4,52 @@ All notable changes to Voice Games are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.0] - 2026-07-03
 
-### Planned (from the Sprint 2 customer review / UAT, 2026-06-27)
+Sprint 3 (MVP v2) release. Every Sprint 2 customer review finding from
+2026-06-27 is addressed below.
 
-Feedback from the recorded review is scheduled for the next release. The
-demonstrated build v0.2.1 is unchanged.
+### Added
 
-- Fix the speech engine self-triggering from its own spoken hint (audio-loop
-  false positive): mute the microphone while text-to-speech plays and / or drop
-  the auto hint, and recalibrate the matching tolerance (#81).
-- Extract a shared voice-processing module reused by all games (#82).
-- Boss Fight finite difficulty modes (10 / 20 / 30 words) plus an unlockable
-  Infinite Mode, with the design documented (#83).
-- Default the interface to Russian on launch, keeping the RU/EN toggle (#84).
-- Smooth Voice Racer movement physics under live streaming (#85).
-- Later polish: an interactive end-of-climb event in Voice Rocket Climb (#86).
+- Two new games: **Skate Word** (keep the skater rolling by pronouncing words)
+  and **Aste Word Destroyer** (destroy asteroids by saying their words) (#88).
+- **Boss Fight difficulty modes**: finite runs of 3 / 5 / 10 bosses plus an
+  **Endless mode unlocked** by completing a finite run (#83).
+- **Progress view**: per-game words practised, high scores, and sessions
+  played, stored on the device and reachable from the hub (US-10, #25).
+- A friendly **alien encounter** on the Voice Rocket Climb win screen (#86).
+- **Architecture documentation**: static, dynamic, and deployment views with
+  Mermaid diagrams and five architecture decision records under
+  `docs/architecture/`.
+- **Development process and configuration management** documentation
+  (`docs/development-process.md`) and a hosted MkDocs documentation site.
+- The app version is shown in a footer on every view, so the deployed build
+  is identifiable during customer sessions.
+
+### Changed
+
+- The interface now **defaults to Russian** with the RU/EN toggle kept (#84).
+- Voice handling consolidated into a **shared `src/voice/` module** (engine +
+  recognition hook) used by all six games (#82).
+- **Voice Racer movement is deterministic**: lane changes apply on a fixed
+  timestep with de-jittered voice input instead of frame-dependent updates
+  (#85).
+- The recognition matcher normalizes **Cyrillic transcripts** and tolerates
+  small pronunciation slips via Levenshtein distance.
+- Definition of Done extended with an architecture documentation gate.
+- **Aste Word Destroyer difficulty rebalanced** for the stricter matcher:
+  fewer and slower asteroids per level, leaving realistic time to pronounce
+  each word including recognition latency.
+
+### Fixed
+
+- The speech engine **no longer scores its own spoken hints**: recognition
+  results are dropped while text-to-speech is playing (anti-feedback gate)
+  (#81).
+- **False-positive voice matches eliminated**: the matcher now requires a
+  strict token match with a tight, length-scaled edit-distance budget instead
+  of substring and consonant-skeleton heuristics that accepted almost any
+  speech (#97).
 
 ## [0.2.1] - 2026-06-27
 
@@ -102,7 +132,7 @@ demonstrated build v0.2.1 is unchanged.
 - This is the MVP v1 release for the Sprint 1 customer review.
 - Voice input requires Google Chrome (Web Speech API).
 
-[Unreleased]: https://github.com/scaredofthesix/voice-games/compare/v0.2.1...HEAD
+[0.3.0]: https://github.com/scaredofthesix/voice-games/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/scaredofthesix/voice-games/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/scaredofthesix/voice-games/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/scaredofthesix/voice-games/releases/tag/v0.1.0

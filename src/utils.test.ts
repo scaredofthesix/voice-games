@@ -79,15 +79,66 @@ describe('matchesWord - tolerant recognition (issue #35)', () => {
   });
 
   test('is more lenient in ease mode than in strict mode', () => {
-    // A two-edit gap on a short word: rejected when strict, allowed in ease mode.
-    const spoken = 'oranje';
+    // Two edits on a six-letter word: rejected when strict, allowed in ease mode.
+    const spoken = 'orinje';
     const target = 'orange';
-    expect(matchesWord(spoken, target, false)).toBe(true);
+    expect(matchesWord(spoken, target, false)).toBe(false);
     expect(matchesWord(spoken, target, true)).toBe(true);
   });
 
   test('rejects an unrelated word', () => {
     expect(matchesWord('banana', 'elephant')).toBe(false);
     expect(matchesWord('dog', 'rabbit')).toBe(false);
+  });
+});
+
+describe('matchesWord - no false accepts (issue #97)', () => {
+  test('rejects one-edit neighbors of short words even in ease mode', () => {
+    expect(matchesWord('cut', 'cat', true)).toBe(false);
+    expect(matchesWord('cap', 'cat', true)).toBe(false);
+    expect(matchesWord('hat', 'cat', true)).toBe(false);
+    expect(matchesWord('dog', 'duck', true)).toBe(false);
+  });
+
+  test('rejects consonant-skeleton twins', () => {
+    // bird and bread share the consonant skeleton "brd".
+    expect(matchesWord('bird', 'bread', true)).toBe(false);
+    expect(matchesWord('bread', 'bird', true)).toBe(false);
+  });
+
+  test('rejects fragments and containers of the target', () => {
+    expect(matchesWord('ca', 'cat', true)).toBe(false);
+    expect(matchesWord('a', 'apple', true)).toBe(false);
+    expect(matchesWord('catalog', 'cat', true)).toBe(false);
+  });
+
+  test('rejects fuzzy candidates that start with a different sound', () => {
+    // One edit away but a different leading sound: not the same word.
+    expect(matchesWord('meach', 'peach', true)).toBe(false);
+  });
+
+  test('rejects non-Latin speech instead of matching everything', () => {
+    // A transcript that normalizes to nothing must never count as a match.
+    expect(matchesWord('привет как дела', 'cat', true)).toBe(false);
+    expect(matchesWord('да', 'apple', true)).toBe(false);
+  });
+});
+
+describe('matchesWord - phrase targets', () => {
+  test('accepts the exact phrase', () => {
+    expect(matchesWord('ice cream', 'ice cream', true)).toBe(true);
+  });
+
+  test('accepts the phrase inside surrounding chatter', () => {
+    expect(matchesWord('i want ice cream please', 'ice cream', true)).toBe(true);
+  });
+
+  test('accepts the phrase glued into one recognized token', () => {
+    expect(matchesWord('icecream', 'ice cream', true)).toBe(true);
+  });
+
+  test('rejects a partial phrase', () => {
+    expect(matchesWord('ice', 'ice cream', true)).toBe(false);
+    expect(matchesWord('cream', 'ice cream', true)).toBe(false);
   });
 });

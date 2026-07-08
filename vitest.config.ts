@@ -1,11 +1,19 @@
 import react from '@vitejs/plugin-react';
+import { readFileSync } from 'fs';
 import path from 'path';
 import { defineConfig } from 'vitest/config';
 
 // Test runner config is kept separate from vite.config.ts so the production
 // build stays free of test-only settings. Coverage thresholds encode the
 // Assignment 4 quality gate: each critical module must keep >=30% line coverage.
+const pkg = JSON.parse(
+  readFileSync(path.resolve(__dirname, 'package.json'), 'utf-8'),
+);
+
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [react()],
   resolve: {
     alias: {
@@ -33,6 +41,7 @@ export default defineConfig({
       // the gate that matters is the per-file floor on critical logic.
       thresholds: {
         'src/utils.ts': { lines: 30 },
+        'src/voice/engine.ts': { lines: 30 },
         'src/gameLogic.ts': { lines: 30 },
       },
     },
