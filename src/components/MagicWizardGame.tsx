@@ -188,6 +188,8 @@ export function MagicWizardGame({
   }, [wordList]);
 
   const handleCollision = useCallback(() => {
+    if (livesRef.current <= 0) return;
+    monsterTimer.current = 100; // Reset timer immediately to prevent multi-triggering
     speakSound.playCrash();
     const nextL = livesRef.current - 1;
     setLives(nextL);
@@ -719,7 +721,7 @@ export function MagicWizardGame({
               ref={canvasRef}
               width={600}
               height={300}
-              className="w-full h-[300px] block"
+              className="w-full max-w-[600px] aspect-[2/1] mx-auto block"
             />
             {paused && (
               <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center gap-1">
