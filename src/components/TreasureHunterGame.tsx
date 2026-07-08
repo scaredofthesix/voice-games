@@ -722,72 +722,26 @@ export function TreasureHunterGame({
       {/* Main Canvas view area */}
       <div className="flex-1 flex flex-col items-center justify-center relative">
         {phase === 'START' && (
-          <div className="w-full max-w-2xl bg-white border-8 border-slate-900 rounded-3xl p-6 md:p-10 shadow-2xl text-center space-y-6 relative z-25">
-            <div className="w-24 h-24 bg-cyan-400 border-4 border-slate-955 rounded-2xl flex items-center justify-center text-5xl mx-auto shadow-md animate-bounce">
-              🐳
-            </div>
-            
-            <div className="space-y-2">
-              <h2 className="text-2xl md:text-3xl font-black uppercase text-slate-950 tracking-wider">
-                {strings.title}
-              </h2>
-              <p className="text-slate-600 font-bold text-xs md:text-sm max-w-md mx-auto leading-relaxed">
-                {strings.description}
-              </p>
-            </div>
-
-            {/* Custom word list/category selector */}
-            <div className="space-y-4">
-              <div className="bg-slate-100 border-4 border-slate-955 p-4 rounded-2xl">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2 text-center">
-                  {strings.chooseSet}
-                </span>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {BUILTIN_CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setActiveCategory(cat)}
-                      className={`py-2 px-3 border-4 font-black text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
-                        activeCategory.id === cat.id
-                          ? 'bg-cyan-500 text-white border-slate-900 shadow-sm'
-                          : 'bg-white text-slate-705 border-slate-350 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="text-lg">{cat.icon}</span>
-                      <span className="truncate">{language === 'ru' ? cat.name : cat.name}</span>
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() =>
-                      setActiveCategory({
-                        id: 'custom',
-                        name: strings.myWords,
-                        description: '',
-                        icon: '✏️',
-                        words: customWords,
-                      })
-                    }
-                    className={`py-2 px-3 border-4 font-black text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
-                      activeCategory.id === 'custom'
-                        ? 'bg-cyan-500 text-white border-slate-900 shadow-sm'
-                        : 'bg-white text-slate-705 border-slate-350 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="text-lg">✏️</span>
-                    <span className="truncate">{strings.myWords}</span>
-                  </button>
+          <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
+            <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-cyan-50 bubble-shadow-cyan">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <div className="w-18 h-18 rounded-3xl bg-cyan-400 border-4 border-slate-900 flex items-center justify-center animate-bounce">
+                  <span className="text-3.5xl">🐳</span>
                 </div>
+                <h1 className="text-4xl font-black uppercase tracking-wider text-slate-900">
+                  {strings.title}
+                </h1>
+                <p className="text-xs font-bold text-slate-655 max-w-xs leading-relaxed mx-auto">
+                  {strings.description}
+                </p>
               </div>
 
-              {/* Theme / Submarine Accent Color Selector */}
-              <div className="bg-slate-100 border-4 border-slate-955 p-4 rounded-2xl">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2 text-center">
+              {/* CHOOSE SUBMARINE COLOR */}
+              <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
+                <label className="block text-xs font-black text-cyan-500 uppercase tracking-widest ml-1">
                   {strings.chooseTheme}
-                </span>
-
-                <div className="flex justify-center gap-3">
+                </label>
+                <div className="flex justify-center gap-3 py-1">
                   {(['yellow', 'orange', 'cyan', 'neon'] as SubColor[]).map((col) => {
                     let colBg = 'bg-amber-400';
                     if (col === 'orange') colBg = 'bg-orange-500';
@@ -797,9 +751,12 @@ export function TreasureHunterGame({
                     return (
                       <button
                         key={col}
-                        onClick={() => setSubColor(col)}
+                        onClick={() => {
+                          speakSound.playCoin();
+                          setSubColor(col);
+                        }}
                         className={`w-10 h-10 rounded-full border-4 cursor-pointer transition-all ${colBg} ${
-                          subColor === col ? 'border-slate-950 scale-115 shadow-md' : 'border-slate-300 hover:scale-105'
+                          subColor === col ? 'border-slate-955 scale-115 shadow-md' : 'border-slate-300 hover:scale-105'
                         }`}
                         aria-label={`Select ${col} submarine`}
                       />
@@ -807,14 +764,61 @@ export function TreasureHunterGame({
                   })}
                 </div>
               </div>
-            </div>
 
-            <button
-              onClick={startGame}
-              className="w-full bg-pink-500 hover:bg-pink-600 text-white font-black text-sm py-4 rounded-2xl border-4 border-slate-955 shadow-md cursor-pointer uppercase transition-all hover:scale-[1.02] active:translate-y-0.5"
-            >
-              {strings.start} 🚀
-            </button>
+              {/* CHOOSE WORD SET */}
+              <fieldset className="text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
+                <legend className="text-xs font-black uppercase tracking-wider text-slate-700 px-1">
+                  {strings.chooseSet}
+                </legend>
+                <div className="flex flex-wrap gap-2">
+                  {BUILTIN_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setActiveCategory(cat)}
+                      className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide cursor-pointer ${
+                        activeCategory.id === cat.id
+                          ? 'bg-cyan-400 border-slate-900 text-slate-900'
+                          : 'bg-white border-slate-300 text-slate-655'
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() =>
+                      setActiveCategory({
+                        id: 'custom',
+                        name: strings.myWords,
+                        description: '',
+                        icon: 'edit',
+                        words: customWords,
+                      })
+                    }
+                    className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide cursor-pointer ${
+                      activeCategory.id === 'custom'
+                        ? 'bg-pink-400 border-slate-900 text-slate-955'
+                        : 'bg-white border-slate-300 text-slate-655'
+                    }`}
+                  >
+                    {strings.myWords} ({customWords.length})
+                  </button>
+                </div>
+              </fieldset>
+
+              {!isSupported && (
+                <p className="text-xs font-bold text-rose-600 text-center" role="alert">
+                  Voice control needs Google Chrome.
+                </p>
+              )}
+
+              <button
+                onClick={startGame}
+                disabled={!isSupported}
+                className="w-full py-3.5 bg-cyan-400 hover:bg-cyan-50 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <Play className="w-4 h-4 fill-current stroke-[3]" /> {strings.start}
+              </button>
+            </div>
           </div>
         )}
 
