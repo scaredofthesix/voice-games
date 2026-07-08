@@ -66,6 +66,10 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
         hearIt: 'Hear it',
         again: 'Again',
       },
+      sentenceBird: {
+        title: 'Sentence Bird',
+        description: 'Speak sentence steps aloud to guide the bird through the clouds and grow your pronunciation confidence.',
+      },
     },
     shared: {
       chooseWordSet: 'Choose a word set',
@@ -185,6 +189,10 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
         sayToLaunch: 'Произнеси слово для запуска',
         hearIt: 'Прослушать',
         again: 'Заново',
+      },
+      sentenceBird: {
+        title: 'Фразоптичка',
+        description: 'Произноси части предложений вслух, чтобы вести птичку по облакам и тренировать произношение.',
       },
     },
     shared: {
