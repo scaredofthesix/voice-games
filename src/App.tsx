@@ -589,6 +589,7 @@ export default function App() {
 
   // Collision damage event triggered by physical canvas detection or timeout
   const handleCarCollision = () => {
+    if (lives <= 0 || gameState === 'GAME_OVER') return;
     speakSound.playCrash();
     
     setIsBulletTime(false);

@@ -380,7 +380,8 @@ export function MagicWizardGame({
         }
 
         // Spells projectile updates
-        spellProjectiles.current.forEach((proj, idx) => {
+        for (let idx = spellProjectiles.current.length - 1; idx >= 0; idx--) {
+          const proj = spellProjectiles.current[idx];
           proj.x += proj.vx;
           // Spawn spell sparks trail
           const colors = { fire: '#ea580c', ice: '#0891b2', lightning: '#ca8a04' };
@@ -419,17 +420,18 @@ export function MagicWizardGame({
               spawnMonster();
             }, 600);
           }
-        });
+        }
 
         // Particles updates
-        particles.current.forEach((p, idx) => {
+        for (let idx = particles.current.length - 1; idx >= 0; idx--) {
+          const p = particles.current[idx];
           p.x += p.vx;
           p.y += p.vy;
           p.alpha -= 0.02;
           if (p.alpha <= 0) {
             particles.current.splice(idx, 1);
           }
-        });
+        }
 
         // Slow monsters approach (for tension)
         if (activeMonster.current) {
@@ -626,7 +628,7 @@ export function MagicWizardGame({
                   ref={previewCanvasRef}
                   width={300}
                   height={100}
-                  className="w-full h-full block"
+                  className="w-full max-w-[300px] aspect-[3/1] mx-auto block"
                 />
                 <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
                   Preview
