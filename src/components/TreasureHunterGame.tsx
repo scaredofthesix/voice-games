@@ -93,6 +93,7 @@ export function TreasureHunterGame({
   const [lastRecognized, setLastRecognized] = useState<string>('');
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const phaseRef = useRef(phase);
   const pausedRef = useRef(paused);
@@ -198,6 +199,144 @@ export function TreasureHunterGame({
       }
     }
   }, []);
+
+  // Preview Loop for Start Screen
+  useEffect(() => {
+    if (phase !== 'START') return;
+    const canvas = previewCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animId: number;
+    let frame = 0;
+
+    // Helper for submarine drawing
+    const drawRoundedRect = (ctx2d: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
+      ctx2d.beginPath();
+      ctx2d.moveTo(x + radius, y);
+      ctx2d.lineTo(x + width - radius, y);
+      ctx2d.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx2d.lineTo(x + width, y + height - radius);
+      ctx2d.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx2d.lineTo(x + radius, y + height);
+      ctx2d.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx2d.lineTo(x, y + radius);
+      ctx2d.quadraticCurveTo(x, y, x + radius, y);
+      ctx2d.closePath();
+    };
+
+    const previewLoop = () => {
+      frame++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Deep sea background
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, '#0ea5e9');
+      grad.addColorStop(1, '#0369a1');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Bubbles
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      for (let i = 0; i < 5; i++) {
+        const x = (Math.sin(frame * 0.02 + i) * 0.4 + 0.5) * canvas.width;
+        const y = (Math.cos(frame * 0.05 + i * 2) * 0.2 + 0.5) * canvas.height;
+        ctx.beginPath();
+        ctx.arc(x, y, 2 + i % 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.save();
+      const subYOffset = Math.sin(frame * 0.05) * 5;
+      ctx.translate(canvas.width / 2 - 10, canvas.height / 2 + subYOffset - 10);
+      
+      // Color themes
+      let subAccent = '#f59e0b';
+      let windowRim = '#38bdf8';
+      if (subColor === 'orange') {
+        subAccent = '#ea580c';
+        windowRim = '#fde047';
+      } else if (subColor === 'cyan') {
+        subAccent = '#06b6d4';
+        windowRim = '#c084fc';
+      } else if (subColor === 'neon') {
+        subAccent = '#10b981';
+        windowRim = '#f43f5e';
+      }
+
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 4.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // Light beam
+      const beamGrad = ctx.createLinearGradient(60, 15, 200, 15);
+      beamGrad.addColorStop(0, 'rgba(253, 224, 71, 0.4)');
+      beamGrad.addColorStop(1, 'rgba(253, 224, 71, 0)');
+      ctx.fillStyle = beamGrad;
+      ctx.beginPath();
+      ctx.moveTo(55, 10);
+      ctx.lineTo(180, -20);
+      ctx.lineTo(180, 50);
+      ctx.closePath();
+      ctx.fill();
+
+      // Propeller tail
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(-35, 10, 12, 10);
+      ctx.strokeRect(-35, 10, 12, 10);
+
+      const propSpin = Math.sin(frame) * 16;
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(-35, 15 - propSpin);
+      ctx.lineTo(-35, 15 + propSpin);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 4.5;
+
+      // Body
+      ctx.fillStyle = subAccent;
+      drawRoundedRect(ctx, -25, -5, 80, 40, 20);
+      ctx.fill();
+      ctx.stroke();
+
+      // Periscope
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(15, -22, 8, 18);
+      ctx.strokeRect(15, -22, 8, 18);
+      ctx.fillRect(23, -22, 8, 8);
+      ctx.strokeRect(23, -22, 8, 8);
+
+      // Window
+      ctx.fillStyle = windowRim;
+      ctx.beginPath();
+      ctx.arc(35, 15, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#bae6fd';
+      ctx.beginPath();
+      ctx.arc(35, 15, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Highlight
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(38, 12, 3, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.restore();
+
+      animId = requestAnimationFrame(previewLoop);
+    };
+
+    previewLoop();
+    return () => cancelAnimationFrame(animId);
+  }, [phase, subColor]);
 
   const handleTranscript = useCallback(
     (text: string) => {
@@ -700,6 +839,11 @@ export function TreasureHunterGame({
 
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-1">
+            <span className="text-yellow-400 font-extrabold text-sm">💰:</span>
+            <span className="font-mono font-black text-lg bg-slate-800 border-2 border-slate-955 px-2 py-0.5 rounded-xl text-emerald-400">${score * 100}</span>
+          </div>
+
+          <div className="flex items-center gap-1">
             <span className="text-yellow-400 font-extrabold text-sm">🏆 {strings.score}:</span>
             <span className="font-mono font-black text-lg bg-slate-800 border-2 border-slate-955 px-2 py-0.5 rounded-xl">{score}</span>
           </div>
@@ -762,6 +906,19 @@ export function TreasureHunterGame({
                       />
                     );
                   })}
+                </div>
+                
+                {/* Active Animated Preview Canvas */}
+                <div className="w-full h-24 rounded-2xl border-4 border-slate-900 relative overflow-hidden bg-white mt-3">
+                  <canvas
+                    ref={previewCanvasRef}
+                    width={300}
+                    height={100}
+                    className="w-full max-w-[300px] aspect-[3/1] mx-auto block"
+                  />
+                  <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
+                    Preview
+                  </div>
                 </div>
               </div>
 
