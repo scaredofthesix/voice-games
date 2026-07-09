@@ -32,6 +32,7 @@ import { AsteWordGame } from './components/AsteWordGame';
 import { MagicWizardGame } from './components/MagicWizardGame';
 import { ProgressView } from './components/ProgressView';
 import SentenceBirdGame from './components/SentenceBirdGame';
+import EchoRecorderGame from './components/EchoRecorderGame';
 import {
   createInitialRacerMovementState,
   speakWord,
@@ -45,7 +46,7 @@ import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, reco
 
 export default function App() {
   const { language, setLanguage, t } = useUiLanguage();
-  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD' | 'SENTENCE_BIRD' | 'MAGIC_WIZARD' | 'PROGRESS'>('HUB');
+  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD' | 'SENTENCE_BIRD' | 'ECHO_RECORDER' | 'MAGIC_WIZARD' | 'PROGRESS'>('HUB');
 
   // Game states
   const [gameState, setGameState] = useState<GameState>('START_SCREEN');
@@ -159,6 +160,15 @@ export default function App() {
     }
   });
 
+  const [echoRecorderHighScore, setEchoRecorderHighScore] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('echo_recorder_highscore');
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
   const [magicWizardHighScore, setMagicWizardHighScore] = useState<number>(() => {
     try {
       const saved = localStorage.getItem('magic_wizard_highscore');
@@ -172,6 +182,12 @@ export default function App() {
     setSentenceBirdHighScore(newScore);
     localStorage.setItem('sentence_bird_highscore', newScore.toString());
     saveProgress(recordHighScore(loadProgress(), 'sentence-bird', newScore));
+  };
+
+  const handleUpdateEchoRecorderHighScore = (newScore: number) => {
+    setEchoRecorderHighScore(newScore);
+    localStorage.setItem('echo_recorder_highscore', newScore.toString());
+    saveProgress(recordHighScore(loadProgress(), 'echo-recorder', newScore));
   };
 
   const handleUpdateMagicWizardHighScore = (newScore: number) => {
@@ -246,6 +262,15 @@ export default function App() {
       icon: "🐦",
       accent: "bg-cyan-400",
       record: sentenceBirdHighScore,
+      unlocked: true,
+    },
+    {
+      id: "echo-recorder",
+      title: t('games.echoRecorder.title'),
+      description: t('games.echoRecorder.description'),
+      icon: "🎤",
+      accent: "bg-amber-400",
+      record: echoRecorderHighScore,
       unlocked: true,
     },
     {
@@ -683,7 +708,7 @@ export default function App() {
       <div className="absolute bottom-20 left-[4%] w-28 h-10 bg-white rounded-full opacity-40 blur-[1px] pointer-events-none" />
 
       {/* HEADER BAR - hidden for the self-contained Sprint 2 games and Progress */}
-      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && currentView !== 'SENTENCE_BIRD' && currentView !== 'MAGIC_WIZARD' && currentView !== 'PROGRESS' && (
+      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && currentView !== 'SENTENCE_BIRD' && currentView !== 'ECHO_RECORDER' && currentView !== 'MAGIC_WIZARD' && currentView !== 'PROGRESS' && (
       <header className="bg-yellow-400 border-b-8 border-slate-900 py-3.5 px-6 md:px-12 sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
         {currentView === 'HUB' ? (
           <>
@@ -747,15 +772,15 @@ export default function App() {
               </button>
               <div className="w-10 h-10 rounded-xl bg-pink-500 border-4 border-slate-900 flex items-center justify-center shadow-md animate-bounce">
                 <span className="text-xl" role="img" aria-label="game-icon">
-                  {currentView === 'VOICE_RACER' ? '🚗' : '🫧'}
+                  {currentView === 'VOICE_RACER' ? '🚗' : currentView === 'ECHO_RECORDER' ? '🎤' : '🫧'}
                 </span>
               </div>
               <div className="text-left">
                 <h1 className="text-xs sm:text-sm md:text-base font-black tracking-wider text-slate-900 uppercase drop-shadow-[0_1px_0_rgba(255,255,255,1)] leading-none">
-                  {currentView === 'VOICE_RACER' ? t('games.voiceRacer.title') : t('games.bubblePopper.title')}
+                  {currentView === 'VOICE_RACER' ? t('games.voiceRacer.title') : currentView === 'ECHO_RECORDER' ? t('games.echoRecorder.title') : t('games.bubblePopper.title')}
                 </h1>
                 <p className="text-[9px] text-purple-900 tracking-wider font-extrabold uppercase bg-white/70 border-2 border-slate-900 px-1.5 py-0.5 rounded-full inline-block mt-0.5">
-                  {currentView === 'VOICE_RACER' ? `${t('header.level')} ${level}` : `${t('header.level')} ${bubbleLevel}`}
+                  {currentView === 'VOICE_RACER' ? `${t('header.level')} ${level}` : currentView === 'ECHO_RECORDER' ? t('games.echoRecorder.title') : `${t('header.level')} ${bubbleLevel}`}
                 </p>
               </div>
             </div>
@@ -773,7 +798,7 @@ export default function App() {
               <div className="bg-pink-100 border-4 border-slate-900 text-slate-900 px-2.5 py-1 rounded-2xl flex items-center gap-1 border-dashed shadow-sm">
                 <span className="text-[10px] font-black uppercase text-slate-600">{t('header.score')}</span>
                 <span className="font-black text-xs text-pink-600 font-mono tracking-tight">
-                  {currentView === 'VOICE_RACER' ? score : bubbleScore}
+                  {currentView === 'VOICE_RACER' ? score : currentView === 'ECHO_RECORDER' ? echoRecorderHighScore : bubbleScore}
                 </span>
               </div>
 
@@ -782,7 +807,7 @@ export default function App() {
                 <Trophy className="w-3.5 h-3.5 text-yellow-600 fill-yellow-400 stroke-[2.5]" />
                 <span className="text-[10px] font-black uppercase text-slate-600">{t('header.best')}</span>
                 <span className="font-black text-xs text-yellow-700 font-mono tracking-tight">
-                  {currentView === 'VOICE_RACER' ? highScore : bubbleHighScore}
+                  {currentView === 'VOICE_RACER' ? highScore : currentView === 'ECHO_RECORDER' ? echoRecorderHighScore : bubbleHighScore}
                 </span>
               </div>
               
@@ -904,6 +929,8 @@ export default function App() {
                               setCurrentView('ASTE_WORD');
                             } else if (g.id === 'sentence-bird') {
                               setCurrentView('SENTENCE_BIRD');
+                            } else if (g.id === 'echo-recorder') {
+                              setCurrentView('ECHO_RECORDER');
                             } else if (g.id === 'magic-wizard') {
                               setCurrentView('MAGIC_WIZARD');
                             }
@@ -1632,6 +1659,12 @@ export default function App() {
             highScore={sentenceBirdHighScore}
             onUpdateHighScore={handleUpdateSentenceBirdHighScore}
             onScoreChange={() => undefined}
+          />
+        ) : currentView === 'ECHO_RECORDER' ? (
+          <EchoRecorderGame
+            onBackToHub={() => setCurrentView('HUB')}
+            highScore={echoRecorderHighScore}
+            onUpdateHighScore={handleUpdateEchoRecorderHighScore}
           />
         ) : currentView === 'MAGIC_WIZARD' ? (
           <MagicWizardGame

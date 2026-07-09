@@ -70,6 +70,10 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
         title: 'Sentence Bird',
         description: 'Speak sentence steps aloud to guide the bird through the clouds and grow your pronunciation confidence.',
       },
+      echoRecorder: {
+        title: 'Echo Microphone',
+        description: 'Listen to word sequences and repeat them back to grow the chain and train your pronunciation memory!',
+      },
     },
     shared: {
       chooseWordSet: 'Choose a word set',
@@ -193,6 +197,10 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       sentenceBird: {
         title: 'Фразоптичка',
         description: 'Произноси части предложений вслух, чтобы вести птичку по облакам и тренировать произношение.',
+      },
+      echoRecorder: {
+        title: 'Эхо-микрофон',
+        description: 'Слушай последовательности слов и повторяй их, чтобы удлинить цепочку и тренировать память произношения!',
       },
     },
     shared: {

@@ -31,6 +31,7 @@ export type GameId =
   | 'skate-word'
   | 'aste-word'
   | 'sentence-bird'
+  | 'echo-recorder'
   | 'magic-wizard';
 
 export const ALL_GAME_IDS: readonly GameId[] = [
@@ -41,6 +42,7 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'skate-word',
   'aste-word',
   'sentence-bird',
+  'echo-recorder',
   'magic-wizard',
 ] as const;
 
@@ -52,6 +54,7 @@ export const GAME_LABELS: Record<GameId, { en: string; ru: string; icon: string 
   'skate-word': { en: 'SkateWord', ru: 'СкейтВорд', icon: '🛹' },
   'aste-word': { en: 'AsteWord Destroyer', ru: 'АстеВорд Разрушитель', icon: '☄️' },
   'sentence-bird': { en: 'Sentence Bird', ru: 'Фразоптичка', icon: '🐦' },
+  'echo-recorder': { en: 'Echo Microphone', ru: 'Эхо-микрофон', icon: '🎤' },
   'magic-wizard': { en: 'Magic Wizard', ru: 'Магический Волшебник', icon: '🧙' },
 };
 
@@ -69,6 +72,7 @@ const LEGACY_HIGHSCORE_KEYS: Record<GameId, string> = {
   'skate-word': 'skate_word_highscore',
   'aste-word': 'aste_word_highscore',
   'sentence-bird': 'sentence_bird_highscore',
+  'echo-recorder': 'echo_recorder_highscore',
   'magic-wizard': 'magic_wizard_highscore',
 };
 
