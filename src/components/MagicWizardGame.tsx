@@ -328,6 +328,8 @@ export function MagicWizardGame({
       }
 
       // Draw preview Wizard emoji
+      ctx.fillStyle = '#ffffff';
+      ctx.globalAlpha = 1.0;
       ctx.font = '24px serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -480,6 +482,8 @@ export function MagicWizardGame({
       const shakeY = (Math.random() - 0.5) * wizardPunchEffect.current;
 
       // Draw Wizard
+      ctx.fillStyle = '#ffffff';
+      ctx.globalAlpha = 1.0;
       ctx.font = '55px serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -494,6 +498,8 @@ export function MagicWizardGame({
 
       // Draw active Monster
       if (activeMonster.current) {
+        ctx.fillStyle = '#ffffff';
+        ctx.globalAlpha = 1.0;
         ctx.font = '50px serif';
         ctx.fillText(activeMonster.current.emoji, activeMonster.current.x, activeMonster.current.y);
 
