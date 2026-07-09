@@ -53,23 +53,46 @@ Every Sprint 2 customer review finding was addressed.
 - **Architecture, process and docs site**: Mermaid views, 5 ADRs,
   development-process doc, hosted MkDocs site - issue #95.
 
-## Next - final version (MVP v3), due 2026-07-19
+## Done - four more games (main pre-Sprint-4 work, not yet tagged as a release)
 
-Scope agreed at the Sprint 3 customer review (2026-07-03): the final version
-must be ready by the end of the week preceding the demo day, 2026-07-19.
+Delivered on `main` between the Sprint 3 release and Sprint 4 planning, completing the
+customer's "four more games" request from the Sprint 3 review: Voice Treasure Hunter
+(submarine spelling game), Voice Magic Wizard (magic battle game), Sentence Bird
+(speech-driven cloud jumping), and Echo Microphone (speech memory chain). The product now
+has **ten games total**, meeting the "ten games total in the final version" target early.
+This work has not yet been cut into a tagged release; that happens as part of the Sprint 4
+trial release below.
 
-- **Four more games** (ten games total in the final version) - customer request.
-- **Adaptive word selection driven by progress statistics**: repeat struggled
-  words, introduce unseen ones, de-prioritize mastered ones, in all games -
-  issue #105 (customer's main feature request).
-- **One consistent hear-the-word control across games**, "Help" renamed to
+## Sprint 4 (Week 6, 2026-07-06 to 2026-07-12) - Week 6 trial release
+
+Assignment 6 Sprint 4. Selected Sprint Backlog = [milestone #4](https://github.com/scaredofthesix/voice-games/milestone/4).
+Fixes the customer's Sprint 3 review feedback and stands up the handover artifacts needed
+for transition, ahead of the Week 6 trial/transition-readiness meeting.
+
+- **Adaptive word selection driven by progress statistics**: repeat struggled words,
+  introduce unseen ones, de-prioritize mastered ones, in all games - issue #105
+  (customer's main feature request).
+- Progress view fix: lost sessions/words counters - issue #103.
+- Game polish from the review: Skate Word ground/jump - issue #106; Aste Word Destroyer
+  Russian translations - issue #107; Boss Fight HUD (hit counter, duplicated health bar) -
+  issue #108; one consistent hear-the-word control across games, "Help" renamed to
   "EN"/flag - issue #109.
-- Progress view fixes: lost sessions/words counters - issue #103; CSV export in
-  readable columns - issue #104 (relates to US-19, issue #52).
-- Game polish from the review: Skate Word ground/jump - issue #106; Aste Word
-  Destroyer Russian translations - issue #107; Boss Fight HUD (hit counter,
-  duplicated health bar) - issue #108.
-- US-20 Phrase-based translation game: build an English phrase word by word, with a
-  Russian-to-English "translate the phrase" mode - issue #53 (phrase word sets
-  already shipped in v0.2.1; the assembly mechanic remains).
-- An accessibility pass (keyboard fallback, captions).
+- Maintained handover documentation: `docs/customer-handover.md`, `CONTRIBUTING.md`,
+  `AGENTS.md`, refreshed `README.md` and `CHANGELOG.md` - issue #124.
+- A new SemVer trial release for the customer to try before Week 7 transition.
+
+## Sprint 5 (Week 7, 2026-07-13 to 2026-07-19) - final MVP v3 and transition
+
+Assignment 6 Sprint 5. Selected Sprint Backlog = [milestone #5](https://github.com/scaredofthesix/voice-games/milestone/5).
+This is the state the product reaches by the end of the course; no post-course versions are
+planned beyond it.
+
+- CSV export in readable columns - issue #104 (relates to US-19, issue #52).
+- Any remaining Week 6 customer trial feedback (added to this milestone once the Week 6
+  trial has run - see `docs/customer-handover.md`).
+- Confirm the final transition outcome and handover level with the customer against
+  `docs/customer-handover.md` - issue #125.
+- Final SemVer release mapped to **MVP v3**, the last course version, plus a public
+  sanitized demo video and Demo Day preparation.
+- US-20 phrase-assembly mode (issue #53) and the accessibility pass (keyboard fallback,
+  captions) are stretch scope for Sprint 5 if time allows; not committed.
