@@ -29,6 +29,7 @@ import { BossFightGame } from './components/BossFightGame';
 import { WordLadderGame } from './components/WordLadderGame';
 import { SkateWordGame } from './components/SkateWordGame';
 import { AsteWordGame } from './components/AsteWordGame';
+import { TreasureHunterGame } from './components/TreasureHunterGame';
 import { MagicWizardGame } from './components/MagicWizardGame';
 import { ProgressView } from './components/ProgressView';
 import SentenceBirdGame from './components/SentenceBirdGame';
@@ -46,7 +47,7 @@ import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, reco
 
 export default function App() {
   const { language, setLanguage, t } = useUiLanguage();
-  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD' | 'SENTENCE_BIRD' | 'ECHO_RECORDER' | 'MAGIC_WIZARD' | 'PROGRESS'>('HUB');
+  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD' | 'TREASURE_HUNTER' | 'SENTENCE_BIRD' | 'ECHO_RECORDER' | 'MAGIC_WIZARD' | 'PROGRESS'>('HUB');
 
   // Game states
   const [gameState, setGameState] = useState<GameState>('START_SCREEN');
@@ -151,6 +152,15 @@ export default function App() {
     saveProgress(recordHighScore(loadProgress(), 'aste-word', newScore));
   };
 
+  const [treasureHunterHighScore, setTreasureHunterHighScore] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('treasure_hunter_highscore');
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
   const [sentenceBirdHighScore, setSentenceBirdHighScore] = useState<number>(() => {
     try {
       const saved = localStorage.getItem('sentence_bird_highscore');
@@ -177,6 +187,11 @@ export default function App() {
       return 0;
     }
   });
+
+  const handleUpdateTreasureHunterHighScore = (newScore: number) => {
+    setTreasureHunterHighScore(newScore);
+    localStorage.setItem('treasure_hunter_highscore', newScore.toString());
+  };
 
   const handleUpdateSentenceBirdHighScore = (newScore: number) => {
     setSentenceBirdHighScore(newScore);
@@ -253,6 +268,17 @@ export default function App() {
       icon: "☄️",
       accent: "bg-indigo-500",
       record: asteWordHighScore,
+      unlocked: true,
+    },
+    {
+      id: "treasure-hunter",
+      title: language === 'en' ? 'Voice Treasure Hunter' : 'Поиск сокровищ',
+      description: language === 'en'
+        ? 'Navigate the submarine deeper to collect shiny treasure chests by saying the English words!'
+        : 'Управляй подводной лодкой, собирая сияющие сундуки с сокровищами при произношении английских слов!',
+      icon: "🐳",
+      accent: "bg-cyan-400",
+      record: treasureHunterHighScore,
       unlocked: true,
     },
     {
@@ -708,7 +734,7 @@ export default function App() {
       <div className="absolute bottom-20 left-[4%] w-28 h-10 bg-white rounded-full opacity-40 blur-[1px] pointer-events-none" />
 
       {/* HEADER BAR - hidden for the self-contained Sprint 2 games and Progress */}
-      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && currentView !== 'SENTENCE_BIRD' && currentView !== 'ECHO_RECORDER' && currentView !== 'MAGIC_WIZARD' && currentView !== 'PROGRESS' && (
+      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && currentView !== 'TREASURE_HUNTER' && currentView !== 'SENTENCE_BIRD' && currentView !== 'ECHO_RECORDER' && currentView !== 'MAGIC_WIZARD' && currentView !== 'PROGRESS' && (
       <header className="bg-yellow-400 border-b-8 border-slate-900 py-3.5 px-6 md:px-12 sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
         {currentView === 'HUB' ? (
           <>
@@ -927,6 +953,8 @@ export default function App() {
                               setCurrentView('SKATE_WORD');
                             } else if (g.id === 'aste-word') {
                               setCurrentView('ASTE_WORD');
+                            } else if (g.id === 'treasure-hunter') {
+                              setCurrentView('TREASURE_HUNTER');
                             } else if (g.id === 'sentence-bird') {
                               setCurrentView('SENTENCE_BIRD');
                             } else if (g.id === 'echo-recorder') {
@@ -1644,6 +1672,13 @@ export default function App() {
             customWords={customWords}
             highScore={skateWordHighScore}
             onUpdateHighScore={handleUpdateSkateWordHighScore}
+          />
+        ) : currentView === 'TREASURE_HUNTER' ? (
+          <TreasureHunterGame
+            onBackToHub={() => setCurrentView('HUB')}
+            customWords={customWords}
+            highScore={treasureHunterHighScore}
+            onUpdateHighScore={handleUpdateTreasureHunterHighScore}
           />
         ) : currentView === 'ASTE_WORD' ? (
           <AsteWordGame

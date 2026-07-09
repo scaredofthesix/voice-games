@@ -11,6 +11,9 @@
   .bubble-shadow-pink {
     box-shadow: 0 8px 0px 0px #db2777, 0 12px 20px rgba(219, 39, 119, 0.3);
   }
+  .bubble-shadow-cyan {
+    box-shadow: 0 8px 0px 0px #0891b2, 0 12px 20px rgba(8, 145, 178, 0.3);
+  }
   .bubble-shadow-purple {
     box-shadow: 0 8px 0px 0px #7c3aed, 0 12px 20px rgba(124, 58, 237, 0.3);
   }

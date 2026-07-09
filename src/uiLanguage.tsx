@@ -66,6 +66,10 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
         hearIt: 'Hear it',
         again: 'Again',
       },
+      treasureHunter: {
+        title: 'VOICE TREASURE HUNTER',
+        description: 'Guide the submarine and collect treasure chests from the ocean depths by pronouncing words correctly!',
+      },
       sentenceBird: {
         title: 'Sentence Bird',
         description: 'Speak sentence steps aloud to guide the bird through the clouds and grow your pronunciation confidence.',
@@ -193,6 +197,10 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
         sayToLaunch: 'Произнеси слово для запуска',
         hearIt: 'Прослушать',
         again: 'Заново',
+      },
+      treasureHunter: {
+        title: 'ПОИСК СОКРОВИЩ',
+        description: 'Управляй подводной лодкой и собирай сундуки с сокровищами на глубине океана, правильно произнося слова!',
       },
       sentenceBird: {
         title: 'Фразоптичка',
