@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'vitest';
 import {
+  ALL_GAME_IDS,
   clearProgress,
   emptyProgress,
   loadProgress,
@@ -18,9 +19,9 @@ describe('progress module', () => {
     localStorage.clear();
   });
 
-  test('emptyProgress returns zeroed stats for all 7 games', () => {
+  test('emptyProgress returns zeroed stats for all games', () => {
     const p = emptyProgress();
-    expect(Object.keys(p)).toHaveLength(7);
+    expect(Object.keys(p)).toHaveLength(ALL_GAME_IDS.length);
     for (const g of Object.values(p)) {
       expect(g.sessionsPlayed).toBe(0);
       expect(g.highScore).toBe(0);
