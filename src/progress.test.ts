@@ -18,9 +18,9 @@ describe('progress module', () => {
     localStorage.clear();
   });
 
-  test('emptyProgress returns zeroed stats for all 7 games', () => {
+  test('emptyProgress returns zeroed stats for all 8 games', () => {
     const p = emptyProgress();
-    expect(Object.keys(p)).toHaveLength(7);
+    expect(Object.keys(p)).toHaveLength(8);
     for (const g of Object.values(p)) {
       expect(g.sessionsPlayed).toBe(0);
       expect(g.highScore).toBe(0);
