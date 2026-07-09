@@ -29,6 +29,7 @@ import { BossFightGame } from './components/BossFightGame';
 import { WordLadderGame } from './components/WordLadderGame';
 import { SkateWordGame } from './components/SkateWordGame';
 import { AsteWordGame } from './components/AsteWordGame';
+import { MagicWizardGame } from './components/MagicWizardGame';
 import { ProgressView } from './components/ProgressView';
 import SentenceBirdGame from './components/SentenceBirdGame';
 import {
@@ -44,7 +45,7 @@ import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, reco
 
 export default function App() {
   const { language, setLanguage, t } = useUiLanguage();
-  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD' | 'SENTENCE_BIRD' | 'PROGRESS'>('HUB');
+  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD' | 'SENTENCE_BIRD' | 'MAGIC_WIZARD' | 'PROGRESS'>('HUB');
 
   // Game states
   const [gameState, setGameState] = useState<GameState>('START_SCREEN');
@@ -158,10 +159,25 @@ export default function App() {
     }
   });
 
+  const [magicWizardHighScore, setMagicWizardHighScore] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('magic_wizard_highscore');
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
   const handleUpdateSentenceBirdHighScore = (newScore: number) => {
     setSentenceBirdHighScore(newScore);
     localStorage.setItem('sentence_bird_highscore', newScore.toString());
     saveProgress(recordHighScore(loadProgress(), 'sentence-bird', newScore));
+  };
+
+  const handleUpdateMagicWizardHighScore = (newScore: number) => {
+    setMagicWizardHighScore(newScore);
+    localStorage.setItem('magic_wizard_highscore', newScore.toString());
+    saveProgress(recordHighScore(loadProgress(), 'magic-wizard', newScore));
   };
 
   const games = [
@@ -230,6 +246,17 @@ export default function App() {
       icon: "🐦",
       accent: "bg-cyan-400",
       record: sentenceBirdHighScore,
+      unlocked: true,
+    },
+    {
+      id: "magic-wizard",
+      title: language === 'en' ? 'Magic Wizard' : 'Магический Волшебник',
+      description: language === 'en' 
+        ? 'Defeat dark forces by casting elemental spells through correct pronunciation!' 
+        : 'Побеждай темные силы, кастуя стихийные заклинания правильным произношением!',
+      icon: "🧙‍♂️",
+      accent: "bg-violet-400",
+      record: magicWizardHighScore,
       unlocked: true,
     },
   ];
@@ -587,6 +614,7 @@ export default function App() {
 
   // Collision damage event triggered by physical canvas detection or timeout
   const handleCarCollision = () => {
+    if (lives <= 0 || gameState === 'GAME_OVER') return;
     speakSound.playCrash();
     
     setIsBulletTime(false);
@@ -654,8 +682,8 @@ export default function App() {
       <div className="absolute top-28 right-[10%] w-32 h-12 bg-white rounded-full opacity-60 blur-[1px] pointer-events-none animate-pulse" />
       <div className="absolute bottom-20 left-[4%] w-28 h-10 bg-white rounded-full opacity-40 blur-[1px] pointer-events-none" />
 
-      {/* HEADER BAR - hidden for the self-contained Sprint 2 games (Boss Fight, Word Ladder, SkateWord, AsteWord) and Progress */}
-      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && currentView !== 'SENTENCE_BIRD' && currentView !== 'PROGRESS' && (
+      {/* HEADER BAR - hidden for the self-contained Sprint 2 games and Progress */}
+      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && currentView !== 'SENTENCE_BIRD' && currentView !== 'MAGIC_WIZARD' && currentView !== 'PROGRESS' && (
       <header className="bg-yellow-400 border-b-8 border-slate-900 py-3.5 px-6 md:px-12 sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
         {currentView === 'HUB' ? (
           <>
@@ -876,6 +904,9 @@ export default function App() {
                               setCurrentView('ASTE_WORD');
                             } else if (g.id === 'sentence-bird') {
                               setCurrentView('SENTENCE_BIRD');
+                            } else if (g.id === 'magic-wizard') {
+                              setCurrentView('MAGIC_WIZARD');
+                            }
                             }
                           }}
                           aria-label={g.id === 'sentence-bird' ? 'play sentence bird' : `${g.title} ${t('hub.playButton')}`}
@@ -1602,6 +1633,13 @@ export default function App() {
             highScore={sentenceBirdHighScore}
             onUpdateHighScore={handleUpdateSentenceBirdHighScore}
             onScoreChange={() => undefined}
+          />
+        ) : currentView === 'MAGIC_WIZARD' ? (
+          <MagicWizardGame
+            onBackToHub={() => setCurrentView('HUB')}
+            customWords={customWords}
+            highScore={magicWizardHighScore}
+            onUpdateHighScore={handleUpdateMagicWizardHighScore}
           />
         ) : (
           <ProgressView onBackToHub={() => setCurrentView('HUB')} />

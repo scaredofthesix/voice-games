@@ -362,7 +362,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
 
       // 4. PHYSICS UPDATE FOR OBSTACLES
-      s.obstacles.forEach((obs, index) => {
+      for (let index = s.obstacles.length - 1; index >= 0; index--) {
+        const obs = s.obstacles[index];
         // Trigger approach (bullet-time) once it gets close (y >= 100)
         if (s.gameState === 'PLAYING' && obs.lane === s.playerLane && obs.y >= 100 && !s.isBulletTime && !s.avoidedObstacleIds.has(obs.id)) {
           s.isBulletTime = true;
@@ -629,7 +630,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
             s.obstacles.splice(index, 1);
           }
         }
-      });
+      }
 
       // Filter out of bounds obstacles
       s.obstacles = s.obstacles.filter(o => o.y < h + 100);
@@ -807,7 +808,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
 
       // 6. DRAW PARTICLES (Exhaust fire, sparkles, lane switch debris, coin pop, crash dust)
-      s.particles.forEach((part, index) => {
+      for (let index = s.particles.length - 1; index >= 0; index--) {
+        const part = s.particles[index];
         part.x += part.vx;
         part.y += part.vy;
         part.life++;
@@ -826,7 +828,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         if (part.life >= part.maxLife) {
           s.particles.splice(index, 1);
         }
-      });
+      }
 
       // Repeat animation next frame
       animationFrameId.current = requestAnimationFrame(frame);
@@ -844,7 +846,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   }, [lives]); // Redraw triggers on lives adjustment
 
   return (
-    <div className="relative w-full h-[460px] md:h-[650px] overflow-hidden bg-slate-950 border-4 border-slate-700 rounded-3xl shadow-2xl">
+    <div className="relative w-full max-w-[400px] mx-auto aspect-[3/5] md:aspect-[9/16] overflow-hidden bg-slate-950 border-4 border-slate-700 rounded-3xl shadow-2xl" style={{ maxHeight: '75vh' }}>
       <canvas
         ref={canvasRef}
         className="w-full h-full block"
