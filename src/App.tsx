@@ -907,7 +907,6 @@ export default function App() {
                             } else if (g.id === 'magic-wizard') {
                               setCurrentView('MAGIC_WIZARD');
                             }
-                            }
                           }}
                           aria-label={g.id === 'sentence-bird' ? 'play sentence bird' : `${g.title} ${t('hub.playButton')}`}
                           className="w-full sm:w-32 py-2 bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-0.5 uppercase tracking-wider transition-all select-none hover:scale-103 shadow-sm"
