@@ -21,4 +21,60 @@ describe('UI language toggle', () => {
 
     expect(screen.getByText('VOICE GAMES!')).toBeInTheDocument();
   });
+
+  test('opens the Sentence Bird game from the hub', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <UiLanguageProvider>
+        <App />
+      </UiLanguageProvider>,
+    );
+
+    await user.click(screen.getByRole('button', { name: /play sentence bird/i }));
+
+    expect(screen.getByRole('heading', { name: /sentence bird/i })).toBeInTheDocument();
+  });
+
+  test('opens the Echo Microphone game from the hub', async () => {
+    const user = userEvent.setup();
+
+    const { container } = render(
+      <UiLanguageProvider>
+        <App />
+      </UiLanguageProvider>,
+    );
+
+    await user.click(container.querySelector('#btn-play-echo-recorder')!);
+
+    expect(screen.getByText(/echo microphone|эхо.микрофон/i)).toBeInTheDocument();
+  });
+
+  test('shows a back to hub action inside Sentence Bird', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <UiLanguageProvider>
+        <App />
+      </UiLanguageProvider>,
+    );
+
+    await user.click(screen.getByRole('button', { name: /play sentence bird/i }));
+
+    expect(screen.getByRole('button', { name: /назад в хаб|back to hub/i })).toBeInTheDocument();
+  });
+
+  test('shows a back to hub action inside Echo Microphone', async () => {
+    const user = userEvent.setup();
+
+    const { container } = render(
+      <UiLanguageProvider>
+        <App />
+      </UiLanguageProvider>,
+    );
+
+    await user.click(container.querySelector('#btn-play-echo-recorder')!);
+
+    expect(screen.getByRole('button', { name: /back to hub|назад в хаб/i })).toBeInTheDocument();
+  });
 });
