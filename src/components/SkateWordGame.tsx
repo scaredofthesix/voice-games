@@ -229,6 +229,7 @@ export function SkateWordGame({
 
   // Безопасный вызов конца игры
   const handleCollision = useCallback((canvasWidth: number) => {
+    if (livesRef.current <= 0) return;
     speakSound.playCrash();
     const nextL = livesRef.current - 1;
     setLives(nextL);
@@ -393,14 +394,15 @@ export function SkateWordGame({
           });
         }
 
-        particles.current.forEach((p, index) => {
+        for (let index = particles.current.length - 1; index >= 0; index--) {
+          const p = particles.current[index];
           p.x += p.vx;
           p.y += p.vy;
           p.alpha -= 0.03;
           if (p.alpha <= 0) {
             particles.current.splice(index, 1);
           }
-        });
+        }
 
         // 3. Сбор звездочки прыжком
         if (isJumping.current && Math.abs(obstacleX.current - 110) < 30 && playerY.current < groundY - 80) {
@@ -792,7 +794,7 @@ export function SkateWordGame({
                 ref={previewCanvasRef}
                 width={300}
                 height={100}
-                className="w-full h-full block"
+                className="w-full max-w-[300px] aspect-[3/1] mx-auto block"
               />
               <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
                 Preview
@@ -886,7 +888,7 @@ export function SkateWordGame({
               ref={canvasRef}
               width={600}
               height={300}
-              className="w-full h-[300px] block"
+              className="w-full max-w-[600px] aspect-[2/1] mx-auto block"
             />
             {paused && (
               <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center gap-1">
