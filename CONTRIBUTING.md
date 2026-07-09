@@ -11,7 +11,7 @@ contributor.
 - Read [docs/customer-handover.md](./docs/customer-handover.md) for the current handover
   status and known limitations.
 - Browse open work in the [issue tracker](https://github.com/scaredofthesix/voice-games/issues)
-  and the [Project board](https://github.com/scaredofthesix/voice-games/projects) before
+  and the [Project board](https://github.com/users/scaredofthesix/projects/1) before
   starting something new, to avoid duplicating in-flight work.
 - If you're an AI coding agent, also read [AGENTS.md](./AGENTS.md).
 
