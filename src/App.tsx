@@ -29,6 +29,7 @@ import { BossFightGame } from './components/BossFightGame';
 import { WordLadderGame } from './components/WordLadderGame';
 import { SkateWordGame } from './components/SkateWordGame';
 import { AsteWordGame } from './components/AsteWordGame';
+import { MagicWizardGame } from './components/MagicWizardGame';
 import { ProgressView } from './components/ProgressView';
 import {
   createInitialRacerMovementState,
@@ -43,7 +44,7 @@ import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, reco
 
 export default function App() {
   const { language, setLanguage, t } = useUiLanguage();
-  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD' | 'PROGRESS'>('HUB');
+  const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD' | 'MAGIC_WIZARD' | 'PROGRESS'>('HUB');
 
   // Game states
   const [gameState, setGameState] = useState<GameState>('START_SCREEN');
@@ -148,6 +149,21 @@ export default function App() {
     saveProgress(recordHighScore(loadProgress(), 'aste-word', newScore));
   };
 
+  const [magicWizardHighScore, setMagicWizardHighScore] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('magic_wizard_highscore');
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const handleUpdateMagicWizardHighScore = (newScore: number) => {
+    setMagicWizardHighScore(newScore);
+    localStorage.setItem('magic_wizard_highscore', newScore.toString());
+    saveProgress(recordHighScore(loadProgress(), 'magic-wizard', newScore));
+  };
+
   const games = [
     {
       id: "voice-racer",
@@ -205,6 +221,17 @@ export default function App() {
       icon: "☄️",
       accent: "bg-indigo-500",
       record: asteWordHighScore,
+      unlocked: true,
+    },
+    {
+      id: "magic-wizard",
+      title: language === 'en' ? 'Magic Wizard' : 'Магический Волшебник',
+      description: language === 'en' 
+        ? 'Defeat dark forces by casting elemental spells through correct pronunciation!' 
+        : 'Побеждай темные силы, кастуя стихийные заклинания правильным произношением!',
+      icon: "🧙‍♂️",
+      accent: "bg-violet-400",
+      record: magicWizardHighScore,
       unlocked: true,
     },
   ];
@@ -562,6 +589,7 @@ export default function App() {
 
   // Collision damage event triggered by physical canvas detection or timeout
   const handleCarCollision = () => {
+    if (lives <= 0 || gameState === 'GAME_OVER') return;
     speakSound.playCrash();
     
     setIsBulletTime(false);
@@ -630,7 +658,7 @@ export default function App() {
       <div className="absolute bottom-20 left-[4%] w-28 h-10 bg-white rounded-full opacity-40 blur-[1px] pointer-events-none" />
 
       {/* HEADER BAR - hidden for the self-contained Sprint 2 games (Boss Fight, Word Ladder, SkateWord, AsteWord) and Progress */}
-      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && currentView !== 'PROGRESS' && (
+      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && currentView !== 'MAGIC_WIZARD' && currentView !== 'PROGRESS' && (
       <header className="bg-yellow-400 border-b-8 border-slate-900 py-3.5 px-6 md:px-12 sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
         {currentView === 'HUB' ? (
           <>
@@ -849,6 +877,8 @@ export default function App() {
                               setCurrentView('SKATE_WORD');
                             } else if (g.id === 'aste-word') {
                               setCurrentView('ASTE_WORD');
+                            } else if (g.id === 'magic-wizard') {
+                              setCurrentView('MAGIC_WIZARD');
                             }
                           }}
                           className="w-full sm:w-32 py-2 bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-0.5 uppercase tracking-wider transition-all select-none hover:scale-103 shadow-sm"
@@ -1566,6 +1596,13 @@ export default function App() {
             customWords={customWords}
             highScore={asteWordHighScore}
             onUpdateHighScore={handleUpdateAsteWordHighScore}
+          />
+        ) : currentView === 'MAGIC_WIZARD' ? (
+          <MagicWizardGame
+            onBackToHub={() => setCurrentView('HUB')}
+            customWords={customWords}
+            highScore={magicWizardHighScore}
+            onUpdateHighScore={handleUpdateMagicWizardHighScore}
           />
         ) : (
           <ProgressView onBackToHub={() => setCurrentView('HUB')} />
