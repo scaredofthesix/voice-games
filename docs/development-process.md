@@ -7,8 +7,9 @@ maintained project asset.
 
 ## Scrum cadence
 
-- **Sprints:** one week, aligned with course assignments
-  (Sprint 1 = Assignment 3, Sprint 2 = Assignment 4, Sprint 3 = Assignment 5).
+- **Sprints:** one week, aligned with course assignments (Sprint 1 = Assignment 3,
+  Sprint 2 = Assignment 4, Sprint 3 = Assignment 5, Sprint 4 = Assignment 6 Week 6,
+  Sprint 5 = Assignment 6 Week 7 - the final course sprint, delivering `MVP v3`).
 - **Roles:** Product Owner, Scrum Master, three developers; every member also
   implements and reviews.
 - **Artifacts:** Product Backlog and Sprint Backlog on GitHub Project board

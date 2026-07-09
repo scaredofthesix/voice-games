@@ -4,6 +4,30 @@ All notable changes to Voice Games are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Assignment 6, Sprint 4 (Week 6). Completes the customer's "four more games" request from
+the Sprint 3 review and stands up the maintained handover documentation ahead of the Week 6
+trial release.
+
+### Added
+
+- Four new games completing the ten-game roster: **Voice Treasure Hunter** (submarine
+  spelling game, #115), **Magic Wizard** (elemental spell-casting battle game, #116),
+  **Sentence Bird** (speech-driven cloud jumping), and **Echo Microphone** (speech memory
+  chain).
+- **`docs/customer-handover.md`**: the maintained handover artifact describing current
+  transition status, what's transferred vs. retained, configuration/secrets, and
+  setup/deployment/recovery/verification steps (#124).
+- **`CONTRIBUTING.md`** and **`AGENTS.md`** at the repository root (#124).
+
+### Changed
+
+- `README.md` refreshed as the public entry point: current ten-game roster, links to the
+  hosted docs site, `docs/customer-handover.md`, `CONTRIBUTING.md`, and `AGENTS.md`.
+- `docs/roadmap.md` and `docs/development-process.md` updated for the Sprint 4 / Sprint 5
+  plan (Assignment 6, Weeks 6-7).
+
 ## [0.3.0] - 2026-07-03
 
 Sprint 3 (MVP v2) release. Every Sprint 2 customer review finding from
