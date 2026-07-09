@@ -66,6 +66,10 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
         hearIt: 'Hear it',
         again: 'Again',
       },
+      echoRecorder: {
+        title: 'Echo Microphone',
+        description: 'Listen to word sequences and repeat them back to grow the chain and train your pronunciation memory!',
+      },
     },
     shared: {
       chooseWordSet: 'Choose a word set',
@@ -185,6 +189,10 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
         sayToLaunch: 'Произнеси слово для запуска',
         hearIt: 'Прослушать',
         again: 'Заново',
+      },
+      echoRecorder: {
+        title: 'Эхо-микрофон',
+        description: 'Слушай последовательности слов и повторяй их, чтобы удлинить цепочку и тренировать память произношения!',
       },
     },
     shared: {
