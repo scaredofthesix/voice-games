@@ -222,6 +222,7 @@ export function AsteWordGame({
 
   // Безопасная обработка удара по щиту
   const handleShieldHit = useCallback((index: number) => {
+    if (livesRef.current <= 0) return;
     speakSound.playCrash(); 
     const nextL = livesRef.current - 1;
     setLives(nextL);
@@ -371,7 +372,8 @@ export function AsteWordGame({
         }
 
         // 2. Движение астероидов и шлейф пыли комет ☄️
-        asteroids.current.forEach((ast, index) => {
+        for (let index = asteroids.current.length - 1; index >= 0; index--) {
+          const ast = asteroids.current[index];
           ast.y += ast.speed;
 
           if (Math.random() < 0.25) {
@@ -389,7 +391,7 @@ export function AsteWordGame({
           if (ast.y > canvas.height - 35) {
             handleShieldHit(index);
           }
-        });
+        }
 
         // 3. Обновление лазера
         if (laser.current) {
@@ -398,23 +400,25 @@ export function AsteWordGame({
         }
 
         // 4. Обновление частиц
-        particles.current.forEach((p, index) => {
+        for (let index = particles.current.length - 1; index >= 0; index--) {
+          const p = particles.current[index];
           p.x += p.vx;
           p.y += p.vy;
           p.alpha -= 0.03;
           if (p.alpha <= 0) {
             particles.current.splice(index, 1);
           }
-        });
+        }
 
         // 5. Обновление ударных волн
-        shockwaves.current.forEach((sw, index) => {
+        for (let index = shockwaves.current.length - 1; index >= 0; index--) {
+          const sw = shockwaves.current[index];
           sw.r += 2.2;
           sw.alpha -= 0.04;
           if (sw.alpha <= 0) {
             shockwaves.current.splice(index, 1);
           }
-        });
+        }
       }
 
       // --- ОТРИСОВКА ---
@@ -662,7 +666,7 @@ export function AsteWordGame({
                 ref={previewCanvasRef}
                 width={300}
                 height={100}
-                className="w-full h-full block"
+                className="w-full max-w-[300px] aspect-[3/1] mx-auto block"
               />
               <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
                 Preview
@@ -781,7 +785,7 @@ export function AsteWordGame({
               ref={canvasRef}
               width={400}
               height={300}
-              className="w-full h-[300px] block"
+              className="w-full max-w-[400px] aspect-[4/3] mx-auto block"
             />
             {paused && (
               <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center gap-1">
