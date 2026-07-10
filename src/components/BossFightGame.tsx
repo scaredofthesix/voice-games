@@ -739,22 +739,50 @@ export function BossFightGame({
               <Swords className="w-4 h-4 stroke-[3]" /> {boss.emoji} {boss.name}
             </span>
             <span className="text-[10px] font-black uppercase text-slate-500">
-              {bossMode === -1 
-                ? `♾️ Boss #${bossLevel + 1}` 
+              {bossMode === -1
+                ? `♾️ Boss #${bossLevel + 1}`
                 : `${language === 'ru' ? 'Босс' : 'Boss'} ${bossLevel + 1}/${bossMode}`}
-               · {score} {language === 'ru' ? 'уд.' : 'hits'}
             </span>
           </div>
 
-          {/* Boss health (accessible) */}
+          {/* Big, unambiguous hit counter (issue #108): the number is the
+              TOTAL of correctly pronounced words across the whole battle,
+              not the hits remaining on the current boss. */}
           <div
-            className="h-4 rounded-full bg-rose-100 border-2 border-slate-900 overflow-hidden"
-            aria-label={`Boss health ${fight.bossHp} of ${fight.bossMaxHp}`}
+            className="flex items-center justify-center gap-2 bg-amber-100 border-4 border-slate-900 rounded-2xl py-1.5 px-3"
+            role="status"
+            aria-label={`${score} total hits this battle`}
           >
+            <Swords className="w-5 h-5 text-amber-700 stroke-[3]" />
+            <span className="text-2xl font-black font-mono text-amber-900 leading-none">{score}</span>
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-800">
+              {language === 'ru' ? 'всего ударов за бой' : 'total hits this battle'}
+            </span>
+          </div>
+
+          {/* Boss health (accessible).
+              Issue #108 dev note on the "duplicated" boss HP: it is shown both
+              here and above the boss inside the canvas scene. Decision - keep
+              both, per the counterargument the customer accepted at the
+              Sprint 3 review: the labeled HUD bar below teaches kids what the
+              mechanic means, while the in-scene bar gives feedback right where
+              they are looking during the fight. To strengthen that purpose the
+              HUD bar now carries a visible text label instead of being an
+              anonymous second bar. */}
+          <div>
+            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-rose-700 mb-1">
+              <span>{language === 'ru' ? 'Здоровье босса' : 'Boss health'}</span>
+              <span className="font-mono">{fight.bossHp}/{fight.bossMaxHp}</span>
+            </div>
             <div
-              className="h-full bg-rose-500 transition-all"
-              style={{ width: `${(fight.bossHp / fight.bossMaxHp) * 100}%` }}
-            />
+              className="h-4 rounded-full bg-rose-100 border-2 border-slate-900 overflow-hidden"
+              aria-label={`Boss health ${fight.bossHp} of ${fight.bossMaxHp}`}
+            >
+              <div
+                className="h-full bg-rose-500 transition-all"
+                style={{ width: `${(fight.bossHp / fight.bossMaxHp) * 100}%` }}
+              />
+            </div>
           </div>
 
           {/* Player lives */}
