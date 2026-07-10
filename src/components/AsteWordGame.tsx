@@ -184,6 +184,34 @@ export function AsteWordGame({
     return () => observer.disconnect();
   }, [phase]);
 
+  // Fill the start-screen preview frame and keep its drawing coordinates in
+  // sync with the responsive 3:1 canvas size.
+  useEffect(() => {
+    if (phase !== 'START') return;
+    const canvas = previewCanvasRef.current;
+    if (!canvas) return;
+
+    const resizeCanvas = () => {
+      const bounds = canvas.getBoundingClientRect();
+      const renderedWidth = Math.round(bounds.width) || 300;
+      const renderedHeight = Math.round(bounds.height) || Math.round(renderedWidth / 3);
+      if (canvas.width !== renderedWidth || canvas.height !== renderedHeight) {
+        canvas.width = renderedWidth;
+        canvas.height = renderedHeight;
+      }
+    };
+
+    resizeCanvas();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', resizeCanvas);
+      return () => window.removeEventListener('resize', resizeCanvas);
+    }
+
+    const observer = new ResizeObserver(resizeCanvas);
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [phase]);
+
   const wordList = useCallback((): WordData[] => {
     if (activeCategory.id === 'custom') {
       return customWords.length > 0 ? customWords : (BUILTIN_CATEGORIES[0].words as WordData[]);
@@ -705,7 +733,7 @@ export function AsteWordGame({
                 ref={previewCanvasRef}
                 width={300}
                 height={100}
-                className="w-full max-w-[300px] aspect-[3/1] mx-auto block"
+                className="block w-full aspect-[3/1]"
               />
               <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
                 {t('shared.preview')}

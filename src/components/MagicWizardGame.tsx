@@ -222,7 +222,6 @@ export function MagicWizardGame({
 
   const castSpell = useCallback(() => {
     if (phaseRef.current === 'PLAYING' && !pausedRef.current && activeMonster.current) {
-      speakSound.playCorrect();
       setFeedback('correct');
 
       // Add spell projectile

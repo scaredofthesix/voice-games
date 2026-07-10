@@ -1111,7 +1111,6 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       if (computedLvl > s.level) {
         s.level = computedLvl;
         setLevel(computedLvl);
-        speakSound.playCorrect();
       }
 
       frameId = requestAnimationFrame(frameLoop);

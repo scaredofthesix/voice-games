@@ -181,7 +181,6 @@ export function SkateWordGame({
       isStoppedBeforeObstacle.current = false;
       playerVy.current = -12.5;
       isJumping.current = true;
-      speakSound.playCorrect();
       setFeedback('correct');
 
       for (let i = 0; i < 20; i++) {

@@ -572,7 +572,6 @@ export default function App() {
     const calculatedLevel = Math.min(5, Math.floor(score / 185) + 1);
     if (calculatedLevel > level) {
       setLevel(calculatedLevel);
-      speakSound.playCorrect();
     }
   }, [score, highScore, level]);
 
