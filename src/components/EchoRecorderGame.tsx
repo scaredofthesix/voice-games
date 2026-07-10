@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import {
   Mic, Volume2, VolumeX, Brain,
@@ -6,11 +6,12 @@ import {
 } from 'lucide-react';
 
 const MAX_LIVES = 3;
-import { BackToHubButton, GameHeader, GameSetupCard, OptionPicker, PauseButton } from './GameUi';
+import { BackToHubButton, CustomWordsSection, GameHeader, GameSetupCard, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 import { useSpeechRecognition } from '../useSpeechRecognition';
-import { LEVELS } from '../echoRecorder/levels';
-import type { EchoGamePhase, EchoGameStats, EchoLevel, EchoWord } from '../echoRecorder/types';
+import { BUILTIN_CATEGORIES } from '../data';
+import type { WordCategory, WordData } from '../types';
+import type { EchoGamePhase, EchoGameStats, EchoWord } from '../echoRecorder/types';
 
 function getLevenshteinDistance(a: string, b: string): number {
   const tmp: number[][] = [];
@@ -92,133 +93,20 @@ function checkPronunciationMatch(spoken: string, expected: string): boolean {
   return distance <= 4 || (distance / Math.max(cleanSpoken.length, cleanExpected.length)) < 0.35;
 }
 
-const LOCAL_LANG = {
-  en: {
-    title: 'Echo Microphone',
-    subtitle: 'Listen and repeat the chain!',
-    back: 'Back to hub',
-    start: 'Start Level',
-    chooseLevel: 'Choose difficulty',
-    chooseTheme: 'Choose echo theme',
-    levelOne: 'Everyday words',
-    levelTwo: 'Short phrases',
-    levelThree: 'Idioms',
-    best: 'Best',
-    howToPlay: 'How to play',
-    learnRules: 'Learn Rules',
-    lobbyTitle: 'Echo Microphone',
-    lobbyIntro: 'Listen to the sequence of words carefully, then repeat them back in the exact same sequence through your microphone to grow the chain!',
-    lobbyStepOne: 'Listen to each word in the sequence.',
-    lobbyStepTwo: 'Repeat them back in order through your mic.',
-    lobbyStepThree: 'Grow the chain and complete the level!',
-    listening: 'Listening phase: Pay attention to pronunciation...',
-    speaking: 'Speak Echo now: Repeat the terms in order!',
-    replay: 'Replay Voice Guidance',
-    currentChain: 'Current Chain',
-    levelTarget: 'Level Target',
-    bestChain: 'Best Chain',
-    perfectMatch: 'Perfect Memory Echo!',
-    perfectDesc: 'Your English sequence order and pronunciation was flawless. Now, get ready to memorize an even longer vocabulary chain!',
-    growChain: 'Grow Chain',
-    proceed: 'Proceed to Level',
-    restart: 'Restart Chain',
-    victory: 'ECHO RECORDER COMPLETED!',
-    victoryDesc: 'Incredible performance! You have successfully completed all the voice chain levels.',
-    replayAll: 'Replay All Levels',
-    tryAgain: 'Try Again!',
-    missedAt: 'You missed at word',
-    startOver: "Let's start the sequence over!",
-    phonetic: 'Phonetic',
-    score: 'Score',
-    completed: 'Done',
-    chainWords: 'Words',
-    pts: 'pts',
-    word: 'Word',
-    translation: 'Translation',
-    target: 'Target',
-    memoryCard: 'MEMORY CARD',
-    sayNext: 'SAY NEXT',
-    idle: 'Transceiver Idle',
-    voiceActive: 'Voice Active',
-    muted: 'Receiver Muted',
-    guide: 'Guide',
-    words: 'words',
-    level: 'Level',
-    speakLabel: 'Speak!',
-    voiceFeed: 'Voice Feed',
-    pronRef: 'Pronunciation Reference',
-    supremeMaster: 'Supreme Memory Master!',
-    finalScore: 'Final Score',
-    longestChainLabel: 'Longest Chain',
-    totalAttemptsLabel: 'Total Attempts',
-    correctRoundsLabel: 'Correct Rounds',
-  },
-  ru: {
-    title: 'Эхо-микрофон',
-    subtitle: 'Слушай и повторяй цепочку!',
-    back: 'Назад в хаб',
-    start: 'Начать уровень',
-    chooseLevel: 'Выбери сложность',
-    chooseTheme: 'Выбери тему эха',
-    levelOne: 'Простые слова',
-    levelTwo: 'Короткие фразы',
-    levelThree: 'Идиомы',
-    best: 'Рекорд',
-    howToPlay: 'Как играть',
-    learnRules: 'Правила',
-    lobbyTitle: 'Эхо-микрофон',
-    lobbyIntro: 'Внимательно слушай последовательность слов, а затем повторяй их в том же порядке в микрофон, чтобы удлинить цепочку!',
-    lobbyStepOne: 'Слушай каждое слово в последовательности.',
-    lobbyStepTwo: 'Повторяй их по порядку в микрофон.',
-    lobbyStepThree: 'Удлиняй цепочку и проходи уровень!',
-    listening: 'Фаза прослушивания: обращай внимание на произношение...',
-    speaking: 'Говори сейчас: повторяй слова по порядку!',
-    replay: 'Повторить подсказку',
-    currentChain: 'Текущая цепь',
-    levelTarget: 'Цель уровня',
-    bestChain: 'Лучшая цепь',
-    perfectMatch: 'Идеальное эхо!',
-    perfectDesc: 'Твоя английская последовательность и произношение были безупречны. Приготовься запомнить ещё более длинную цепочку!',
-    growChain: 'Удлинить цепь',
-    proceed: 'Перейти к уровню',
-    restart: 'Начать заново',
-    victory: 'ЭХО-РЕКОРДЕР ПРОЙДЕН!',
-    victoryDesc: 'Невероятный результат! Ты успешно прошёл все уровни голосовых цепочек.',
-    replayAll: 'Пройти всё заново',
-    tryAgain: 'Попробуй ещё раз!',
-    missedAt: 'Ты ошибся на слове',
-    startOver: 'Начнём последовательность заново!',
-    phonetic: 'Фонетика',
-    score: 'Очки',
-    completed: 'Готово',
-    chainWords: 'Слов',
-    pts: 'очк',
-    word: 'Слово',
-    translation: 'Перевод',
-    target: 'Цель',
-    memoryCard: 'КАРТА ПАМЯТИ',
-    sayNext: 'ГОВОРИ',
-    idle: 'Приёмник в режиме ожидания',
-    voiceActive: 'Микрофон активен',
-    muted: 'Микрофон выключен',
-    guide: 'Гайд',
-    words: 'слов',
-    level: 'Уровень',
-    speakLabel: 'Говори!',
-    voiceFeed: 'Голосовой канал',
-    pronRef: 'Справочник произношения',
-    supremeMaster: 'Верховный мастер памяти!',
-    finalScore: 'Финальный счёт',
-    longestChainLabel: 'Самая длинная цепь',
-    totalAttemptsLabel: 'Всего попыток',
-    correctRoundsLabel: 'Правильных раундов',
-  },
-};
+const ECHO_STRING_KEYS = ["title", "subtitle", "back", "start", "chooseTheme", "best", "howToPlay", "learnRules", "lobbyTitle", "lobbyIntro", "lobbyStepOne", "lobbyStepTwo", "lobbyStepThree", "listening", "speaking", "replay", "currentChain", "bestChain", "perfectMatch", "perfectDesc", "growChain", "proceed", "restart", "victory", "victoryDesc", "replayAll", "tryAgain", "missedAt", "startOver", "phonetic", "score", "completed", "chainWords", "pts", "word", "translation", "target", "memoryCard", "sayNext", "idle", "voiceActive", "muted", "guide", "words", "speakLabel", "voiceFeed", "pronRef", "supremeMaster", "finalScore", "longestChainLabel", "totalAttemptsLabel", "correctRoundsLabel"] as const;
 
 interface EchoRecorderGameProps {
   onBackToHub: () => void;
+  customWords: WordData[];
   highScore?: number;
   onUpdateHighScore?: (score: number) => void;
+  onAddCustomWord?: (word: string, translation: string) => void;
+  onDeleteCustomWord?: (index: number) => void;
+  onClearCustomWords?: () => void;
+}
+
+function toEchoWord(entry: { word: string; translation: string; translationRu?: string }): EchoWord {
+  return { text: entry.word, translation: entry.translationRu || entry.translation };
 }
 
 type EchoTheme = 'studio' | 'forest' | 'space';
@@ -264,18 +152,26 @@ function EchoThemePreview({ theme }: { theme: (typeof ECHO_THEMES)[number] }) {
   );
 }
 
-export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateHighScore }: EchoRecorderGameProps) {
-  const { language, t } = useUiLanguage();
+export default function EchoRecorderGame({
+  onBackToHub,
+  customWords,
+  highScore = 0,
+  onUpdateHighScore,
+  onAddCustomWord,
+  onDeleteCustomWord,
+  onClearCustomWords,
+}: EchoRecorderGameProps) {
+  const { t } = useUiLanguage();
   const strings = Object.fromEntries(
-    Object.keys(LOCAL_LANG.en).map((key) => [key, t(`echo.${key}`)]),
-  ) as Record<keyof typeof LOCAL_LANG.en, string>;
+    ECHO_STRING_KEYS.map((key) => [key, t(`echo.${key}`)]),
+  ) as Record<typeof ECHO_STRING_KEYS[number], string>;
   const [gameState, setGameState] = useState<EchoGamePhase>('start');
-  const [currentLevelIdx, setCurrentLevelIdx] = useState(0);
+  const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
   const [theme, setTheme] = useState<EchoTheme>('studio');
   const [currentSequence, setCurrentSequence] = useState<EchoWord[]>([]);
   const [activeWordIdx, setActiveWordIdx] = useState(-1);
   const [userSpeechProgressIdx, setUserSpeechProgressIdx] = useState(0);
-  const [tryAgainTip, setTryAgainTip] = useState<{ text: string; translation: string; phonetic: string } | null>(null);
+  const [tryAgainTip, setTryAgainTip] = useState<{ text: string; translation: string; phonetic?: string } | null>(null);
   const [recentTranscript, setRecentTranscript] = useState('');
   const [stats, setStats] = useState<EchoGameStats>({
     score: 0, longestChain: 1, totalAttempts: 0, correctRounds: 0, failedWords: {},
@@ -287,23 +183,32 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
   const gameStateRef = useRef(gameState);
   const currentSequenceRef = useRef(currentSequence);
   const userSpeechProgressIdxRef = useRef(userSpeechProgressIdx);
-  const currentLevelIdxRef = useRef(currentLevelIdx);
+  const activeCategoryRef = useRef(activeCategory);
+  const customWordsRef = useRef(customWords);
   const statsRef = useRef(stats);
   const failTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTranscriptRef = useRef('');
   const pausedRef = useRef(false);
   const livesRef = useRef(MAX_LIVES);
+  const showListeningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
   useEffect(() => { currentSequenceRef.current = currentSequence; }, [currentSequence]);
   useEffect(() => { userSpeechProgressIdxRef.current = userSpeechProgressIdx; }, [userSpeechProgressIdx]);
-  useEffect(() => { currentLevelIdxRef.current = currentLevelIdx; }, [currentLevelIdx]);
+  useEffect(() => { activeCategoryRef.current = activeCategory; }, [activeCategory]);
+  useEffect(() => { customWordsRef.current = customWords; }, [customWords]);
   useEffect(() => { statsRef.current = stats; }, [stats]);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
   useEffect(() => { livesRef.current = lives; }, [lives]);
 
-  const level: EchoLevel = LEVELS[currentLevelIdx];
-  const wordPool = level.pool;
+  const wordPool = useMemo((): EchoWord[] => {
+    if (activeCategory.id === 'custom') {
+      return customWords.length > 0
+        ? customWords.map(toEchoWord)
+        : BUILTIN_CATEGORIES[0].words.map(toEchoWord);
+    }
+    return activeCategory.words.map(toEchoWord);
+  }, [activeCategory, customWords]);
   const activeTheme = ECHO_THEMES.find((item) => item.id === theme) || ECHO_THEMES[0];
 
   const playSound = (type: 'success' | 'fail' | 'flip' | 'click' | 'victory') => {
@@ -362,7 +267,7 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
     }
   };
 
-  const speakSequence = async (sequence: EchoWord[], pitch?: number, rate?: number) => {
+  const speakSequence = async (sequence: EchoWord[], pitch = 1.0, rate = 0.85) => {
     if (typeof window === 'undefined' || !window.speechSynthesis) {
       for (let i = 0; i < sequence.length; i++) {
         setActiveWordIdx(i);
@@ -386,8 +291,8 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
       const item = sequence[index];
       const utterance = new SpeechSynthesisUtterance(item.text);
       utterance.lang = 'en-US';
-      utterance.pitch = pitch ?? level.speechPitch;
-      utterance.rate = rate ?? level.speechRate;
+      utterance.pitch = pitch;
+      utterance.rate = rate;
       utterance.onend = () => {
         setTimeout(() => { speakItem(index + 1); }, 400);
       };
@@ -406,19 +311,17 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
     return [...current, randomWord];
   };
 
-  const startLevel = (lvlIdx: number) => {
+  const startGame = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setCurrentLevelIdx(lvlIdx);
     setLives(MAX_LIVES);
     livesRef.current = MAX_LIVES;
-    const lvl = LEVELS[lvlIdx];
-    const initialChain = extendChain([], lvl.pool);
+    const initialChain = extendChain([], wordPool);
     setCurrentSequence(initialChain);
     setUserSpeechProgressIdx(0);
     setTryAgainTip(null);
     setRecentTranscript('');
     setGameState('playback');
-    speakSequence(initialChain, lvl.speechPitch, lvl.speechRate);
+    speakSequence(initialChain);
   };
 
   const cancelFailTimer = () => {
@@ -446,14 +349,16 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
           totalAttempts: prev.totalAttempts + 1,
         }));
         // Endless play: the chain just keeps growing until the player runs out of hearts.
-        const lvlIdx = currentLevelIdxRef.current;
-        const updatedSequence = extendChain(currentSequenceRef.current, LEVELS[lvlIdx].pool);
+        const cat = activeCategoryRef.current;
+        const pool: EchoWord[] = cat.id === 'custom'
+          ? customWordsRef.current.map(toEchoWord)
+          : cat.words.map(toEchoWord);
+        const updatedSequence = extendChain(currentSequenceRef.current, pool);
         setCurrentSequence(updatedSequence);
         setUserSpeechProgressIdx(0);
         setRecentTranscript('');
         setTryAgainTip(null);
-        const lvl = LEVELS[lvlIdx];
-        speakSequence(updatedSequence, lvl.speechPitch, lvl.speechRate);
+        speakSequence(updatedSequence);
       }, 500);
     }
   }, []);
@@ -506,6 +411,7 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
           setRecentTranscript('');
           if (remainingLives <= 0) {
             // Out of hearts - end the endless run.
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             setGameState('victory');
           } else {
             // Still have hearts: repeat the same chain from the start.
@@ -527,8 +433,26 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
       stop();
       cancelFailTimer();
     }
-    return () => { stop(); cancelFailTimer(); };
+    return cancelFailTimer;
   }, [gameState, paused, start, stop]);
+
+  useEffect(() => stop, [stop]);
+
+  const [showListening, setShowListening] = useState(false);
+
+  useEffect(() => {
+    if (isListening) {
+      setShowListening(true);
+      if (showListeningTimerRef.current) clearTimeout(showListeningTimerRef.current);
+    } else {
+      showListeningTimerRef.current = setTimeout(() => {
+        setShowListening(false);
+      }, 300);
+    }
+    return () => {
+      if (showListeningTimerRef.current) clearTimeout(showListeningTimerRef.current);
+    };
+  }, [isListening]);
 
   const handleNextChainStep = () => {
     setUserSpeechProgressIdx(0);
@@ -563,6 +487,7 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
       cancelFailTimer();
     } else {
       window.speechSynthesis?.resume();
+      if (gameState === 'recording') start();
     }
   };
 
@@ -611,36 +536,67 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
             </ol>
           </div>
 
-          <div className="rounded-2xl border-4 border-slate-900 bg-white p-3 text-left">
-            <p className="text-xs font-black text-rose-500 uppercase tracking-widest ml-1 mb-2">{t('shared.listenAndLearnPractice')}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {LEVELS[0].pool.slice(0, 8).map((word, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    const u = new SpeechSynthesisUtterance(word.text);
-                    u.lang = 'en-US';
-                    window.speechSynthesis?.speak(u);
-                  }}
-                  className="flex items-center justify-between gap-1 rounded-xl border-2 border-slate-900 bg-slate-50 px-2 py-1.5 text-left hover:bg-yellow-100 cursor-pointer"
-                >
-                  <span className="text-xs font-black text-slate-900 truncate">{word.emoji} {word.text}</span>
-                  <Volume2 className="h-3.5 w-3.5 shrink-0 text-indigo-600" />
-                </button>
-              ))}
-            </div>
-          </div>
+          <WordSetPicker
+            legend={t('shared.chooseWordSet')}
+            myWordsLabel={t('shared.myWords')}
+            activeCategoryId={activeCategory.id}
+            customWords={customWords}
+            onSelect={setActiveCategory}
+          />
+
+          <ListenAndLearnSection
+            words={
+              activeCategory.id === 'custom'
+                ? (customWords.length > 0 ? customWords : BUILTIN_CATEGORIES[0].words)
+                : activeCategory.words
+            }
+          />
+
+          {onAddCustomWord && onDeleteCustomWord && onClearCustomWords && (
+            <CustomWordsSection
+              customWords={customWords}
+              onAddWord={onAddCustomWord}
+              onDeleteWord={onDeleteCustomWord}
+              onClearAll={onClearCustomWords}
+            />
+          )}
 
           <button
             type="button"
-            onClick={() => { playSound('click'); startLevel(0); }}
+            onClick={() => { playSound('click'); startGame(); }}
             className="w-full py-3 bg-emerald-400 hover:bg-emerald-500 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer"
           >
             {strings.start} <ArrowRight className="h-4 w-4 stroke-[3]" />
           </button>
         </GameSetupCard>
       </section>
+    );
+  }
+
+  if (gameState === 'victory') {
+    return (
+      <div className="max-w-md mx-auto py-4 px-2">
+        <BackToHubButton label={strings.back} onClick={handleBackToHub} />
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-[2rem] border-8 border-slate-900 bg-white p-8 text-center space-y-6 shadow-[10px_10px_0_0_rgba(15,23,42,1)] relative overflow-hidden">
+          <div className="absolute -top-10 -left-10 w-32 h-32 bg-yellow-100 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-yellow-100 rounded-full blur-2xl pointer-events-none" />
+          <span className="text-5xl animate-bounce block">💔🎧</span>
+          <div className="space-y-2">
+            <span className="text-[10px] font-black text-slate-900 bg-yellow-400 border-2 border-slate-900 px-2 py-0.5 shadow-[2px_2px_0_0_rgba(0,0,0,1)] uppercase inline-block">{t('echo.gameOverBadge')}</span>
+            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{t('echo.gameOverTitle')}</h3>
+            <p className="text-sm font-bold text-slate-600 max-w-md mx-auto">{t('echo.gameOverDesc')}</p>
+          </div>
+          <div className="rounded-2xl border-4 border-slate-900 bg-slate-50 p-5 text-left divide-y divide-slate-200 shadow-[4px_4px_0_0_rgba(15,23,42,1)]">
+            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.finalScore}:</span><span className="font-black text-yellow-600">{stats.score} {strings.pts}</span></div>
+            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.longestChainLabel}:</span><span className="font-black text-slate-900">{stats.longestChain} {strings.words}</span></div>
+            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.totalAttemptsLabel}:</span><span className="font-black text-slate-900">{stats.totalAttempts}</span></div>
+            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.correctRoundsLabel}:</span><span className="font-black text-emerald-600">{stats.correctRounds}</span></div>
+          </div>
+          <div className="flex justify-center gap-3">
+            <button onClick={() => { playSound('click'); setStats({ score: 0, longestChain: 1, totalAttempts: 0, correctRounds: 0, failedWords: {} }); startGame(); }} className="rounded-2xl border-4 border-slate-900 bg-emerald-400 px-6 py-3 text-sm font-black uppercase tracking-wider shadow-[4px_4px_0_0_rgba(15,23,42,1)]">{t('echo.playAgain')}</button>
+          </div>
+        </motion.div>
+      </div>
     );
   }
 
@@ -651,7 +607,7 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
       <GameHeader
         icon={<Brain className="h-5 w-5 text-slate-900" />}
         title={strings.title}
-        subtitle={t(`echo.levels.${level.id}.subtitle`)}
+        subtitle={t(`wordSets.${activeCategory.id}`)}
         stats={[
           { label: strings.score, value: stats.score, icon: <Star className="h-3.5 w-3.5 text-amber-500" />, tone: 'amber' },
           { label: strings.best, value: Math.max(highScore, stats.score), icon: <Trophy className="h-3.5 w-3.5 text-emerald-600" />, tone: 'emerald' },
@@ -667,7 +623,7 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
         }
       />
 
-      {gameState !== 'victory' && <PauseButton paused={paused} onToggle={togglePause} />}
+      <PauseButton paused={paused} onToggle={togglePause} />
 
       <div className={`grid grid-cols-1 sm:grid-cols-3 gap-3 ${activeTheme.accentClass}`}>
         <div className="rounded-xl border-4 border-slate-900 bg-amber-100 px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-slate-900">
@@ -756,7 +712,7 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
                 <div className="text-center space-y-1">
                   {isRevealed || isTTSActive || gameState === 'playback' ? (
                     <>
-                      <div className="text-xl">{word.emoji}</div>
+                      {word.emoji && <div className="text-xl">{word.emoji}</div>}
                       <div className={`font-black uppercase tracking-tight text-sm ${isTTSActive ? 'text-white' : 'text-slate-900'}`}>{word.text}</div>
                     </>
                   ) : (
@@ -792,9 +748,11 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
               <p className="text-xs font-bold text-slate-700">{strings.missedAt} <span className="text-rose-600 font-extrabold">"{tryAgainTip.text}"</span> ({tryAgainTip.translation}). {strings.startOver}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-black bg-white border-2 border-rose-600 px-2.5 py-1 shadow-[2px_2px_0_0_rgba(225,29,72,1)]">{strings.phonetic}: {tryAgainTip.phonetic}</span>
-          </div>
+          {tryAgainTip.phonetic && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-black bg-white border-2 border-rose-600 px-2.5 py-1 shadow-[2px_2px_0_0_rgba(225,29,72,1)]">{strings.phonetic}: {tryAgainTip.phonetic}</span>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -805,7 +763,7 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
               <Mic className="w-3.5 h-3.5 text-indigo-600" /> {strings.voiceFeed}
             </h4>
             <div className="rounded-2xl border-4 border-slate-900 bg-slate-50 p-4 min-h-[60px] flex flex-col items-center justify-center text-center relative overflow-hidden">
-              {gameState === 'recording' && isListening ? (
+              {gameState === 'recording' && showListening ? (
                 <div className="space-y-1 w-full flex flex-col items-center">
                   {recentTranscript ? (
                     <p className="text-xs font-black text-slate-800 italic truncate max-w-[180px]">"{recentTranscript}"</p>
@@ -827,8 +785,8 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
           </div>
           <div className="border-t border-slate-200 pt-2 mt-2 flex items-center justify-between text-[9px] font-black uppercase text-slate-400">
             <span className="flex items-center gap-1">
-              <span className={`w-2 h-2 rounded-full ${isListening ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-              {isListening ? strings.voiceActive : strings.muted}
+              <span className={`w-2 h-2 rounded-full ${showListening ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+              {showListening ? strings.voiceActive : strings.muted}
             </span>
           </div>
         </div>
@@ -840,40 +798,31 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
             </h4>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {level.pool.map((word, idx) => (
+            {wordPool.map((word, idx) => (
               <div key={idx} className="rounded-xl border-2 border-slate-200 bg-slate-50/50 p-2 flex flex-col justify-between select-none">
-                <span className="text-xs font-black text-slate-800 tracking-tight">{word.emoji} "{word.text}"</span>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-xs font-black text-slate-800 tracking-tight truncate">{word.emoji ? `${word.emoji} ` : ''}"{word.text}"</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const u = new SpeechSynthesisUtterance(word.text);
+                      u.lang = 'en-US';
+                      window.speechSynthesis?.speak(u);
+                    }}
+                    className="shrink-0 rounded-lg border-2 border-slate-300 bg-white p-1 hover:bg-yellow-100 cursor-pointer"
+                  >
+                    <Volume2 className="h-3 w-3 text-indigo-600" />
+                  </button>
+                </div>
                 <div className="flex justify-between items-center mt-1 w-full">
                   <span className="text-[8px] font-extrabold text-slate-400">{word.translation}</span>
-                  <span className="text-[8px] font-mono text-indigo-600 font-bold bg-indigo-50 px-1 rounded">{word.phonetic}</span>
+                  {word.phonetic && <span className="text-[8px] font-mono text-indigo-600 font-bold bg-indigo-50 px-1 rounded">{word.phonetic}</span>}
                 </div>
               </div>
             ))}
           </div>
         </div>
       </div>
-
-      {gameState === 'victory' && (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-[2rem] border-8 border-slate-900 bg-white p-8 text-center space-y-6 shadow-[10px_10px_0_0_rgba(15,23,42,1)] max-w-xl mx-auto relative overflow-hidden">
-          <div className="absolute -top-10 -left-10 w-32 h-32 bg-yellow-100 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-yellow-100 rounded-full blur-2xl pointer-events-none" />
-          <span className="text-5xl animate-bounce block">💔🎧</span>
-          <div className="space-y-2">
-            <span className="text-[10px] font-black text-slate-900 bg-yellow-400 border-2 border-slate-900 px-2 py-0.5 shadow-[2px_2px_0_0_rgba(0,0,0,1)] uppercase inline-block">{t('echo.gameOverBadge')}</span>
-            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{t('echo.gameOverTitle')}</h3>
-            <p className="text-sm font-bold text-slate-600 max-w-md mx-auto">{t('echo.gameOverDesc')}</p>
-          </div>
-          <div className="rounded-2xl border-4 border-slate-900 bg-slate-50 p-5 text-left divide-y divide-slate-200 shadow-[4px_4px_0_0_rgba(15,23,42,1)]">
-            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.finalScore}:</span><span className="font-black text-yellow-600">{stats.score} {strings.pts}</span></div>
-            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.longestChainLabel}:</span><span className="font-black text-slate-900">{stats.longestChain} {strings.words}</span></div>
-            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.totalAttemptsLabel}:</span><span className="font-black text-slate-900">{stats.totalAttempts}</span></div>
-            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.correctRoundsLabel}:</span><span className="font-black text-emerald-600">{stats.correctRounds}</span></div>
-          </div>
-          <div className="flex justify-center gap-3">
-            <button onClick={() => { playSound('click'); setStats({ score: 0, longestChain: 1, totalAttempts: 0, correctRounds: 0, failedWords: {} }); startLevel(0); }} className="rounded-2xl border-4 border-slate-900 bg-emerald-400 px-6 py-3 text-sm font-black uppercase tracking-wider shadow-[4px_4px_0_0_rgba(15,23,42,1)]">{t('echo.playAgain')}</button>
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 }

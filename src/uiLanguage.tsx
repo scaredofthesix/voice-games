@@ -301,6 +301,8 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       back: 'Back to hub',
       world: 'World',
       emptySet: 'Add words to My Words or choose a built-in set.',
+      wordsMastered: 'Words mastered:',
+      accuracy: 'Accuracy',
     },
     echo: {
       title: 'Echo Microphone',
@@ -736,6 +738,8 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       back: 'Назад в хаб',
       world: 'Мир',
       emptySet: 'Добавь слова в Мои слова или выбери готовый набор.',
+      wordsMastered: 'Слов освоено:',
+      accuracy: 'Точность',
     },
     echo: {
       title: 'Эхо-микрофон',

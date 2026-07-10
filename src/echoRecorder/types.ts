@@ -3,8 +3,8 @@ export type EchoGamePhase = 'start' | 'playback' | 'recording' | 'victory';
 export interface EchoWord {
   text: string;
   translation: string;
-  emoji: string;
-  phonetic: string;
+  emoji?: string;
+  phonetic?: string;
 }
 
 export interface EchoLevel {

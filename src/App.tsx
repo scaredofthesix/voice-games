@@ -1557,8 +1557,12 @@ export default function App() {
         ) : currentView === 'ECHO_RECORDER' ? (
           <EchoRecorderGame
             onBackToHub={() => setCurrentView('HUB')}
+            customWords={customWords}
             highScore={echoRecorderHighScore}
             onUpdateHighScore={handleUpdateEchoRecorderHighScore}
+            onAddCustomWord={handleAddNewWord}
+            onDeleteCustomWord={handleDeleteWord}
+            onClearCustomWords={handleClearCustomWords}
           />
         ) : currentView === 'MAGIC_WIZARD' ? (
           <MagicWizardGame
