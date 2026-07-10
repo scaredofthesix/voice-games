@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Play, RotateCcw, Star, Trophy } from 'lucide-react';
 
 import { BUILTIN_CATEGORIES } from '../data';
-import { loadProgress, pickAdaptiveWordIndex, recordHighScore, recordWordSpoken, recordWordStruggled, saveProgress } from '../progress';
+import { loadProgress, recordHighScore, recordWordSpoken, recordWordStruggled, saveProgress } from '../progress';
 import { sceneDefinitions } from '../sentenceBird/presets';
 import { cleanText } from '../sentenceBird/speechHelper';
 import { synths } from '../sentenceBird/audioSynth';
@@ -46,12 +46,15 @@ const LOCAL_LANG = {
     detected: 'Detected',
     completedTitle: 'You did it, champion!',
     completedText: 'You flew through every word in this set.',
+    failureTitle: 'Oh no, crashed!',
+    failureText: 'You ran out of lives. Try again!',
     playAgain: 'Play again',
     back: 'Back to hub',
     world: 'World',
     emptySet: 'Add words to My Words or choose a built-in set.',
     wordsMastered: 'Words mastered:',
     accuracy: 'Accuracy',
+    speakLabel: 'Say it!',
   },
   ru: {
     title: 'Фразоптичка',
@@ -69,12 +72,15 @@ const LOCAL_LANG = {
     detected: 'Распознано',
     completedTitle: 'Ты справился, чемпион!',
     completedText: 'Ты пролетел через все слова в наборе.',
+    failureTitle: 'Ой, разбился!',
+    failureText: 'У тебя кончились жизни. Попробуй снова!',
     playAgain: 'Играть снова',
     back: 'Назад в хаб',
     world: 'Мир',
     emptySet: 'Добавь слова в Мои слова или выбери готовый набор.',
     wordsMastered: 'Слов освоено:',
     accuracy: 'Точность',
+    speakLabel: 'Скажи!',
   },
 };
 
@@ -124,10 +130,12 @@ export default function SentenceBirdGame({
   const [activeSceneId, setActiveSceneId] = useState<SceneType>('forest');
   const [phase, setPhase] = useState<'START_SCREEN' | 'PLAYING' | 'GAME_OVER'>('START_SCREEN');
   const [targetIndex, setTargetIndex] = useState(-1);
+  const [birdCloudIndex, setBirdCloudIndex] = useState(-1);
+  const [scrollOffset, setScrollOffset] = useState(-30);
   const [score, setScore] = useState(0);
+  const [won, setWon] = useState(false);
   const [spokenText, setSpokenText] = useState('');
   const [isFlapping, setIsFlapping] = useState(false);
-  const [pipeEntering, setPipeEntering] = useState(false);
   const [paused, setPaused] = useState(false);
   const [lives, setLives] = useState(5);
   const [totalWordsInSet, setTotalWordsInSet] = useState(0);
@@ -144,14 +152,20 @@ export default function SentenceBirdGame({
   const livesRef = useRef(5);
   const targetWordRef = useRef('');
   const targetIndexRef = useRef(-1);
+  const birdCloudIndexRef = useRef(-1);
+  const scrollOffsetRef = useRef(-30);
   const wordStatsRef = useRef<Record<string, { spoken: number; struggled: number }>>({});
   const onSuccessHopRef = useRef<() => void>(() => {});
   const onLoseLifeRef = useRef<() => void>(() => {});
+  const lastWrongTextRef = useRef('');
+  const failTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const words = useMemo(() => normalizeWords(activeCategory), [activeCategory]);
   const activeScene = sceneDefinitions.find((scene) => scene.id === activeSceneId) || sceneDefinitions[0];
   const currentWord = targetIndex >= 0 ? words[targetIndex] : undefined;
   useEffect(() => { targetIndexRef.current = targetIndex; }, [targetIndex]);
+  useEffect(() => { birdCloudIndexRef.current = birdCloudIndex; }, [birdCloudIndex]);
+  useEffect(() => { scrollOffsetRef.current = scrollOffset; }, [scrollOffset]);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
   useEffect(() => { targetWordRef.current = currentWord?.word || ''; }, [currentWord?.word]);
   useEffect(() => { wordStatsRef.current = wordStudyStats; }, [wordStudyStats]);
@@ -165,12 +179,8 @@ export default function SentenceBirdGame({
 
   const chooseNextWordIndex = useCallback((previous: number) => {
     if (words.length === 0) return -1;
-    const picked = pickAdaptiveWordIndex(
-      words.map((item) => item.word),
-      wordStatsRef.current,
-      previous,
-    );
-    return Math.max(0, picked);
+    const next = previous + 1;
+    return next < words.length ? next : -1;
   }, [words]);
 
   const handleListenEn = useCallback((word = targetWordRef.current) => {
@@ -181,7 +191,6 @@ export default function SentenceBirdGame({
     }));
     saveProgress(recordWordStruggled(loadProgress(), GAME_ID, word));
     speakWord(word, 'en');
-    onLoseLifeRef.current();
   }, []);
 
   const handleTranscript = useCallback((text: string) => {
@@ -189,7 +198,18 @@ export default function SentenceBirdGame({
     setSpokenText(text);
     const target = targetWordRef.current;
     if (target && (matchesWord(text, target) || cleanText(text).includes(cleanText(target)))) {
+      lastWrongTextRef.current = '';
+      if (failTimerRef.current) {
+        clearTimeout(failTimerRef.current);
+        failTimerRef.current = null;
+      }
       onSuccessHopRef.current();
+    } else if (target && text.trim() && text !== lastWrongTextRef.current) {
+      lastWrongTextRef.current = text;
+      if (!failTimerRef.current) {
+        failTimerRef.current = window.setTimeout(() => { failTimerRef.current = null; }, 1500);
+        onLoseLifeRef.current();
+      }
     }
   }, []);
 
@@ -200,6 +220,7 @@ export default function SentenceBirdGame({
     if (livesRef.current <= 1) {
       livesRef.current = 0;
       setLives(0);
+      setWon(false);
       stop();
       setPhase('GAME_OVER');
       return;
@@ -234,19 +255,30 @@ export default function SentenceBirdGame({
       if (newScore >= totalWordsInSet) {
         isProcessingSuccessRef.current = false;
         setScore(newScore);
+        setWon(true);
         stop();
         setPhase('GAME_OVER');
         return;
       }
 
       setScore(newScore);
+      setBirdCloudIndex(newScore - 1);
       setSpokenText('');
       const nextIndex = chooseNextWordIndex(currentIdx);
       setTargetIndex(nextIndex);
-      setIsFlapping(false);
-      setPipeEntering(true);
-      window.setTimeout(() => setPipeEntering(false), 30);
-      isProcessingSuccessRef.current = false;
+
+      window.setTimeout(() => {
+        const spacing = Math.max(12, 100 / (totalWordsInSet + 1));
+        const BIRD_SCREEN_PCT = 30;
+        const MAX_SCROLL = totalWordsInSet * spacing - BIRD_SCREEN_PCT;
+        const newOffset = Math.min(
+          Math.max(-BIRD_SCREEN_PCT, newScore * spacing - BIRD_SCREEN_PCT),
+          MAX_SCROLL,
+        );
+        setScrollOffset(newOffset);
+        setIsFlapping(false);
+        isProcessingSuccessRef.current = false;
+      }, 700);
     }, 700);
   }, [chooseNextWordIndex, score, stop, totalWordsInSet]);
 
@@ -256,16 +288,17 @@ export default function SentenceBirdGame({
     synths.playFlap();
     const firstIndex = chooseNextWordIndex(-1);
     setTargetIndex(firstIndex);
+    setBirdCloudIndex(-1);
+    setScrollOffset(-30);
     setScore(0);
+    setWon(false);
     setSpokenText('');
-    setPipeEntering(true);
     setPaused(false);
     pausedRef.current = false;
     setLives(5);
     livesRef.current = 5;
     setTotalWordsInSet(words.length);
     setPhase('PLAYING');
-    window.setTimeout(() => setPipeEntering(false), 30);
     window.setTimeout(() => { start(); }, 150);
   };
 
@@ -357,43 +390,152 @@ export default function SentenceBirdGame({
 
       <PauseButton paused={paused} onToggle={togglePause} />
 
-      <div className={`relative flex min-h-[380px] w-full flex-col justify-between overflow-hidden rounded-[2rem] border-8 border-slate-900 p-3 sm:min-h-[440px] sm:p-4 shadow-[10px_10px_0_0_rgba(15,23,42,1)] transition-all duration-700 ${activeScene.bgClass}`}>
-        <div className="absolute inset-0 z-0 opacity-15" style={{ backgroundImage: 'radial-gradient(#000 1.5px, transparent 1.5px)', backgroundSize: '16px 16px' }} />
-        <div className="self-center z-10">
+      {(() => {
+        const totalWords = words.length;
+        if (totalWords === 0) return null;
+        const spacing = Math.max(12, 100 / (totalWords + 1));
+        const BIRD_SCREEN_PCT = 30;
+        const cloudHeight = (idx: number) => 32 + Math.sin(idx * 1.8) * 11;
+
+        const MAX_VISIBLE = 7;
+        const centerIdx = Math.max(0, Math.min(
+          Math.max(0, birdCloudIndex + 2),
+          Math.max(0, totalWords - Math.floor(MAX_VISIBLE / 2)),
+        ));
+        const renderFrom = Math.max(0, centerIdx - Math.floor(MAX_VISIBLE / 2));
+        const renderTo = Math.min(totalWords, renderFrom + MAX_VISIBLE);
+
+        const birdScreenBottom = `calc(${cloudHeight(Math.max(0, birdCloudIndex))}% + 25px)`;
+
+        const pipeTheme: Record<string, { body: string; cap: string }> = {
+          forest: { body: '#059669', cap: '#34d399' },
+          winter: { body: '#0891b2', cap: '#22d3ee' },
+          space: { body: '#7c3aed', cap: '#a78bfa' },
+          ninja: { body: '#b45309', cap: '#f59e0b' },
+        };
+        const pc = pipeTheme[activeSceneId] || pipeTheme.forest;
+
+        return (
+      <div className={`relative w-full aspect-[16/9] min-h-[300px] rounded-[2rem] border-8 border-slate-900 shadow-[10px_10px_0_0_rgba(15,23,42,1)] overflow-hidden transition-all duration-700 ${activeScene.bgClass}`}>
+        <div className="absolute inset-0 z-0 opacity-15 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1.5px, transparent 1.5px)', backgroundSize: '16px 16px' }} />
+        <div className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden">
+          <div className="absolute top-6 left-[10%] opacity-40 text-xl animate-bounce" style={{ animationDuration: '6s' }}>☁️</div>
+          <div className="absolute top-20 right-[15%] opacity-30 text-2xl animate-pulse" style={{ animationDuration: '8s' }}>☁️</div>
+          <div className="absolute top-8 left-[60%] opacity-40 text-lg animate-bounce" style={{ animationDuration: '4s' }}>🎈</div>
+          <div className="absolute top-12 left-[35%] opacity-25 text-sm">{activeScene.ambientSoundEmoji}</div>
+          <span className="absolute top-1/4 left-[5%] text-lg animate-pulse" style={{ animationDuration: '12s' }}>{activeScene.particleEmoji}</span>
+          <span className="absolute top-1/3 right-[10%] text-sm opacity-50">{activeScene.particleEmoji}</span>
+          <span className="absolute bottom-1/4 left-[40%] text-xs opacity-70 animate-bounce">{activeScene.particleEmoji}</span>
+        </div>
+        <div className="self-center z-40 absolute top-3 left-1/2 -translate-x-1/2">
           <span className={`rounded-full border-2 border-slate-900 px-4 py-1.5 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0_0_rgba(15,23,42,1)] ${activeScene.accentClass}`}>
             {t(`wordSets.${activeCategory.id}`)} · {strings.world}: {t(`themes.sentenceBird.${activeScene.id}`)}
           </span>
         </div>
 
-        <div className="relative z-10 flex-1 w-full min-h-[280px] pb-4 sm:min-h-[340px] sm:pb-6">
-            {(() => {
-              const gapCenter = 48 + ((targetIndex + words.length) % 3) * 2;
-              const gapHalf = 21;
-              const bottomPipeHeight = Math.max(10, gapCenter - gapHalf);
-              const topPipeHeight = Math.max(10, 100 - (gapCenter + gapHalf));
+        <div className="relative w-full h-full z-10">
+          <div
+            className="absolute inset-0 transition-all duration-700 ease-out will-change-transform"
+            style={{ transform: `translateX(-${scrollOffset}%)` }}
+          >
+            {words.slice(renderFrom, renderTo).map((word, idx) => {
+              const globalIdx = renderFrom + idx;
+              const left = `${(globalIdx + 1) * spacing}%`;
+              const bottom = `${cloudHeight(globalIdx)}%`;
+              const isPassed = globalIdx < birdCloudIndex;
+              const isActive = globalIdx === targetIndex;
               return (
                 <div
-                  className={`absolute bottom-1 top-2 z-10 w-12 -translate-x-1/2 pointer-events-none transition-all duration-700 ease-in-out sm:w-16 ${isFlapping ? 'left-[12%] opacity-20' : pipeEntering ? 'left-[108%] opacity-0' : 'left-[70%] sm:left-[66%] opacity-100'}`}
+                  key={globalIdx}
+                  style={{ left, bottom }}
+                  className={`absolute -translate-x-1/2 translate-y-1/2 p-2 rounded-lg border-2 border-slate-900 transition-all duration-500 font-bold cursor-pointer z-10 flex flex-col items-center ${
+                    isActive
+                      ? `scale-110 ring-4 ring-yellow-400 ${activeScene.cloudClass} py-3 shadow-[4px_4px_0_0_rgba(15,23,42,1)] z-20`
+                      : isPassed
+                      ? 'opacity-65 scale-95 border-slate-900 bg-white text-slate-900 shadow-[2px_2px_0_0_rgba(15,23,42,1)]'
+                      : 'opacity-50 scale-90 border-dashed bg-slate-100 text-slate-600'
+                  }`}
                 >
-                  <div className="absolute top-0 w-full border-x-4 border-b-4 border-slate-900 bg-emerald-500" style={{ height: `${topPipeHeight}%` }} />
-                  <div className="absolute bottom-0 w-full border-x-4 border-t-4 border-slate-900 bg-emerald-500" style={{ height: `${bottomPipeHeight}%` }} />
+                  <div className="text-center space-y-0.5">
+                    <div className="flex items-center gap-1 justify-center">
+                      <span className="text-[8px] uppercase tracking-wider font-black text-slate-500">#{globalIdx + 1}</span>
+                    </div>
+                    <p className={`text-[10px] font-black leading-tight ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
+                      {word.word}
+                    </p>
+                    <p className="text-[7px] font-bold italic text-slate-500 truncate max-w-[80px]">
+                      {word.translationRu || word.translation}
+                    </p>
+                  </div>
+                  {isActive && (
+                    <div className="absolute -top-3.5 px-2 py-0.5 bg-yellow-400 text-slate-900 border border-slate-900 rounded text-[8px] font-black uppercase tracking-wider animate-bounce shadow">
+                      {strings.speakLabel}
+                    </div>
+                  )}
+                  {isPassed && (
+                    <div className="absolute -top-2 text-emerald-600 text-xs font-black">✨</div>
+                  )}
                 </div>
               );
-            })()}
+            })}
 
-            <div className={`absolute bottom-[42%] z-20 -translate-x-1/2 transition-all duration-700 ease-in-out ${isFlapping ? 'left-[58%] -translate-y-7' : 'left-[30%] sm:left-[34%] translate-y-0'}`}>
-              <FlappyBirdIcon size={72} isFlapping={isFlapping} className={`h-14 w-14 transition-all duration-300 sm:h-18 sm:w-18 ${isFlapping ? '-rotate-6 scale-105' : 'rotate-0'}`} />
+            {Array.from({ length: totalWords - 1 }).map((_, pIdx) => {
+              if (pIdx < renderFrom - 1 || pIdx >= renderTo - 1) return null;
+              const pos1Left = (pIdx + 1) * spacing;
+              const pos2Left = (pIdx + 2) * spacing;
+              const leftPos = (pos1Left + pos2Left) / 2;
+              const avgBottom = (cloudHeight(pIdx) + cloudHeight(pIdx + 1)) / 2;
+              const gapCenter = avgBottom + 10;
+              const gapHalf = 15;
+              const bottomPipeHeight = Math.max(10, gapCenter - gapHalf);
+              const topPipeHeight = Math.max(10, 100 - (gapCenter + gapHalf));
+              const isPassed = (pIdx + 1) <= birdCloudIndex;
+              return (
+                <div key={pIdx} className="absolute inset-y-0 z-0 pointer-events-none" style={{ left: `${leftPos}%`, width: '38px', transform: 'translateX(-50%)' }}>
+                  <div className="absolute top-0 w-full border-x-4 border-b-4 border-slate-900 flex flex-col justify-end" style={{ height: `${topPipeHeight}%`, backgroundColor: pc.body }}>
+                    <div className="h-5 w-[46px] -ml-[4px] border-4 border-slate-900 rounded-sm self-center" style={{ backgroundColor: pc.cap }} />
+                    <div className="absolute inset-y-0 left-1.5 w-2 opacity-50" style={{ backgroundColor: pc.cap }} />
+                  </div>
+                  <div className="absolute bottom-0 w-full border-x-4 border-t-4 border-slate-900 flex flex-col justify-start" style={{ height: `${bottomPipeHeight}%`, backgroundColor: pc.body }}>
+                    <div className="h-5 w-[46px] -ml-[4px] border-4 border-slate-900 rounded-sm self-center" style={{ backgroundColor: pc.cap }} />
+                    <div className="absolute inset-y-0 left-1.5 w-2 opacity-50" style={{ backgroundColor: pc.cap }} />
+                  </div>
+                  {isPassed && (
+                    <div className="absolute left-1/2 -translate-x-1/2 text-lg animate-ping" style={{ bottom: `${gapCenter}%`, animationDuration: '2s' }}>✨</div>
+                  )}
+                </div>
+              );
+            })}
+
+            <div
+              style={{ left: `${(birdCloudIndex + 1) * spacing}%`, bottom: birdScreenBottom }}
+              className="absolute z-20 flex flex-col items-center transition-all duration-700 ease-out"
+            >
+              <FlappyBirdIcon
+                size={64}
+                isFlapping={isFlapping}
+                className={`transform transition-all duration-300 ${isFlapping ? '-rotate-6 scale-105' : 'rotate-0'}`}
+              />
+              {spokenText && (
+                <div className="absolute bottom-16 bg-[#fef08a] text-slate-900 text-[10px] font-black px-2.5 py-1 rounded border-2 border-slate-900 shadow-[2px_2px_0_0_rgba(15,23,42,1)] max-w-[120px] text-center truncate">
+                  "{spokenText}"
+                </div>
+              )}
             </div>
-            {paused && (
-              <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-900/70">
-                <span className="rounded-2xl border-4 border-slate-900 bg-orange-400 px-5 py-3 text-sm font-black uppercase text-slate-900">
-                  {t('shared.paused')}
-                </span>
-              </div>
-            )}
           </div>
-        <div className={`z-10 h-8 w-full rounded-b-[1.5rem] transition-colors duration-700 ${activeScene.groundClass}`} />
+
+          {paused && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-900/70">
+              <span className="rounded-2xl border-4 border-slate-900 bg-orange-400 px-5 py-3 text-sm font-black uppercase text-slate-900">
+                {t('shared.paused')}
+              </span>
+            </div>
+          )}
+        </div>
+        <div className={`z-10 h-8 w-full absolute bottom-0 pointer-events-none ${activeScene.groundClass} rounded-b-[1.5rem]`} />
       </div>
+        );
+      })()}
 
       {currentWord && phase === 'PLAYING' && (
         <div className="text-center space-y-4 py-1">
@@ -431,13 +573,13 @@ export default function SentenceBirdGame({
     return (
       <section className="max-w-md mx-auto py-4 px-2">
         <BackToHubButton label={strings.back} onClick={handleBackToHub} />
-        <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-amber-50 bubble-shadow-amber text-center">
+        <div className={`space-y-4 p-6 border-8 border-slate-900 rounded-4xl text-center ${won ? 'bg-amber-50 bubble-shadow-amber' : 'bg-red-50 bubble-shadow-red'}`}>
           <FlappyBirdIcon size={64} className="mx-auto" />
           <h1 className="text-3xl font-black uppercase tracking-wider text-slate-900">
-            {strings.completedTitle}
+            {won ? strings.completedTitle : strings.failureTitle}
           </h1>
           <p className="text-sm font-bold text-slate-600">
-            {strings.completedText}
+            {won ? strings.completedText : strings.failureText}
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border-4 border-slate-900 bg-white p-3">
@@ -459,10 +601,12 @@ export default function SentenceBirdGame({
               onClick={() => {
                 setPhase('START_SCREEN');
                 setTargetIndex(-1);
+                setBirdCloudIndex(-1);
+                setScrollOffset(-30);
                 setScore(0);
+                setWon(false);
                 setSpokenText('');
                 setIsFlapping(false);
-                setPipeEntering(false);
               }}
               className="flex-1 py-3 bg-sky-400 hover:bg-sky-500 border-4 border-slate-900 text-white font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer"
             >

@@ -26,6 +26,9 @@
   .bubble-shadow-rose {
     box-shadow: 0 8px 0px 0px #e11d48, 0 12px 20px rgba(225, 29, 72, 0.3);
   }
+  .bubble-shadow-red {
+    box-shadow: 0 8px 0px 0px #dc2626, 0 12px 20px rgba(220, 38, 38, 0.3);
+  }
   .bubble-shadow-white {
     box-shadow: 0 6px 0px 0px #cbd5e1, 0 10px 15px rgba(0, 0, 0, 0.08);
   }
