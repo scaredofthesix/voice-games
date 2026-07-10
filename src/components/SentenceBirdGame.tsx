@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Play, Star, Trophy } from 'lucide-react';
+import { Play, RotateCcw, Star, Trophy } from 'lucide-react';
 
 import { BUILTIN_CATEGORIES } from '../data';
 import { loadProgress, pickAdaptiveWordIndex, recordHighScore, recordWordSpoken, recordWordStruggled, saveProgress } from '../progress';
@@ -9,7 +9,8 @@ import { synths } from '../sentenceBird/audioSynth';
 import type { SceneType } from '../sentenceBird/types';
 import type { WordCategory, WordData } from '../types';
 import { useUiLanguage } from '../uiLanguage';
-import { matchesWord, speakWord } from '../utils';
+import { matchesWord, speakSound, speakWord } from '../utils';
+import { useSpeechRecognition } from '../useSpeechRecognition';
 import { BackToHubButton, CustomWordsSection, GameHeader, GameSetupCard, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
 import FlappyBirdIcon from './FlappyBirdIcon';
 
@@ -49,6 +50,8 @@ const LOCAL_LANG = {
     back: 'Back to hub',
     world: 'World',
     emptySet: 'Add words to My Words or choose a built-in set.',
+    wordsMastered: 'Words mastered:',
+    accuracy: 'Accuracy',
   },
   ru: {
     title: 'Фразоптичка',
@@ -70,6 +73,8 @@ const LOCAL_LANG = {
     back: 'Назад в хаб',
     world: 'Мир',
     emptySet: 'Добавь слова в Мои слова или выбери готовый набор.',
+    wordsMastered: 'Слов освоено:',
+    accuracy: 'Точность',
   },
 };
 
@@ -117,14 +122,15 @@ export default function SentenceBirdGame({
 
   const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
   const [activeSceneId, setActiveSceneId] = useState<SceneType>('forest');
-  const [gameState, setGameState] = useState<'lobby' | 'playing'>('lobby');
+  const [phase, setPhase] = useState<'START_SCREEN' | 'PLAYING' | 'GAME_OVER'>('START_SCREEN');
   const [targetIndex, setTargetIndex] = useState(-1);
   const [score, setScore] = useState(0);
   const [spokenText, setSpokenText] = useState('');
-  const [isListening, setIsListening] = useState(false);
   const [isFlapping, setIsFlapping] = useState(false);
   const [pipeEntering, setPipeEntering] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [lives, setLives] = useState(5);
+  const [totalWordsInSet, setTotalWordsInSet] = useState(0);
   const [wordStudyStats, setWordStudyStats] = useState<Record<string, { spoken: number; struggled: number }>>(() => {
     try {
       return loadProgress()[GAME_ID].words;
@@ -133,21 +139,18 @@ export default function SentenceBirdGame({
     }
   });
 
-  const recognitionRef = useRef<any>(null);
   const isProcessingSuccessRef = useRef(false);
-  const keepListeningRef = useRef(false);
-  const gameStateRef = useRef(gameState);
-  const consecutiveErrorCountRef = useRef(0);
-  const isSpeechActiveRef = useRef(false);
   const pausedRef = useRef(false);
+  const livesRef = useRef(5);
   const targetWordRef = useRef('');
   const targetIndexRef = useRef(-1);
   const wordStatsRef = useRef<Record<string, { spoken: number; struggled: number }>>({});
+  const onSuccessHopRef = useRef<() => void>(() => {});
+  const onLoseLifeRef = useRef<() => void>(() => {});
 
   const words = useMemo(() => normalizeWords(activeCategory), [activeCategory]);
   const activeScene = sceneDefinitions.find((scene) => scene.id === activeSceneId) || sceneDefinitions[0];
   const currentWord = targetIndex >= 0 ? words[targetIndex] : undefined;
-  useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
   useEffect(() => { targetIndexRef.current = targetIndex; }, [targetIndex]);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
   useEffect(() => { targetWordRef.current = currentWord?.word || ''; }, [currentWord?.word]);
@@ -170,17 +173,6 @@ export default function SentenceBirdGame({
     return Math.max(0, picked);
   }, [words]);
 
-  const safeStartSpeech = useCallback(() => {
-    if (!recognitionRef.current || isSpeechActiveRef.current) return;
-    isSpeechActiveRef.current = true;
-    try {
-      recognitionRef.current.start();
-    } catch (e) {
-      isSpeechActiveRef.current = false;
-      console.warn('Speech start failed:', e);
-    }
-  }, []);
-
   const handleListenEn = useCallback((word = targetWordRef.current) => {
     if (!word) return;
     setWordStudyStats((prev) => ({
@@ -188,32 +180,47 @@ export default function SentenceBirdGame({
       [word]: { spoken: prev[word]?.spoken || 0, struggled: (prev[word]?.struggled || 0) + 1 },
     }));
     saveProgress(recordWordStruggled(loadProgress(), GAME_ID, word));
-    const resumeAfterSpeech = keepListeningRef.current && gameStateRef.current === 'playing' && !pausedRef.current;
-    if (resumeAfterSpeech) {
-      keepListeningRef.current = false;
-      try { recognitionRef.current?.stop(); } catch {}
-    }
     speakWord(word, 'en');
-    if (resumeAfterSpeech) {
-      window.setTimeout(() => {
-        if (gameStateRef.current === 'playing' && !pausedRef.current) {
-          keepListeningRef.current = true;
-          safeStartSpeech();
-        }
-      }, 900);
+    onLoseLifeRef.current();
+  }, []);
+
+  const handleTranscript = useCallback((text: string) => {
+    if (pausedRef.current || isProcessingSuccessRef.current) return;
+    setSpokenText(text);
+    const target = targetWordRef.current;
+    if (target && (matchesWord(text, target) || cleanText(text).includes(cleanText(target)))) {
+      onSuccessHopRef.current();
     }
-  }, [safeStartSpeech]);
+  }, []);
+
+  const { status, isSupported, start, stop } = useSpeechRecognition(handleTranscript);
+  const isListening = status.status === 'listening';
+
+  const handleLoseLife = useCallback(() => {
+    if (livesRef.current <= 1) {
+      livesRef.current = 0;
+      setLives(0);
+      stop();
+      setPhase('GAME_OVER');
+      return;
+    }
+    const next = livesRef.current - 1;
+    livesRef.current = next;
+    setLives(next);
+  }, [stop]);
+
+  onLoseLifeRef.current = handleLoseLife;
 
   const handleSuccessHop = useCallback(() => {
     if (isProcessingSuccessRef.current) return;
     const spokenWord = targetWordRef.current;
-    if (!spokenWord) return;
+    const currentIdx = targetIndexRef.current;
+    if (!spokenWord || currentIdx < 0) return;
+
     isProcessingSuccessRef.current = true;
     setIsFlapping(true);
     synths.playFlap();
     window.setTimeout(() => { synths.playSuccess(); }, 200);
-    try { recognitionRef.current?.stop(); } catch {}
-    setIsListening(false);
 
     saveProgress(recordWordSpoken(loadProgress(), GAME_ID, spokenWord));
     setWordStudyStats((prev) => ({
@@ -222,88 +229,28 @@ export default function SentenceBirdGame({
     }));
 
     window.setTimeout(() => {
-      setScore((prev) => prev + 1);
+      const newScore = score + 1;
+
+      if (newScore >= totalWordsInSet) {
+        isProcessingSuccessRef.current = false;
+        setScore(newScore);
+        stop();
+        setPhase('GAME_OVER');
+        return;
+      }
+
+      setScore(newScore);
       setSpokenText('');
-      const nextIndex = chooseNextWordIndex(targetIndexRef.current);
+      const nextIndex = chooseNextWordIndex(currentIdx);
       setTargetIndex(nextIndex);
       setIsFlapping(false);
       setPipeEntering(true);
       window.setTimeout(() => setPipeEntering(false), 30);
       isProcessingSuccessRef.current = false;
-      if (keepListeningRef.current) {
-        window.setTimeout(() => {
-          if (keepListeningRef.current && !isProcessingSuccessRef.current && gameStateRef.current === 'playing') {
-            safeStartSpeech();
-          }
-        }, 150);
-      }
     }, 700);
-  }, [chooseNextWordIndex, safeStartSpeech]);
+  }, [chooseNextWordIndex, score, stop, totalWordsInSet]);
 
-  useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
-
-    const rec = new SpeechRecognition();
-    rec.lang = 'en-US';
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.maxAlternatives = 1;
-
-    rec.onstart = () => {
-      isSpeechActiveRef.current = true;
-      setIsListening(true);
-      consecutiveErrorCountRef.current = 0;
-    };
-
-    rec.onresult = (event: any) => {
-      if (pausedRef.current) return;
-      let interimTranscript = '';
-      let finalTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
-        else interimTranscript += event.results[i][0].transcript;
-      }
-      const activeResultText = finalTranscript || interimTranscript;
-      if (!activeResultText.trim()) return;
-      setSpokenText(activeResultText);
-      const target = targetWordRef.current;
-      if (target && (matchesWord(activeResultText, target) || cleanText(activeResultText).includes(cleanText(target)))) {
-        handleSuccessHop();
-      }
-    };
-
-    rec.onerror = (err: any) => {
-      console.warn('SPEECH ERROR', err.error);
-      if (err.error !== 'no-speech') consecutiveErrorCountRef.current += 1;
-      if (err.error === 'not-allowed') {
-        setIsListening(false);
-        keepListeningRef.current = false;
-      }
-      if (consecutiveErrorCountRef.current > 5) {
-        setIsListening(false);
-        keepListeningRef.current = false;
-      }
-    };
-
-    rec.onend = () => {
-      isSpeechActiveRef.current = false;
-      setIsListening(false);
-      if (keepListeningRef.current && !isProcessingSuccessRef.current && gameStateRef.current === 'playing' && consecutiveErrorCountRef.current <= 5) {
-        window.setTimeout(() => {
-          if (keepListeningRef.current && !isProcessingSuccessRef.current && gameStateRef.current === 'playing' && consecutiveErrorCountRef.current <= 5) {
-            safeStartSpeech();
-          }
-        }, 300);
-      }
-    };
-
-    recognitionRef.current = rec;
-    return () => {
-      keepListeningRef.current = false;
-      try { recognitionRef.current?.abort(); } catch {}
-    };
-  }, [handleSuccessHop, safeStartSpeech]);
+  onSuccessHopRef.current = handleSuccessHop;
 
   const startPlayingAndListening = () => {
     synths.playFlap();
@@ -314,40 +261,31 @@ export default function SentenceBirdGame({
     setPipeEntering(true);
     setPaused(false);
     pausedRef.current = false;
-    setGameState('playing');
+    setLives(5);
+    livesRef.current = 5;
+    setTotalWordsInSet(words.length);
+    setPhase('PLAYING');
     window.setTimeout(() => setPipeEntering(false), 30);
-    window.setTimeout(() => {
-      if (recognitionRef.current && firstIndex !== -1) {
-        keepListeningRef.current = true;
-        consecutiveErrorCountRef.current = 0;
-        safeStartSpeech();
-      }
-    }, 150);
+    window.setTimeout(() => { start(); }, 150);
   };
 
-  const togglePause = () => {
-    const nextPaused = !pausedRef.current;
-    pausedRef.current = nextPaused;
-    setPaused(nextPaused);
-    if (nextPaused) {
-      keepListeningRef.current = false;
-      try { recognitionRef.current?.stop(); } catch {}
-      setIsListening(false);
-      return;
-    }
-    keepListeningRef.current = true;
-    consecutiveErrorCountRef.current = 0;
-    window.setTimeout(safeStartSpeech, 100);
-  };
+  const togglePause = useCallback(() => {
+    setPaused((p) => {
+      const next = !p;
+      pausedRef.current = next;
+      if (next) stop();
+      else start();
+      return next;
+    });
+  }, [start, stop]);
 
   const handleBackToHub = () => {
-    keepListeningRef.current = false;
-    try { recognitionRef.current?.abort(); } catch {}
+    stop();
     if (score > highScore) onUpdateHighScore?.(score);
     onBackToHub();
   };
 
-  if (gameState === 'lobby') {
+  if (phase === 'START_SCREEN') {
     return (
       <section className="max-w-md mx-auto py-4 px-2">
         <BackToHubButton label={strings.back} onClick={onBackToHub} />
@@ -401,7 +339,8 @@ export default function SentenceBirdGame({
     );
   }
 
-  return (
+  if (phase === 'PLAYING') {
+    return (
     <div className="space-y-6">
       <BackToHubButton label={strings.back} onClick={handleBackToHub} />
 
@@ -411,6 +350,7 @@ export default function SentenceBirdGame({
         subtitle={strings.subtitle}
         stats={[
           { label: strings.score, value: score, icon: <Star className="h-3.5 w-3.5 text-amber-500" />, tone: 'amber' },
+          { label: t('shared.lives'), value: lives, icon: <span className="text-red-500">❤️</span>, tone: 'violet' },
           { label: strings.best, value: Math.max(highScore, score), icon: <Trophy className="h-3.5 w-3.5 text-sky-600" />, tone: 'sky' },
         ]}
       />
@@ -455,7 +395,7 @@ export default function SentenceBirdGame({
         <div className={`z-10 h-8 w-full rounded-b-[1.5rem] transition-colors duration-700 ${activeScene.groundClass}`} />
       </div>
 
-      {currentWord && gameState === 'playing' && (
+      {currentWord && phase === 'PLAYING' && (
         <div className="text-center space-y-4 py-1">
           <TargetWordCard
             ribbon={strings.targetRibbon}
@@ -476,7 +416,63 @@ export default function SentenceBirdGame({
           </div>
         </div>
       )}
-
     </div>
   );
+  }
+
+  if (phase === 'GAME_OVER') {
+    const wordCount = Object.keys(wordStudyStats).length;
+    const totalAttempts = (Object.values(wordStudyStats) as { spoken: number; struggled: number }[]).reduce(
+      (acc, s) => acc + s.spoken + s.struggled,
+      0,
+    );
+    const accuracy = totalAttempts > 0 ? Math.round((score / totalAttempts) * 100) : 0;
+
+    return (
+      <section className="max-w-md mx-auto py-4 px-2">
+        <BackToHubButton label={strings.back} onClick={handleBackToHub} />
+        <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-amber-50 bubble-shadow-amber text-center">
+          <FlappyBirdIcon size={64} className="mx-auto" />
+          <h1 className="text-3xl font-black uppercase tracking-wider text-slate-900">
+            {strings.completedTitle}
+          </h1>
+          <p className="text-sm font-bold text-slate-600">
+            {strings.completedText}
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border-4 border-slate-900 bg-white p-3">
+              <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">{strings.score}</p>
+              <p className="text-3xl font-black text-slate-900">{score}</p>
+            </div>
+            <div className="rounded-2xl border-4 border-slate-900 bg-white p-3">
+              <p className="text-[10px] font-black uppercase tracking-widest text-sky-600">{strings.best}</p>
+              <p className="text-3xl font-black text-slate-900">{Math.max(highScore, score)}</p>
+            </div>
+          </div>
+          <div className="rounded-2xl border-4 border-slate-900 bg-white p-3 text-xs font-bold text-slate-600 space-y-1">
+            <p>{strings.wordsMastered} {wordCount}</p>
+            <p>{strings.accuracy}: {accuracy}%</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setPhase('START_SCREEN');
+                setTargetIndex(-1);
+                setScore(0);
+                setSpokenText('');
+                setIsFlapping(false);
+                setPipeEntering(false);
+              }}
+              className="flex-1 py-3 bg-sky-400 hover:bg-sky-500 border-4 border-slate-900 text-white font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <RotateCcw className="w-4 h-4 stroke-[3]" /> {strings.playAgain}
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return null;
 }
