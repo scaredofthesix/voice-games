@@ -181,29 +181,3 @@ export function ladderZone(state: WordLadderState): LadderZone {
   if (p < 0.85) return 'sky';
   return 'space';
 }
-
-// ---------------------------------------------------------------------------
-// Shared word selection
-// Deterministic when given a random source, so tests can pin the output.
-// ---------------------------------------------------------------------------
-
-/**
- * Pick the next target word index, avoiding an immediate repeat of `previous`.
- * `rng` returns a float in [0, 1) (defaults to Math.random) so callers in tests
- * can inject a fixed value.
- */
-export function pickNextIndex(
-  count: number,
-  previous: number = -1,
-  rng: () => number = Math.random,
-): number {
-  if (count <= 0) return -1;
-  if (count === 1) return 0;
-
-  let index = Math.floor(rng() * count);
-  if (index >= count) index = count - 1;
-  if (index === previous) {
-    index = (index + 1) % count;
-  }
-  return index;
-}

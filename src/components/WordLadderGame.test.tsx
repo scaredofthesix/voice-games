@@ -35,7 +35,7 @@ describe('WordLadderGame (integration)', () => {
     );
 
     expect(
-      screen.getByRole('button', { name: /start the rocket climb/i }),
+      screen.getByRole('button', { name: /start launch/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { name: /voice rocket climb/i }),
@@ -51,7 +51,7 @@ describe('WordLadderGame (integration)', () => {
     );
 
     fireEvent.click(
-      screen.getByRole('button', { name: /start the rocket climb/i }),
+      screen.getByRole('button', { name: /start launch/i }),
     );
 
     const rec = MockSpeechRecognition.latest();
@@ -79,7 +79,7 @@ describe('WordLadderGame (integration)', () => {
     );
 
     fireEvent.click(
-      screen.getByRole('button', { name: /start the rocket climb/i }),
+      screen.getByRole('button', { name: /start launch/i }),
     );
 
     const rec = MockSpeechRecognition.latest();
@@ -106,7 +106,7 @@ describe('WordLadderGame (integration)', () => {
     );
 
     fireEvent.click(
-      screen.getByRole('button', { name: /start the rocket climb/i }),
+      screen.getByRole('button', { name: /start launch/i }),
     );
     const rec = MockSpeechRecognition.latest();
 

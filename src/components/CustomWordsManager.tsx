@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { WordData } from '../types';
 import { speakWord } from '../voice/engine';
 import { Plus, Trash2, Volume2, AlertCircle } from 'lucide-react';
+import { useUiLanguage } from '../uiLanguage';
 
 interface CustomWordsManagerProps {
   customWords: WordData[];
@@ -16,6 +17,7 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
   onDeleteWord,
   onClearAll,
 }) => {
+  const { t } = useUiLanguage();
   const [newWord, setNewWord] = useState('');
   const [newTranslation, setNewTranslation] = useState('');
   const [error, setError] = useState('');
@@ -28,17 +30,17 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
     const trimmedTranslation = newTranslation.trim();
 
     if (!trimmedWord) {
-      setError('Please write an English word or phrase!');
+      setError(t('customWords.englishRequired'));
       return;
     }
 
     if (!trimmedTranslation) {
-      setError('Please add the translation!');
+      setError(t('customWords.translationRequired'));
       return;
     }
 
     if (!/^[a-zA-Z0-9\s\-\?\!\,\.\'\"’]+$/.test(trimmedWord)) {
-      setError('Letters, numbers, spaces and standard punctuation only!');
+      setError(t('customWords.invalidCharacters'));
       return;
     }
 
@@ -55,11 +57,11 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-[11px] font-black text-rose-500 uppercase tracking-widest mb-1.5 ml-1">
-              English Word or Phrase:
+              {t('customWords.englishLabel')}
             </label>
             <input
               type="text"
-              placeholder="e.g. Nice to meet you!"
+              placeholder={t('customWords.englishPlaceholder')}
               value={newWord}
               onChange={(e) => setNewWord(e.target.value)}
               className="w-full bg-white border-4 border-slate-900 text-slate-800 text-xs px-4 py-3 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-200 placeholder:text-slate-400 transition-all font-bold"
@@ -68,11 +70,11 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
           </div>
           <div>
             <label className="block text-[11px] font-black text-rose-500 uppercase tracking-widest mb-1.5 ml-1">
-              Translation:
+              {t('customWords.translationLabel')}
             </label>
             <input
               type="text"
-              placeholder="e.g. Приятно познакомиться!"
+              placeholder={t('customWords.translationPlaceholder')}
               value={newTranslation}
               onChange={(e) => setNewTranslation(e.target.value)}
               className="w-full bg-white border-4 border-slate-900 text-slate-800 text-xs px-4 py-3 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-200 placeholder:text-slate-400 transition-all font-bold"
@@ -93,7 +95,7 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
           className="w-full bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs px-6 py-3.5 rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-1 active:shadow-none bubble-shadow-pink"
           id="btn-add-custom-word"
         >
-          <Plus className="w-4 h-4 stroke-[3]" /> ADD TO MY LIST!
+          <Plus className="w-4 h-4 stroke-[3]" /> {t('customWords.addButton')}
         </button>
       </form>
 
@@ -101,7 +103,7 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
       <div className="space-y-3 pt-2">
         <div className="flex justify-between items-center px-1">
           <span className="text-xs font-black uppercase tracking-wider text-purple-600">
-            MY CUSTOM DICTIONARY ({customWords.length})
+            {t('customWords.dictionaryTitle')} ({customWords.length})
           </span>
           {customWords.length > 0 && (
             <button
@@ -110,14 +112,14 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
               className="text-[10px] text-rose-500 hover:text-rose-600 font-extrabold cursor-pointer transition-colors uppercase tracking-widest bg-white border-2 border-slate-900 px-2 py-0.5 rounded-lg"
               id="btn-clear-custom-words"
             >
-              Clear All
+              {t('customWords.clearAll')}
             </button>
           )}
         </div>
 
         {customWords.length === 0 ? (
           <div className="bg-amber-100/50 border-4 border-dashed border-amber-300 rounded-2xl p-5 text-center">
-            <p className="text-xs text-amber-800 font-black">Your driving dictionary is empty. Put a word and its Russian translation above!</p>
+            <p className="text-xs text-amber-800 font-black">{t('customWords.empty')}</p>
           </div>
         ) : (
           <div className="max-h-48 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-purple-200 scrollbar-track-transparent">
@@ -137,7 +139,7 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
                   <button
                     type="button"
                     onClick={() => speakWord(item.word)}
-                    title="Speak word"
+                    title={t('customWords.speakWord')}
                     className="p-1.5 bg-yellow-100 hover:bg-yellow-200 border-2 border-slate-900 text-slate-800 rounded-xl cursor-pointer transition-all"
                   >
                     <Volume2 className="w-4 h-4" />
@@ -145,7 +147,7 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
                   <button
                     type="button"
                     onClick={() => onDeleteWord(index)}
-                    title="Delete word"
+                    title={t('customWords.deleteWord')}
                     className="p-1.5 bg-rose-150 hover:bg-rose-200 border-2 border-slate-900 text-rose-600 rounded-xl cursor-pointer transition-all"
                   >
                     <Trash2 className="w-4 h-4" />

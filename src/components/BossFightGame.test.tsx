@@ -35,7 +35,7 @@ describe('BossFightGame (integration)', () => {
     );
 
     expect(
-      screen.getByRole('button', { name: /start the boss fight/i }),
+      screen.getByRole('button', { name: /start fight/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { name: /boss fight/i }),
@@ -55,7 +55,7 @@ describe('BossFightGame (integration)', () => {
     fireEvent.click(screen.getByRole('button', { name: /endless/i }));
 
     fireEvent.click(
-      screen.getByRole('button', { name: /start the boss fight/i }),
+      screen.getByRole('button', { name: /start fight/i }),
     );
 
     const rec = MockSpeechRecognition.latest();
@@ -85,7 +85,7 @@ describe('BossFightGame (integration)', () => {
 
     // Default mode is 3 bosses (Normal)
     fireEvent.click(
-      screen.getByRole('button', { name: /start the boss fight/i }),
+      screen.getByRole('button', { name: /start fight/i }),
     );
 
     const rec = MockSpeechRecognition.latest();

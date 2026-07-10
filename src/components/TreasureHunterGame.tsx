@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Play, Pause, Volume2, RotateCcw, BookOpen } from 'lucide-react';
+import { ArrowLeft, Play, Volume2, RotateCcw, BookOpen } from 'lucide-react';
 
-import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled } from '../progress';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex } from '../progress';
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
+import { CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 interface TreasureHunterGameProps {
@@ -14,6 +15,9 @@ interface TreasureHunterGameProps {
   highScore?: number;
   onUpdateHighScore?: (score: number) => void;
   onScoreChange?: (score: number) => void;
+  onAddCustomWord?: (word: string, translation: string) => void;
+  onDeleteCustomWord?: (index: number) => void;
+  onClearCustomWords?: () => void;
 }
 
 const LOCAL_LANG = {
@@ -78,9 +82,14 @@ export function TreasureHunterGame({
   highScore = 0,
   onUpdateHighScore,
   onScoreChange,
+  onAddCustomWord = () => undefined,
+  onDeleteCustomWord = () => undefined,
+  onClearCustomWords = () => undefined,
 }: TreasureHunterGameProps) {
-  const { language } = useUiLanguage();
-  const strings = LOCAL_LANG[language as 'en' | 'ru'] || LOCAL_LANG.en;
+  const { language, t } = useUiLanguage();
+  const strings = Object.fromEntries(
+    Object.keys(LOCAL_LANG.en).map((key) => [key, t(`treasure.${key}`)]),
+  ) as Record<keyof typeof LOCAL_LANG.en, string>;
 
   const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
   const [phase, setPhase] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
@@ -154,14 +163,9 @@ export function TreasureHunterGame({
     const list = wordList();
     if (list.length === 0) return;
 
-    let nextIdx = wordIndexRef.current;
-    if (list.length > 1) {
-      while (nextIdx === wordIndexRef.current) {
-        nextIdx = Math.floor(Math.random() * list.length);
-      }
-    } else {
-      nextIdx = 0;
-    }
+    const words = list.map((w) => w.word);
+    const wordStats = loadProgress()['treasure-hunter'].words;
+    const nextIdx = pickAdaptiveWordIndex(words, wordStats, wordIndexRef.current);
 
     wordIndexRef.current = nextIdx;
     const word = list[nextIdx].word;
@@ -794,7 +798,7 @@ export function TreasureHunterGame({
       ctx.fillStyle = '#ffffff';
       ctx.font = '900 16px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(`${language === 'ru' ? 'ГЛУБИНА' : 'DEPTH'}: ${Math.round(depth.current)}m`, 20, 30);
+      ctx.fillText(`${t('treasure.depth')}: ${Math.round(depth.current)}m`, 20, 30);
 
       // WORD TIME TIMER BAR
       if (feedback === 'listening') {
@@ -838,7 +842,7 @@ export function TreasureHunterGame({
           }}
           className="flex items-center gap-1 text-slate-400 hover:text-white font-black text-xs uppercase cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4 stroke-[3]" /> {language === 'ru' ? 'Назад' : 'Back'}
+        <ArrowLeft className="w-4 h-4 stroke-[3]" /> {t('shared.back')}
         </button>
 
         <div className="flex items-center gap-6">
@@ -886,31 +890,19 @@ export function TreasureHunterGame({
 
               {/* CHOOSE SUBMARINE COLOR */}
               <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
-                <label className="block text-xs font-black text-cyan-500 uppercase tracking-widest ml-1">
-                  {strings.chooseTheme}
-                </label>
-                <div className="flex justify-center gap-3 py-1">
-                  {(['yellow', 'orange', 'cyan', 'neon'] as SubColor[]).map((col) => {
-                    let colBg = 'bg-amber-400';
-                    if (col === 'orange') colBg = 'bg-orange-500';
-                    if (col === 'cyan') colBg = 'bg-cyan-400';
-                    if (col === 'neon') colBg = 'bg-emerald-400';
-
-                    return (
-                      <button
-                        key={col}
-                        onClick={() => {
-                          speakSound.playCoin();
-                          setSubColor(col);
-                        }}
-                        className={`w-10 h-10 rounded-full border-4 cursor-pointer transition-all ${colBg} ${
-                          subColor === col ? 'border-slate-955 scale-115 shadow-md' : 'border-slate-300 hover:scale-105'
-                        }`}
-                        aria-label={`Select ${col} submarine`}
-                      />
-                    );
-                  })}
-                </div>
+                <OptionPicker
+                  label={strings.chooseTheme}
+                  columns={4}
+                  options={(['yellow', 'orange', 'cyan', 'neon'] as SubColor[]).map((color) => ({
+                    id: color,
+                    label: t(`themes.treasure.${color}`),
+                  }))}
+                  selected={subColor}
+                  onSelect={(color) => {
+                    speakSound.playCoin();
+                    setSubColor(color);
+                  }}
+                />
                 
                 {/* Active Animated Preview Canvas */}
                 <div className="w-full h-24 rounded-2xl border-4 border-slate-900 relative overflow-hidden bg-white mt-3">
@@ -921,54 +913,32 @@ export function TreasureHunterGame({
                     className="w-full max-w-[300px] aspect-[3/1] mx-auto block"
                   />
                   <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
-                    Preview
+                    {t('shared.preview')}
                   </div>
                 </div>
               </div>
 
               {/* CHOOSE WORD SET */}
-              <fieldset className="text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
-                <legend className="text-xs font-black uppercase tracking-wider text-slate-700 px-1">
-                  {strings.chooseSet}
-                </legend>
-                <div className="flex flex-wrap gap-2">
-                  {BUILTIN_CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setActiveCategory(cat)}
-                      className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide cursor-pointer ${
-                        activeCategory.id === cat.id
-                          ? 'bg-cyan-400 border-slate-900 text-slate-900'
-                          : 'bg-white border-slate-300 text-slate-655'
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() =>
-                      setActiveCategory({
-                        id: 'custom',
-                        name: strings.myWords,
-                        description: '',
-                        icon: 'edit',
-                        words: customWords,
-                      })
-                    }
-                    className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide cursor-pointer ${
-                      activeCategory.id === 'custom'
-                        ? 'bg-pink-400 border-slate-900 text-slate-955'
-                        : 'bg-white border-slate-300 text-slate-655'
-                    }`}
-                  >
-                    {strings.myWords} ({customWords.length})
-                  </button>
-                </div>
-              </fieldset>
+              <WordSetPicker
+                legend={strings.chooseSet}
+                myWordsLabel={strings.myWords}
+                activeCategoryId={activeCategory.id}
+                customWords={customWords}
+                onSelect={setActiveCategory}
+              />
+
+              <ListenAndLearnSection words={activeCategory.id === 'custom' ? customWords : wordList()} />
+
+              <CustomWordsSection
+                customWords={customWords}
+                onAddWord={onAddCustomWord}
+                onDeleteWord={onDeleteCustomWord}
+                onClearAll={onClearCustomWords}
+              />
 
               {!isSupported && (
                 <p className="text-xs font-bold text-rose-600 text-center" role="alert">
-                  Voice control needs Google Chrome.
+                  {t('shared.voiceNeedsChrome')}
                 </p>
               )}
 
@@ -985,6 +955,13 @@ export function TreasureHunterGame({
 
         {phase === 'PLAYING' && (
           <div className="w-full max-w-3xl flex flex-col gap-4 relative">
+            <PauseButton
+              paused={paused}
+              onToggle={() => setPaused((current) => !current)}
+              pauseLabel={strings.pause}
+              resumeLabel={strings.resume}
+            />
+
             <canvas
               ref={canvasRef}
               width={640}
@@ -992,52 +969,31 @@ export function TreasureHunterGame({
               className="bg-sky-950 border-8 border-slate-900 rounded-3xl w-full aspect-[640/380] shadow-2xl block"
             />
 
-            {/* Speaking word details overlay bar below Canvas */}
-            <div className="bg-white border-4 border-slate-955 p-4 rounded-3xl flex items-center justify-between shadow-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center shadow-inner text-white font-black animate-pulse">
-                  🎙️
-                </div>
-                <div className="text-left">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">
-                    {strings.sayThis}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span data-testid="target-word" className="text-lg md:text-xl font-black text-slate-900 tracking-wide uppercase">
-                      {target}
-                    </span>
-                    {activeCategory.words.find(w => w.word.toLowerCase() === target.toLowerCase())?.translationRu && (
-                      <span className="text-[10px] md:text-xs font-black text-slate-400 px-2 py-0.5 bg-slate-100 rounded-lg border border-slate-300">
-                        {activeCategory.words.find(w => w.word.toLowerCase() === target.toLowerCase())?.translationRu}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => playWordTTS(target)}
-                  className="p-3 bg-yellow-400 hover:bg-yellow-500 border-4 border-slate-955 rounded-2xl cursor-pointer active:translate-y-0.5"
-                  aria-label="Listen to target word"
-                >
-                  <Volume2 className="w-5 h-5 text-slate-955 stroke-[2.5]" />
-                </button>
-
-                <button
-                  onClick={() => setPaused(!paused)}
-                  className="p-3 bg-slate-105 hover:bg-slate-200 border-4 border-slate-955 rounded-2xl cursor-pointer active:translate-y-0.5"
-                >
-                  {paused ? <Play className="w-5 h-5 text-slate-955" /> : <Pause className="w-5 h-5 text-slate-955" />}
-                </button>
-              </div>
-            </div>
+            {(() => {
+              const currentWordItem = wordList().find(
+                (item) => item.word.toLowerCase() === target.toLowerCase(),
+              );
+              return (
+                <TargetWordCard
+                  ribbon={strings.sayThis}
+                  word={target}
+                  translation={currentWordItem?.translationRu || currentWordItem?.translation}
+                  translationRu={currentWordItem?.translationRu}
+                  heard={lastRecognized}
+              heardLabel={t('shared.youSaidHeard')}
+                  onListenEn={() => playWordTTS(target)}
+                  onListenRu={() =>
+                    currentWordItem?.translationRu && speakWord(currentWordItem.translationRu, 'ru')
+                  }
+                />
+              );
+            })()}
 
             {/* Hearing status bar */}
             <div className="text-center font-extrabold text-[10px] uppercase tracking-widest text-slate-600 bg-slate-100/60 py-1.5 px-3 rounded-full inline-block mx-auto border-2 border-slate-300">
               {status.status === 'listening' ? (
                 <span className="text-cyan-800 animate-pulse">
-                  {strings.micListening} {lastRecognized && `("${lastRecognized}")`}
+                  {strings.micListening}
                 </span>
               ) : (
                 <span className="text-slate-500">{status.message}</span>
@@ -1054,7 +1010,7 @@ export function TreasureHunterGame({
 
             <div className="space-y-1">
               <h2 className="text-2xl font-black uppercase text-slate-950 tracking-wider">
-                {language === 'ru' ? 'КОНЕЦ ИГРЫ!' : 'DIVE COMPLETED!'}
+              {t('treasure.diveCompleted')}
               </h2>
               <p className="text-slate-505 font-bold text-xs">
                 {language === 'ru'
@@ -1067,13 +1023,13 @@ export function TreasureHunterGame({
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-cyan-50 border-4 border-slate-955 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
                 <span className="text-[10px] font-black text-cyan-600 uppercase tracking-widest text-center">
-                  {language === 'ru' ? 'СУНДУКИ' : 'TOTAL CHESTS'}
+                {t('treasure.totalChests')}
                 </span>
                 <span className="text-lg font-black text-cyan-850 mt-1 font-mono">{score}</span>
               </div>
               <div className="bg-amber-100 border-4 border-slate-955 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
-                  {language === 'ru' ? 'РЕКОРД' : 'BEST RECORD'}
+                {t('treasure.bestRecord')}
                 </span>
                 <span className="text-lg font-black text-amber-850 mt-1 font-mono">{highScore}</span>
               </div>
@@ -1084,7 +1040,7 @@ export function TreasureHunterGame({
               <div className="flex items-center gap-2 mb-2.5">
                 <BookOpen className="w-5 h-5 text-purple-700 stroke-[2.5]" />
                 <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">
-                  {language === 'ru' ? 'Статистика погружения:' : 'Dive Spelling Scorecard:'}
+              {t('treasure.scorecard')}
                 </h4>
               </div>
 
@@ -1092,7 +1048,7 @@ export function TreasureHunterGame({
                 {Object.keys(wordStudyStats).length === 0 ? (
                   <div className="text-center py-4 bg-white border-2 border-dashed border-slate-350 rounded-2xl">
                     <p className="text-xs text-slate-500 font-extrabold">
-                      {language === 'ru' ? 'Ни одного сундука не собрано.' : 'No chests collected yet.'}
+                  {t('treasure.emptyReport')}
                     </p>
                   </div>
                 ) : (
@@ -1116,11 +1072,11 @@ export function TreasureHunterGame({
 
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span className="text-[8px] md:text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-1 rounded-full font-black border border-emerald-300">
-                            {language === 'ru' ? 'Верно:' : 'Chests:'} {spoken}
+                              {t('treasure.correct')}: {spoken}
                           </span>
                           {struggled > 0 && (
                             <span className="text-[8px] md:text-[9px] text-amber-800 bg-amber-100 px-1.5 py-1 rounded-full font-black border border-amber-350">
-                              {language === 'ru' ? 'Ошибок:' : 'Missed:'} {struggled}
+                              {t('treasure.missed')}: {struggled}
                             </span>
                           )}
                           <button
@@ -1162,7 +1118,7 @@ export function TreasureHunterGame({
                 }}
                 className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-955 text-white font-black text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase"
               >
-                🏰 {language === 'ru' ? 'ВЫЙТИ В ХАБ' : 'EXIT TO PORTAL'}
+            🏰 {t('shared.exitToPortal')}
               </button>
             </div>
           </div>

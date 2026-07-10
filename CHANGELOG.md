@@ -4,6 +4,30 @@ All notable changes to Voice Games are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- A shared game UI kit with tested theme and mode pickers, word-set selection,
+  target-word playback cards, and pause/resume controls.
+
+### Changed
+
+- Recurring setup and gameplay controls now use one layout and interaction
+  pattern across all 10 games, including Echo Recorder, while each game's
+  purpose-specific scene and mechanic remain intact.
+- Sentence Bird now starts listening automatically during play, shows heard
+  speech inside the shared target card, and uses a compact listening pill
+  instead of a separate microphone and recognition panel.
+- Sentence Bird is reworked into single-word, one-pipe-at-a-time flappy play
+  with the shared word sets while keeping its bird and sky scenes.
+- Echo Recorder now draws chain words from the shared word sets and includes
+  a theme picker on its setup screen.
+- Voice Racer now fills its race frame responsively instead of rendering as a
+  small letterboxed canvas.
+- Voice Racer and Bubble Popper now place the Start action after configuration,
+  matching the other game setup screens.
+
 ## [0.3.0] - 2026-07-03
 
 Sprint 3 (MVP v2) release. Every Sprint 2 customer review finding from
