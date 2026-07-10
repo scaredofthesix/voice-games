@@ -500,7 +500,7 @@ export default function EchoRecorderGame({
   if (gameState === 'start') {
     return (
       <section className="max-w-md mx-auto py-4 px-2">
-        <BackToHubButton label={strings.back} onClick={handleBackToHub} />
+        <BackToHubButton label={t('shared.backToHub')} onClick={handleBackToHub} />
         <GameSetupCard
           icon={<Headphones className="h-10 w-10 text-slate-900" />}
           title={strings.lobbyTitle}
@@ -576,7 +576,7 @@ export default function EchoRecorderGame({
   if (gameState === 'victory') {
     return (
       <div className="max-w-md mx-auto py-4 px-2">
-        <BackToHubButton label={strings.back} onClick={handleBackToHub} />
+        <BackToHubButton label={t('shared.backToHub')} onClick={handleBackToHub} />
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-[2rem] border-8 border-slate-900 bg-white p-8 text-center space-y-6 shadow-[10px_10px_0_0_rgba(15,23,42,1)] relative overflow-hidden">
           <div className="absolute -top-10 -left-10 w-32 h-32 bg-yellow-100 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-yellow-100 rounded-full blur-2xl pointer-events-none" />
@@ -602,7 +602,7 @@ export default function EchoRecorderGame({
 
   return (
     <div className={`space-y-6 rounded-[2.5rem] p-3 sm:p-5 transition-colors duration-500 ${activeTheme.gameClass}`}>
-      <BackToHubButton label={strings.back} onClick={handleBackToHub} />
+      <BackToHubButton label={t('shared.backToHub')} onClick={handleBackToHub} />
 
       <GameHeader
         icon={<Brain className="h-5 w-5 text-slate-900" />}
@@ -786,7 +786,7 @@ export default function EchoRecorderGame({
           <div className="border-t border-slate-200 pt-2 mt-2 flex items-center justify-between text-[9px] font-black uppercase text-slate-400">
             <span className="flex items-center gap-1">
               <span className={`w-2 h-2 rounded-full ${showListening ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-              {showListening ? strings.voiceActive : strings.muted}
+              {showListening ? t('shared.micListening') : strings.muted}
             </span>
           </div>
         </div>

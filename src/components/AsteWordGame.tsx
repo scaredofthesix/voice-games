@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
-import { ArrowLeft, Play, RotateCcw, Heart, BookOpen, Volume2 } from 'lucide-react';
+import { Play, RotateCcw, Heart, BookOpen, Volume2 } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
-import { CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
+import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 interface AsteWordGameProps {
@@ -30,7 +30,6 @@ const LOCAL_LANG = {
     paused: 'Paused',
     resume: 'Resume',
     pause: 'Pause',
-    micListening: '🎤 Space defenses listening...',
     chooseSet: 'Choose Word Set',
     myWords: 'My Words',
     chooseTheme: 'CHOOSE SPACE SECTOR THEME:',
@@ -48,7 +47,6 @@ const LOCAL_LANG = {
     paused: 'Пауза',
     resume: 'Продолжить',
     pause: 'Пауза',
-    micListening: '🎤 Космо-оборона слушает...',
     chooseSet: 'Выбрать набор слов',
     myWords: 'Мои слова',
     chooseTheme: 'ВЫБЕРИ КОСМИЧЕСКИЙ СЕКТОР:',
@@ -159,6 +157,33 @@ export function AsteWordGame({
     }
   }, [score, highScore, onScoreChange, onUpdateHighScore]);
 
+  // Keep the canvas backing store aligned with its responsive CSS size so the
+  // game coordinates always match what the child sees on screen.
+  useEffect(() => {
+    if (phase !== 'PLAYING') return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resizeCanvas = () => {
+      const renderedWidth = Math.round(canvas.getBoundingClientRect().width) || 400;
+      const renderedHeight = Math.round(renderedWidth * 0.75);
+      if (canvas.width !== renderedWidth || canvas.height !== renderedHeight) {
+        canvas.width = renderedWidth;
+        canvas.height = renderedHeight;
+      }
+    };
+
+    resizeCanvas();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', resizeCanvas);
+      return () => window.removeEventListener('resize', resizeCanvas);
+    }
+
+    const observer = new ResizeObserver(resizeCanvas);
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [phase]);
+
   const wordList = useCallback((): WordData[] => {
     if (activeCategory.id === 'custom') {
       return customWords.length > 0 ? customWords : (BUILTIN_CATEGORIES[0].words as WordData[]);
@@ -167,7 +192,7 @@ export function AsteWordGame({
   }, [activeCategory, customWords]);
 
   const shootLaserAt = (targetAst: Asteroid) => {
-    speakSound.playAccelerate(); 
+    speakSound.playCorrect();
     laser.current = { tx: targetAst.x, ty: targetAst.y, life: 12 };
 
     // Создаем ударную волну взрыва
@@ -234,7 +259,7 @@ export function AsteWordGame({
   // Безопасная обработка удара по щиту
   const handleShieldHit = useCallback((index: number) => {
     if (livesRef.current <= 0) return;
-    speakSound.playCrash(); 
+    speakSound.playLose();
     const nextL = livesRef.current - 1;
     setLives(nextL);
     livesRef.current = nextL;
@@ -272,17 +297,17 @@ export function AsteWordGame({
     ctx.globalAlpha = 0.08;
     if (activeTheme === 'galaxy') {
       ctx.fillStyle = '#22d3ee'; // Голубой
-      ctx.beginPath(); ctx.arc(100, 100, 140, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(width * 0.25, height / 3, 140, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#6366f1'; // Индиго
-      ctx.beginPath(); ctx.arc(320, 200, 160, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(width * 0.8, height * 0.67, 160, 0, Math.PI * 2); ctx.fill();
     } else if (activeTheme === 'supernova') {
       ctx.fillStyle = '#ea580c'; // Оранжевый
       ctx.beginPath(); ctx.arc(width / 2, height / 2 - 50, 150, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#ef4444'; // Красный
-      ctx.beginPath(); ctx.arc(120, 220, 120, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(width * 0.3, height * 0.73, 120, 0, Math.PI * 2); ctx.fill();
     } else {
       ctx.fillStyle = '#a21caf'; // Фуксия
-      ctx.beginPath(); ctx.arc(80, 80, 130, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(width * 0.2, height * 0.27, 130, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#10b981'; // Изумрудный
       ctx.beginPath(); ctx.arc(width - 100, 210, 150, 0, Math.PI * 2); ctx.fill();
     }
@@ -643,15 +668,7 @@ export function AsteWordGame({
 
   return (
     <section className="max-w-md mx-auto py-4 px-2" aria-label={strings.title}>
-      <button
-        onClick={() => {
-          stop();
-          onBackToHub();
-        }}
-        className="mb-3 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 cursor-pointer"
-      >
-        <ArrowLeft className="w-4 h-4 stroke-[3]" /> {t('shared.backToHub')}
-      </button>
+      <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} />
 
       {phase === 'START' && (
         <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-indigo-50 bubble-shadow-purple">
@@ -783,7 +800,7 @@ export function AsteWordGame({
               ref={canvasRef}
               width={400}
               height={300}
-              className="w-full max-w-[400px] aspect-[4/3] mx-auto block"
+              className="mx-auto block w-full max-w-[400px] aspect-[4/3]"
             />
             {paused && (
               <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center gap-1">
@@ -869,7 +886,7 @@ export function AsteWordGame({
 
           <div className="text-center bg-slate-100 border-2 border-slate-900 rounded-xl py-2 px-3">
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-700 animate-pulse">
-              {status.status === 'listening' ? strings.micListening : status.message}
+              {status.status === 'listening' ? t('shared.micListening') : status.message}
             </p>
           </div>
         </div>
@@ -902,7 +919,7 @@ export function AsteWordGame({
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
                 {t('aste.galaxyRecord')}
                 </span>
-                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} lasers</span>
+                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} {t('aste.lasers')}</span>
               </div>
             </div>
 
@@ -983,15 +1000,11 @@ export function AsteWordGame({
                 <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {strings.start}
               </button>
               
-              <button
-                onClick={() => {
-                  stop();
-                  onBackToHub();
-                }}
-                className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-900 text-white font-black text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase"
-              >
-            🏰 {t('shared.exitToPortal')}
-              </button>
+              <BackToHubButton
+                label={t('shared.backToHub')}
+                onClick={() => { stop(); onBackToHub(); }}
+                className="w-full justify-center"
+              />
             </div>
 
           </div>

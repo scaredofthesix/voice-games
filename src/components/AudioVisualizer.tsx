@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Mic, MicOff } from 'lucide-react';
+import { useUiLanguage } from '../uiLanguage';
 
 interface AudioVisualizerProps {
   isListening: boolean;
@@ -12,6 +13,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
   isMatched,
   errorMessage,
 }) => {
+  const { t } = useUiLanguage();
   const [waveHeights, setWaveHeights] = useState<number[]>([10, 10, 10, 10, 10, 10, 10, 10]);
 
   // Infinite wave heartbeat when listening
@@ -73,19 +75,19 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
         <div className="flex-1">
           {errorMessage ? (
             <p className="text-xs text-rose-600 font-bold leading-relaxed">
-              Error: {errorMessage}
+              {t('shared.error')} {errorMessage}
             </p>
           ) : (
             <div className="flex flex-col">
               <span className={`text-xs font-black uppercase tracking-widest ${isMatched ? 'text-emerald-600' : isListening ? 'text-sky-600 animate-pulse' : 'text-slate-400'}`}>
-                {isMatched ? 'GREAT SPEAKING!' : isListening ? 'LISTENING NOW...' : 'MICROPHONE OFF'}
+                {isMatched ? t('shared.greatSpeaking') : isListening ? t('shared.micListening') : t('shared.microphoneOff')}
               </span>
               <span className="text-[10px] text-slate-500 leading-tight font-bold mt-0.5">
                 {isMatched
-                  ? 'Perfect! The car swerved smoothly to the target lane!'
+                  ? t('shared.perfectSpeech')
                   : isListening
-                  ? 'Speak the target English word aloud to drive!'
-                  : 'Click Start in the menu to turn on the microphone.'}
+                  ? t('shared.speakTarget')
+                  : t('shared.microphoneOffPrompt')}
               </span>
             </div>
           )}

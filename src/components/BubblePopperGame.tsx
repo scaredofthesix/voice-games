@@ -19,7 +19,7 @@ import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { AudioVisualizer } from './AudioVisualizer';
 import { CustomWordsManager } from './CustomWordsManager';
-import { CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
+import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 import { speakWord, speakSound, matchesWord, isSpeechSynthesisActive } from '../voice/engine';
 
@@ -113,7 +113,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
   const [struggleCounter, setStruggleCounter] = useState<Record<string, number>>({});
   const [voiceStatus, setVoiceStatus] = useState({
     status: 'idle',
-    message: 'Click Start to turn on the microphone.',
+    message: t('shared.voiceStartPrompt'),
   });
 
   // Canvas refs
@@ -178,7 +178,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
     if (!SpeechRecognition) {
       setVoiceStatus({
         status: 'unsupported',
-        message: 'Google Chrome Voice API not detected. Please play inside Google Chrome!',
+        message: t('shared.voiceUnsupported'),
       });
       return;
     }
@@ -197,7 +197,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       rec.onstart = () => {
         setVoiceStatus({
           status: 'listening',
-          message: 'Voice engine live! Speak the English words to pop bubbles!',
+          message: t('bubble.voiceEngineLive'),
         });
       };
 
@@ -205,7 +205,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
         if (e.error === 'not-allowed') {
           setVoiceStatus({
             status: 'error',
-            message: 'Microphone access blocked. Please allow mic in browser address bar!',
+          message: t('shared.micAccessBlocked'),
           });
         }
       };
@@ -250,7 +250,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
     } catch (err) {
       console.error('Failed to trigger Speech Recognition Engine:', err);
     }
-  }, []);
+  }, [t]);
 
   // Check if spoken word matches any floating bubble
   const evaluateVoiceInput = (speechText: string) => {
@@ -282,7 +282,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       );
 
       // Play soft sound pop
-      speakSound.playCoin();
+      speakSound.playCorrect();
 
       // Award Score authoritatively
       s.score += 20;
@@ -1075,7 +1075,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
         // 5. Warning Red-Zone limits evaluation when crossing alertY boundary
         if (b.y - b.radius * 0.5 <= alertY) {
           s.bubbles.splice(i, 1);
-          speakSound.playMiss();
+          speakSound.playLose();
 
           // Authoritative count reduce to prevent dual frame lags collision
           s.lives -= 1;
@@ -1111,7 +1111,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       if (computedLvl > s.level) {
         s.level = computedLvl;
         setLevel(computedLvl);
-        speakSound.playSuccess();
+        speakSound.playCorrect();
       }
 
       frameId = requestAnimationFrame(frameLoop);
@@ -1140,12 +1140,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
           </div>
         </div>
 
-        <button
-          onClick={onBackToHub}
-          className="bg-white hover:bg-slate-50 border-2 border-slate-900 px-3 py-1.5 rounded-xl text-xs font-black text-slate-900 uppercase tracking-wider cursor-pointer transition-all hover:scale-102"
-        >
-          ← {t('bubble.hubPortal')}
-        </button>
+        <BackToHubButton label={t('shared.backToHub')} onClick={onBackToHub} className="mb-0 text-slate-900" />
       </div>
 
 
@@ -1333,7 +1328,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
               <div className="absolute inset-0 z-50 bg-slate-900/75 flex flex-col items-center justify-center gap-1">
                 <span className="text-5xl" aria-hidden="true">⏸️</span>
                 <span className="text-xl font-black uppercase tracking-widest text-orange-400">
-                  Paused
+                  {t('shared.paused')}
                 </span>
               </div>
             )}
@@ -1393,11 +1388,11 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
             <div className="grid grid-cols-2 gap-3.5 my-6">
               <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
                 <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest">{t('bubble.poppingScore')}</span>
-                <span className="text-lg font-black text-sky-900 mt-1 font-mono">{score} points</span>
+                <span className="text-lg font-black text-sky-900 mt-1 font-mono">{score} {t('bubble.points')}</span>
               </div>
               <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">{t('bubble.personalHigh')}</span>
-                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} points</span>
+                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} {t('bubble.points')}</span>
               </div>
             </div>
 
@@ -1486,12 +1481,11 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                 </button>
               </div>
               
-              <button
+              <BackToHubButton
+                label={t('shared.backToHub')}
                 onClick={onBackToHub}
-                className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-900 text-white font-black text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase mt-1"
-              >
-                🏰 {t('bubble.exitToPortal')}
-              </button>
+                className="w-full justify-center mt-1"
+              />
             </div>
 
           </div>

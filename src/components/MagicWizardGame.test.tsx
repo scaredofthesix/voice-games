@@ -15,9 +15,8 @@ vi.mock('../utils', async () => {
     ...actual,
     speakWord: vi.fn(),
     speakSound: {
-      playSuccess: vi.fn(),
-      playCrash: vi.fn(),
-      playAccelerate: vi.fn(),
+      playCorrect: vi.fn(),
+      playLose: vi.fn(),
       playCoin: vi.fn(),
     },
   };

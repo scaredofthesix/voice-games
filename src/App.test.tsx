@@ -25,13 +25,13 @@ describe('UI language toggle', () => {
   test('opens the Sentence Bird game from the hub', async () => {
     const user = userEvent.setup();
 
-    render(
+    const { container } = render(
       <UiLanguageProvider>
         <App />
       </UiLanguageProvider>,
     );
 
-    await user.click(screen.getByRole('button', { name: /play sentence bird/i }));
+    await user.click(container.querySelector('#btn-play-sentence-bird')!);
 
     expect(screen.getByRole('heading', { name: /sentence bird|фразоптичка/i })).toBeInTheDocument();
   });
@@ -53,13 +53,13 @@ describe('UI language toggle', () => {
   test('shows a back to hub action inside Sentence Bird', async () => {
     const user = userEvent.setup();
 
-    render(
+    const { container } = render(
       <UiLanguageProvider>
         <App />
       </UiLanguageProvider>,
     );
 
-    await user.click(screen.getByRole('button', { name: /play sentence bird/i }));
+    await user.click(container.querySelector('#btn-play-sentence-bird')!);
 
     expect(screen.getByRole('button', { name: /назад в хаб|back to hub/i })).toBeInTheDocument();
   });

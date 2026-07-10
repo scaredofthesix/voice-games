@@ -302,8 +302,8 @@ export function clearProgress(): AllGamesProgress {
 // ---------------------------------------------------------------------------
 
 export function progressToCsv(progress: AllGamesProgress): string {
-  const rows: string[] = [
-    'Game,Sessions Played,High Score,Word,Times Spoken,Times Struggled',
+  const rows: string[][] = [
+    ['Game', 'Sessions Played', 'High Score', 'Word', 'Times Spoken', 'Times Struggled'],
   ];
 
   for (const gameId of ALL_GAME_IDS) {
@@ -311,24 +311,24 @@ export function progressToCsv(progress: AllGamesProgress): string {
     const label = GAME_LABELS[gameId].en;
     const words = Object.keys(g.words);
     if (words.length === 0) {
-      rows.push(`"${label}",${g.sessionsPlayed},${g.highScore},"","",""` );
+      rows.push([label, String(g.sessionsPlayed), String(g.highScore), '', '', '']);
     } else {
       for (const word of words) {
         const w = g.words[word];
-        rows.push(
-          `"${label}",${g.sessionsPlayed},${g.highScore},"${word}",${w.spoken},${w.struggled}`,
-        );
+        rows.push([label, String(g.sessionsPlayed), String(g.highScore), word, String(w.spoken), String(w.struggled)]);
       }
     }
   }
 
-  return rows.join('\n');
+  return rows
+    .map((row) => row.map((value) => `"${value.replace(/"/g, '""')}"`).join(','))
+    .join('\n');
 }
 
 /** Trigger a CSV file download in the browser. */
 export function downloadProgressCsv(progress: AllGamesProgress): void {
   const csv = progressToCsv(progress);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, BarChart3, Download, Trash2 } from 'lucide-react';
+import { BarChart3, Download, Trash2 } from 'lucide-react';
 
 import { useUiLanguage } from '../uiLanguage';
+import { BackToHubButton } from './GameUi';
 import {
   ALL_GAME_IDS,
   AllGamesProgress,
@@ -17,7 +18,7 @@ interface ProgressViewProps {
 }
 
 export function ProgressView({ onBackToHub }: ProgressViewProps) {
-  const { language } = useUiLanguage();
+  const { language, t } = useUiLanguage();
   const [progress, setProgress] = useState<AllGamesProgress>(loadProgress);
   const [confirmClear, setConfirmClear] = useState(false);
 
@@ -62,14 +63,7 @@ export function ProgressView({ onBackToHub }: ProgressViewProps) {
 
   return (
     <section className="max-w-md mx-auto py-4 px-2" aria-label="Progress view">
-      <button
-        onClick={onBackToHub}
-        className="mb-3 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900"
-        aria-label="Back to the game hub"
-      >
-        <ArrowLeft className="w-4 h-4 stroke-[3]" />{' '}
-        {language === 'ru' ? 'Хаб' : 'Hub'}
-      </button>
+      <BackToHubButton label={t('shared.backToHub')} onClick={onBackToHub} />
 
       <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-gradient-to-b from-purple-50 to-indigo-50 bubble-shadow-purple">
         {/* Header */}

@@ -29,7 +29,7 @@ import { SkateWordGame } from './components/SkateWordGame';
 import { AsteWordGame } from './components/AsteWordGame';
 import { TreasureHunterGame } from './components/TreasureHunterGame';
 import { MagicWizardGame } from './components/MagicWizardGame';
-import { CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './components/GameUi';
+import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './components/GameUi';
 import { ProgressView } from './components/ProgressView';
 import SentenceBirdGame from './components/SentenceBirdGame';
 import EchoRecorderGame from './components/EchoRecorderGame';
@@ -324,7 +324,7 @@ export default function App() {
   const [wordStudyStats, setWordStudyStats] = useState<Record<string, { spoken: number; struggled: number }>>({});
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>({
     status: 'idle',
-    message: 'Click Start to turn on the microphone.',
+    message: t('shared.voiceStartPrompt'),
   });
 
   // Bullet time states
@@ -444,7 +444,7 @@ export default function App() {
     if (!SpeechRecognition) {
       setVoiceStatus({
         status: 'unsupported',
-        message: 'Google Chrome Voice API not detected. Please play inside Google Chrome!',
+        message: t('shared.voiceUnsupported'),
       });
       return;
     }
@@ -463,7 +463,7 @@ export default function App() {
       rec.onstart = () => {
         setVoiceStatus({
           status: 'listening',
-          message: 'Voice engine live! Speak the English words aloud!',
+          message: t('racer.voiceEngineLive'),
         });
       };
 
@@ -471,7 +471,7 @@ export default function App() {
         if (e.error === 'not-allowed') {
           setVoiceStatus({
             status: 'error',
-            message: 'Microphone access block. Please allow mic in your browser address bar!',
+            message: t('shared.micAccessBlocked'),
           });
         } else {
           console.warn('Speech engine warning:', e.error);
@@ -490,7 +490,7 @@ export default function App() {
         } else {
           setVoiceStatus({
             status: 'idle',
-            message: 'Engine stopped.',
+            message: t('shared.voiceStopped'),
           });
         }
       };
@@ -518,7 +518,7 @@ export default function App() {
     } catch (e) {
       console.error('Failed to start Voice engine:', e);
     }
-  }, []);
+  }, [t]);
 
   // Evaluate if spoken transcript matches target adjacent lane words
   const evaluateVoiceTrigger = (spokenText: string) => {
@@ -553,7 +553,7 @@ export default function App() {
         }));
         saveProgress(recordWordSpoken(loadProgress(), 'voice-racer', target));
 
-        speakSound.playAccelerate();
+        speakSound.playCorrect();
         setLastHeardTranscript('');
         break;
       }
@@ -572,7 +572,7 @@ export default function App() {
     const calculatedLevel = Math.min(5, Math.floor(score / 185) + 1);
     if (calculatedLevel > level) {
       setLevel(calculatedLevel);
-      speakSound.playSuccess();
+      speakSound.playCorrect();
     }
   }, [score, highScore, level]);
 
@@ -661,7 +661,7 @@ export default function App() {
   // Collision damage event triggered by physical canvas detection or timeout
   const handleCarCollision = () => {
     if (lives <= 0 || gameState === 'GAME_OVER') return;
-    speakSound.playCrash();
+    speakSound.playLose();
     
     setIsBulletTime(false);
     setCurrentLaneWords({
@@ -777,7 +777,7 @@ export default function App() {
         ) : (
           <>
             <div className="flex items-center gap-3">
-              <button
+              <BackToHubButton
                 onClick={() => {
                   speakSound.playCoin();
                   if (recognitionRef.current) {
@@ -786,11 +786,10 @@ export default function App() {
                   }
                   setCurrentView('HUB');
                 }}
-                className="bg-white hover:bg-slate-50 border-4 border-slate-900 px-3.5 py-1.5 rounded-2xl text-slate-900 font-black text-xs flex items-center gap-1.5 cursor-pointer transition-all active:translate-y-0.5 shadow-md uppercase tracking-wider animate-pulse"
+                label={t('shared.backToHub')}
+                className="mb-0 text-slate-900 hover:text-slate-700"
                 id="btn-back-to-hub-header"
-              >
-                ← {t('header.backToHub')}
-              </button>
+              />
               <div className="w-10 h-10 rounded-xl bg-pink-500 border-4 border-slate-900 flex items-center justify-center shadow-md animate-bounce">
                 <span className="text-xl" role="img" aria-label="game-icon">
                   {currentView === 'VOICE_RACER' ? '🚗' : currentView === 'ECHO_RECORDER' ? '🎤' : '🫧'}
@@ -958,7 +957,7 @@ export default function App() {
                               setCurrentView('MAGIC_WIZARD');
                             }
                           }}
-                          aria-label={g.id === 'sentence-bird' ? 'play sentence bird' : `${g.title} ${t('hub.playButton')}`}
+                          aria-label={`${g.title} ${t('hub.playButton')}`}
                           className="w-full sm:w-32 py-2 bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-0.5 uppercase tracking-wider transition-all select-none hover:scale-103 shadow-sm"
                           id={`btn-play-${g.id}`}
                         >
@@ -1110,17 +1109,15 @@ export default function App() {
 
             </div>
 
-            {/* EXIT TO PORTAL BUTTON */}
-            <button
+            <BackToHubButton
+              label={t('shared.backToHub')}
               onClick={() => {
                 speakSound.playCoin();
                 setCurrentView('HUB');
               }}
-              className="w-full mt-4 py-3.5 bg-purple-500 hover:bg-purple-600 border-4 border-slate-900 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-transform active:translate-y-1 active:shadow-none bubble-shadow-purple uppercase tracking-wider hover:scale-101 shadow-md"
+              className="mt-4 w-full justify-center"
               id="btn-quit-to-hub-start-screen"
-            >
-              🏯 EXIT TO GAMES PORTAL
-            </button>
+            />
 
           </div>
         )}
@@ -1134,12 +1131,12 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-slate-900 animate-ping" />
                 <span className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1">
-                  SAY WORD TO DODGE!
+                  {t('racer.sayWordToDodge')}
                 </span>
               </div>
               
               <div className="text-xs font-black text-purple-900 uppercase tracking-wider bg-white border-2 border-slate-900 px-2.5 py-0.5 rounded-full">
-                Topic: {activeCategory.name}
+                {t('racer.topic')}: {t(`wordSets.${activeCategory.id}`)}
               </div>
 
               {/* Exit out button */}
@@ -1153,7 +1150,7 @@ export default function App() {
                 className="bg-rose-500 hover:bg-rose-600 border-2 border-slate-950 px-3 py-1 rounded-xl text-white font-black text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-sm"
                 id="btn-quit-playing-state"
               >
-                <X className="w-3.5 h-3.5 stroke-[3]" /> QUIT GAME
+                <X className="w-3.5 h-3.5 stroke-[3]" /> {t('shared.quit')}
               </button>
             </div>
 
@@ -1187,7 +1184,7 @@ export default function App() {
               {isBulletTime && (
                 <div className="absolute top-16 left-1/2 -translate-x-1/2 w-[85%] bg-yellow-400 border-4 border-slate-900 px-4 py-3.5 rounded-3xl shadow-lg flex flex-col items-center gap-2 z-45 animate-bounce">
                   <span className="text-xs font-black tracking-widest text-slate-950 uppercase flex items-center gap-1">
-                    SPEAK QUICKLY IN ORDER TO SWERVE!
+                    {t('racer.speakQuickly')}
                   </span>
                   <div className="w-full bg-slate-900 h-3 rounded-full overflow-hidden border-2 border-slate-950">
                     <div
@@ -1204,7 +1201,7 @@ export default function App() {
                   {([0, 1, 2] as Lane[]).map(lane => {
                     const targetWord = currentLaneWords[lane];
                     const isCurrent = playerLane === lane;
-                    const laneName = lane === 0 ? 'LEFT LANE' : lane === 1 ? 'CENTER' : 'RIGHT LANE';
+                    const laneName = lane === 0 ? t('racer.leftLane') : lane === 1 ? t('racer.centerLane') : t('racer.rightLane');
 
                     // Lane styled color boxes
                     const borderClass = lane === 0 
@@ -1307,7 +1304,7 @@ export default function App() {
                 <div className="absolute inset-0 z-50 bg-slate-900/75 flex flex-col items-center justify-center gap-1">
                   <span className="text-5xl" aria-hidden="true">⏸️</span>
                   <span className="text-xl font-black uppercase tracking-widest text-white">
-                    Paused
+                    {t('shared.paused')}
                   </span>
                 </div>
               )}
@@ -1328,7 +1325,7 @@ export default function App() {
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      Your Words Heard:
+                      {t('shared.wordsHeard')}
                     </p>
                     
                     {/* Speech bubble bubble-gum effect */}
@@ -1353,25 +1350,25 @@ export default function App() {
             <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
               
               <span className="inline-flex items-center gap-1 bg-yellow-300 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest">
-                Driving Finish Line!
+                {t('racer.finishLine')}
               </span>
 
               <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
-                SUPER COOPER DRIVING!
+                {t('racer.gameOverTitle')}
               </h2>
               <p className="text-xs text-slate-500 leading-normal font-bold">
-                You drove amazingly! Click below to practice speaking words and beat your high record!
+                {t('racer.gameOverDescription')}
               </p>
 
               {/* Driving stats grid boxes */}
               <div className="grid grid-cols-2 gap-3.5 my-6">
                 <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
                     <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest">{t('racer.drivingScore')}</span>
-                  <span className="text-lg font-black text-sky-900 mt-1 font-mono">{score} points</span>
+                  <span className="text-lg font-black text-sky-900 mt-1 font-mono">{score} {t('racer.points')}</span>
                 </div>
                 <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
                     <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">{t('racer.recordTarget')}</span>
-                  <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} points</span>
+                  <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} {t('racer.points')}</span>
                 </div>
               </div>
 
@@ -1380,7 +1377,7 @@ export default function App() {
                 <div className="flex items-center gap-2 mb-2.5">
                   <BookOpen className="w-5 h-5 text-purple-700 stroke-[2.5]" />
                   <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">
-                    Your English Practice Scorecard:
+                    {t('racer.practiceScorecard')}
                   </h4>
                 </div>
 
@@ -1388,7 +1385,7 @@ export default function App() {
                   {Object.keys(wordStudyStats).length === 0 ? (
                     <div className="text-center py-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl">
                       <p className="text-xs text-slate-500 font-extrabold leading-normal">
-                        Spoken scorecard empty. Try driving again to gather speech stats!
+                        {t('racer.emptyScorecard')}
                       </p>
                     </div>
                   ) : (
@@ -1410,7 +1407,7 @@ export default function App() {
 
                           <div className="flex items-center gap-1.5">
                             <span className="inline-flex items-center text-[9px] text-emerald-800 bg-emerald-100 px-2 py-1.5 rounded-full font-black border border-emerald-300">
-                              Heard: {spoken}m
+                              {t('racer.heard')}: {spoken}m
                             </span>
                             {struggled > 0 && (
                               <span className="inline-flex items-center text-[9px] text-amber-800 bg-amber-100 px-2 py-1.5 rounded-full font-black border border-amber-350">
@@ -1453,27 +1450,26 @@ export default function App() {
                     className="flex-1 bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs px-6 py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 active:shadow-none bubble-shadow-pink"
                     id="btn-play-again-failed"
                   >
-                    <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> PLAY HIGHWAY AGAIN!
+                    <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {t('racer.playAgain')}
                   </button>
                   <button
                     onClick={() => setGameState('START_SCREEN')}
                     className="flex-1 bg-white hover:bg-slate-50 border-4 border-slate-900 text-slate-800 font-black text-xs px-5 py-4 rounded-xl flex items-center justify-center cursor-pointer hover:scale-101 active:translate-y-1 transition-all"
                     id="btn-home-screen-failed"
                   >
-                    Race Options
+                    {t('racer.options')}
                   </button>
                 </div>
                 
-                <button
+                <BackToHubButton
+                  label={t('shared.backToHub')}
                   onClick={() => {
                     speakSound.playCoin();
                     setCurrentView('HUB');
                   }}
-                  className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-900 text-white font-black text-xs px-5 py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-101 active:translate-y-1 shadow-md uppercase tracking-wider mt-1.5"
+                  className="mt-1.5 w-full justify-center"
                   id="btn-quit-to-hub-gameover"
-                >
-                  🏰 EXIT TO GAMES PORTAL
-                </button>
+                />
               </div>
 
             </div>

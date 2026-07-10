@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
-import { ArrowLeft, Play, Heart, RotateCcw } from 'lucide-react';
+import { Play, Heart, RotateCcw } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
-import { CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 interface MagicWizardGameProps {
@@ -30,7 +30,6 @@ const LOCAL_LANG = {
     paused: 'Paused',
     resume: 'Resume',
     pause: 'Pause',
-    micListening: '🎤 Say the word out loud...',
     chooseSet: 'Choose Word Set',
     myWords: 'My Words',
     sayThis: '🎯 SPEAK TO CAST SPELL!:',
@@ -48,7 +47,6 @@ const LOCAL_LANG = {
     paused: 'Пауза',
     resume: 'Продолжить',
     pause: 'Пауза',
-    micListening: '🎤 Произнеси слово...',
     chooseSet: 'Выбрать набор слов',
     myWords: 'Мои слова',
     sayThis: '🎯 ПРОИЗНЕСИ ДЛЯ ЗАКЛИНАНИЯ!:',
@@ -194,7 +192,7 @@ export function MagicWizardGame({
   const handleCollision = useCallback(() => {
     if (livesRef.current <= 0) return;
     monsterTimer.current = 100; // Reset timer immediately to prevent multi-triggering
-    speakSound.playCrash();
+    speakSound.playLose();
     const nextL = livesRef.current - 1;
     setLives(nextL);
     livesRef.current = nextL;
@@ -224,7 +222,7 @@ export function MagicWizardGame({
 
   const castSpell = useCallback(() => {
     if (phaseRef.current === 'PLAYING' && !pausedRef.current && activeMonster.current) {
-      speakSound.playAccelerate();
+      speakSound.playCorrect();
       setFeedback('correct');
 
       // Add spell projectile
@@ -404,7 +402,7 @@ export function MagicWizardGame({
           // Check hit
           if (proj.x >= proj.targetX - 20) {
             spellProjectiles.current.splice(idx, 1);
-            speakSound.playSuccess();
+            speakSound.playCorrect();
             setScore((s) => s + 1);
 
             // Explode monster particles
@@ -572,13 +570,7 @@ export function MagicWizardGame({
     <div className="w-full max-w-4xl mx-auto px-4 py-6" style={{ fontFamily: 'Fredoka, sans-serif' }}>
       {/* Header Navigation */}
       <div className="flex items-center mb-6">
-        <button
-          onClick={onBackToHub}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-black uppercase text-slate-700 bg-white hover:bg-slate-100 border-4 border-slate-900 rounded-2xl cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4 stroke-[3]" />
-          {t('shared.backToHub')}
-        </button>
+        <BackToHubButton label={t('shared.backToHub')} onClick={onBackToHub} />
 
       </div>
 
@@ -737,6 +729,12 @@ export function MagicWizardGame({
               />
             );
           })()}
+
+          <div role="status" aria-live="polite" className="text-center bg-slate-100 border-2 border-slate-900 rounded-xl py-1.5 px-3 inline-flex mx-auto">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-700">
+              {status.status === 'listening' ? t('shared.micListening') : status.message}
+            </span>
+          </div>
 
         </div>
       )}

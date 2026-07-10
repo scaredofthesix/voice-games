@@ -272,7 +272,7 @@ export const speakSound = {
     } catch {}
   },
 
-  playCrash: () => {
+  playLose: () => {
     try {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = ctx.createOscillator();
@@ -292,65 +292,31 @@ export const speakSound = {
     } catch {}
   },
 
-  playSuccess: () => {
+  playCorrect: () => {
     try {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      const now = ctx.currentTime;
+      const notes = [261.63, 329.63, 392.0, 523.25];
 
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(261.63, ctx.currentTime);
-      osc.frequency.setValueAtTime(329.63, ctx.currentTime + 0.08);
-      osc.frequency.setValueAtTime(392.0, ctx.currentTime + 0.16);
-      osc.frequency.setValueAtTime(523.25, ctx.currentTime + 0.24);
+      notes.forEach((frequency, index) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
 
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(frequency, now + index * 0.08);
+        gain.gain.setValueAtTime(0.15, now + index * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + index * 0.08 + 0.3);
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(2000, now);
 
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.45);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + index * 0.08);
+        osc.stop(now + index * 0.08 + 0.35);
+      });
     } catch {}
   },
 
-  playMiss: () => {
-    try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(180, ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.25);
-
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.3);
-    } catch {}
-  },
-
-  playAccelerate: () => {
-    try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12);
-
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
-
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.18);
-    } catch {}
-  },
 };

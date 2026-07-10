@@ -41,7 +41,6 @@ const LOCAL_LANG = {
     myWords: 'My Words',
     chooseTheme: 'Choose sky theme',
     targetRibbon: 'Say this word',
-    listening: '🎤 Mic is listening...',
     ready: 'Ready to listen.',
     detected: 'Detected',
     completedTitle: 'You did it, champion!',
@@ -67,7 +66,6 @@ const LOCAL_LANG = {
     myWords: 'Мои слова',
     chooseTheme: 'Выбери тему неба',
     targetRibbon: 'Произнеси слово',
-    listening: '🎤 Микрофон слушает...',
     ready: 'Готов слушать.',
     detected: 'Распознано',
     completedTitle: 'Ты справился, чемпион!',
@@ -241,7 +239,7 @@ export default function SentenceBirdGame({
     isProcessingSuccessRef.current = true;
     setIsFlapping(true);
     synths.playFlap();
-    window.setTimeout(() => { synths.playSuccess(); }, 200);
+    window.setTimeout(() => { speakSound.playCorrect(); }, 200);
 
     saveProgress(recordWordSpoken(loadProgress(), GAME_ID, spokenWord));
     setWordStudyStats((prev) => ({
@@ -321,7 +319,7 @@ export default function SentenceBirdGame({
   if (phase === 'START_SCREEN') {
     return (
       <section className="max-w-md mx-auto py-4 px-2">
-        <BackToHubButton label={strings.back} onClick={onBackToHub} />
+        <BackToHubButton label={t('shared.backToHub')} onClick={onBackToHub} />
         <GameSetupCard
           icon={<FlappyBirdIcon size={52} />}
           title={strings.title}
@@ -375,7 +373,7 @@ export default function SentenceBirdGame({
   if (phase === 'PLAYING') {
     return (
     <div className="space-y-6">
-      <BackToHubButton label={strings.back} onClick={handleBackToHub} />
+      <BackToHubButton label={t('shared.backToHub')} onClick={handleBackToHub} />
 
       <GameHeader
         icon={<Trophy className="h-5 w-5 text-slate-900" />}
@@ -460,10 +458,10 @@ export default function SentenceBirdGame({
                     <div className="flex items-center gap-1 justify-center">
                       <span className="text-[8px] uppercase tracking-wider font-black text-slate-500">#{globalIdx + 1}</span>
                     </div>
-                    <p className={`text-[10px] font-black leading-tight ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
+                    <p className={`text-[13px] font-black leading-tight ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
                       {word.word}
                     </p>
-                    <p className="text-[7px] font-bold italic text-slate-500 truncate max-w-[80px]">
+                    <p className="text-[9px] font-bold italic text-slate-500 truncate max-w-[90px]">
                       {word.translationRu || word.translation}
                     </p>
                   </div>
@@ -517,7 +515,7 @@ export default function SentenceBirdGame({
                 className={`transform transition-all duration-300 ${isFlapping ? '-rotate-6 scale-105' : 'rotate-0'}`}
               />
               {spokenText && (
-                <div className="absolute bottom-16 bg-[#fef08a] text-slate-900 text-[10px] font-black px-2.5 py-1 rounded border-2 border-slate-900 shadow-[2px_2px_0_0_rgba(15,23,42,1)] max-w-[120px] text-center truncate">
+                <div className="absolute bottom-16 bg-[#fef08a] text-slate-900 text-[12px] font-black px-2.5 py-1 rounded border-2 border-slate-900 shadow-[2px_2px_0_0_rgba(15,23,42,1)] max-w-[120px] text-center truncate">
                   "{spokenText}"
                 </div>
               )}
@@ -553,7 +551,7 @@ export default function SentenceBirdGame({
           <div role="status" aria-live="polite" className="flex items-center justify-center gap-2 bg-slate-100 border-2 border-slate-900 rounded-xl py-1.5 px-3 inline-flex mx-auto">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-700">
-              {isListening ? strings.listening : strings.ready}
+              {isListening ? t('shared.micListening') : strings.ready}
             </p>
           </div>
         </div>
@@ -572,7 +570,7 @@ export default function SentenceBirdGame({
 
     return (
       <section className="max-w-md mx-auto py-4 px-2">
-        <BackToHubButton label={strings.back} onClick={handleBackToHub} />
+        <BackToHubButton label={t('shared.backToHub')} onClick={handleBackToHub} />
         <div className={`space-y-4 p-6 border-8 border-slate-900 rounded-4xl text-center ${won ? 'bg-amber-50 bubble-shadow-amber' : 'bg-red-50 bubble-shadow-red'}`}>
           <FlappyBirdIcon size={64} className="mx-auto" />
           <h1 className="text-3xl font-black uppercase tracking-wider text-slate-900">
