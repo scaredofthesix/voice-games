@@ -303,6 +303,7 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       emptySet: 'Add words to My Words or choose a built-in set.',
       wordsMastered: 'Words mastered:',
       accuracy: 'Accuracy',
+      speakLabel: 'Say it!',
     },
     echo: {
       title: 'Echo Microphone',
@@ -740,6 +741,7 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       emptySet: 'Добавь слова в Мои слова или выбери готовый набор.',
       wordsMastered: 'Слов освоено:',
       accuracy: 'Точность',
+      speakLabel: 'Скажи!',
     },
     echo: {
       title: 'Эхо-микрофон',
