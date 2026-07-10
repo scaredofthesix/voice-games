@@ -30,6 +30,7 @@ export type GameId =
   | 'word-ladder'
   | 'skate-word'
   | 'aste-word'
+  | 'treasure-hunter'
   | 'sentence-bird'
   | 'echo-recorder'
   | 'magic-wizard';
@@ -41,6 +42,7 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'word-ladder',
   'skate-word',
   'aste-word',
+  'treasure-hunter',
   'sentence-bird',
   'echo-recorder',
   'magic-wizard',
@@ -53,6 +55,7 @@ export const GAME_LABELS: Record<GameId, { en: string; ru: string; icon: string 
   'word-ladder': { en: 'Voice Rocket Climb', ru: 'Космический Старт', icon: '🚀' },
   'skate-word': { en: 'SkateWord', ru: 'СкейтВорд', icon: '🛹' },
   'aste-word': { en: 'AsteWord Destroyer', ru: 'АстеВорд Разрушитель', icon: '☄️' },
+  'treasure-hunter': { en: 'Voice Treasure Hunter', ru: 'Поиск сокровищ', icon: '🐳' },
   'sentence-bird': { en: 'Sentence Bird', ru: 'Фразоптичка', icon: '🐦' },
   'echo-recorder': { en: 'Echo Microphone', ru: 'Эхо-микрофон', icon: '🎤' },
   'magic-wizard': { en: 'Magic Wizard', ru: 'Магический Волшебник', icon: '🧙' },
@@ -71,6 +74,7 @@ const LEGACY_HIGHSCORE_KEYS: Record<GameId, string> = {
   'word-ladder': 'word_ladder_highscore',
   'skate-word': 'skate_word_highscore',
   'aste-word': 'aste_word_highscore',
+  'treasure-hunter': 'treasure_hunter_highscore',
   'sentence-bird': 'sentence_bird_highscore',
   'echo-recorder': 'echo_recorder_highscore',
   'magic-wizard': 'magic_wizard_highscore',
@@ -94,26 +98,8 @@ export function emptyProgress(): AllGamesProgress {
 // Load / Save
 // ---------------------------------------------------------------------------
 
-/** Load all progress from localStorage. Migrates legacy high scores on first load. */
-export function loadProgress(): AllGamesProgress {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<AllGamesProgress>;
-      // Ensure every game ID is present (new games added after the save).
-      const full = emptyProgress();
-      for (const id of ALL_GAME_IDS) {
-        if (parsed[id]) {
-          full[id] = { ...emptyGameProgress(), ...parsed[id] };
-        }
-      }
-      return full;
-    }
-  } catch {
-    // Corrupt data; fall through to migration / default.
-  }
-
-  // First load: migrate legacy standalone high score keys.
+/** Recover high scores from the old standalone per-game localStorage keys. */
+function progressFromLegacyHighScores(): AllGamesProgress {
   const fresh = emptyProgress();
   for (const id of ALL_GAME_IDS) {
     try {
@@ -128,8 +114,48 @@ export function loadProgress(): AllGamesProgress {
       // Ignore per-key errors.
     }
   }
-  saveProgress(fresh);
   return fresh;
+}
+
+/**
+ * Load all progress from localStorage. Migrates legacy high scores on the very
+ * first load (`voice_games_progress` has never been written).
+ *
+ * If the stored blob exists but cannot be parsed (corrupted data, e.g. from a
+ * cross-tab write race or manual tampering), this returns a fresh, legacy-
+ * high-score-recovered snapshot for the CURRENT call only and does NOT persist
+ * it. Previously this path called saveProgress() on the reset snapshot, which
+ * permanently destroyed every game's sessions/words history on a single bad
+ * read - see issue #103. Not auto-persisting means a transient read failure
+ * cannot turn into permanent data loss, and leaves the original (possibly
+ * still-recoverable) stored value untouched for a future read.
+ */
+export function loadProgress(): AllGamesProgress {
+  const raw = localStorage.getItem(STORAGE_KEY);
+
+  if (raw === null) {
+    // Genuine first load: nothing has ever been saved. Migrate legacy
+    // high-score keys and persist the migrated result as the new baseline.
+    const fresh = progressFromLegacyHighScores();
+    saveProgress(fresh);
+    return fresh;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<AllGamesProgress>;
+    // Ensure every game ID is present (new games added after the save).
+    const full = emptyProgress();
+    for (const id of ALL_GAME_IDS) {
+      if (parsed[id]) {
+        full[id] = { ...emptyGameProgress(), ...parsed[id] };
+      }
+    }
+    return full;
+  } catch {
+    // Stored value exists but is not valid JSON. Do not overwrite it -
+    // return a legacy-recovered snapshot for this read only.
+    return progressFromLegacyHighScores();
+  }
 }
 
 /** Persist the full progress blob to localStorage. */

@@ -191,6 +191,7 @@ export default function App() {
   const handleUpdateTreasureHunterHighScore = (newScore: number) => {
     setTreasureHunterHighScore(newScore);
     localStorage.setItem('treasure_hunter_highscore', newScore.toString());
+    saveProgress(recordHighScore(loadProgress(), 'treasure-hunter', newScore));
   };
 
   const handleUpdateSentenceBirdHighScore = (newScore: number) => {

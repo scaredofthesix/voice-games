@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Play, Pause, Volume2, RotateCcw, BookOpen } from 'lucide-react';
 
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled } from '../progress';
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
@@ -359,6 +360,7 @@ export function TreasureHunterGame({
             struggled: prevStats[current]?.struggled || 0,
           },
         }));
+        saveProgress(recordWordSpoken(loadProgress(), 'treasure-hunter', current));
 
         // Collect chest and increment score
         setTimeout(() => {
@@ -402,6 +404,7 @@ export function TreasureHunterGame({
           struggled: (prevStats[current]?.struggled || 0) + 1,
         },
       }));
+      saveProgress(recordWordStruggled(loadProgress(), 'treasure-hunter', current));
     }
 
     if (nextL <= 0) {
@@ -416,6 +419,7 @@ export function TreasureHunterGame({
 
   // Start game loop
   const startGame = () => {
+    saveProgress(recordSessionPlayed(loadProgress(), 'treasure-hunter'));
     setScore(0);
     setLives(3);
     depth.current = 0;
@@ -424,7 +428,7 @@ export function TreasureHunterGame({
     subTargetY.current = 200;
     setWordStudyStats({});
     setPhase('PLAYING');
-    
+
     // Spawn some initial sealife
     const newLife: SeaLife[] = [];
     for (let i = 0; i < 8; i++) {
