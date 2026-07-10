@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
 import {
   ArrowLeft,
   BookOpen,
@@ -24,7 +24,6 @@ import {
   DEFAULT_PLAYER_HP,
   endlessBossAtLevel,
   isFinalBoss,
-  pickNextIndex,
   playerHitByTimeout,
   BossKind,
 } from '../gameLogic';
@@ -167,7 +166,9 @@ export function BossFightGame({
   const nextWord = useCallback(() => {
     const list = wordList();
     if (list.length === 0) return;
-    const idx = pickNextIndex(list.length, wordIndexRef.current);
+    const words = list.map((w) => w.word);
+    const wordStats = loadProgress()['boss-fight'].words;
+    const idx = pickAdaptiveWordIndex(words, wordStats, wordIndexRef.current);
     wordIndexRef.current = idx;
     const word = list[idx].word;
     setTarget(word);

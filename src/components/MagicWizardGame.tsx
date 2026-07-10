@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
 import { ArrowLeft, Play, Pause, Volume2, Heart, RotateCcw } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
@@ -156,14 +156,9 @@ export function MagicWizardGame({
     const list = wordList();
     if (list.length === 0) return;
 
-    let nextIdx = wordIndexRef.current;
-    if (list.length > 1) {
-      while (nextIdx === wordIndexRef.current) {
-        nextIdx = Math.floor(Math.random() * list.length);
-      }
-    } else {
-      nextIdx = 0;
-    }
+    const words = list.map((w) => w.word);
+    const wordStats = loadProgress()['magic-wizard'].words;
+    const nextIdx = pickAdaptiveWordIndex(words, wordStats, wordIndexRef.current);
     wordIndexRef.current = nextIdx;
     const word = list[nextIdx].word;
     setTarget(word);

@@ -5,7 +5,6 @@ import {
   createBossFight,
   createLadder,
   ladderProgress,
-  pickNextIndex,
   playerHitByTimeout,
 } from './gameLogic';
 
@@ -104,22 +103,3 @@ describe('Word Ladder', () => {
   });
 });
 
-describe('pickNextIndex', () => {
-  test('returns -1 for an empty list', () => {
-    expect(pickNextIndex(0)).toBe(-1);
-  });
-
-  test('always returns 0 for a single-word list', () => {
-    expect(pickNextIndex(1, -1, () => 0.99)).toBe(0);
-  });
-
-  test('uses the injected rng to choose an index', () => {
-    // rng 0.5 over 4 items -> floor(2.0) = 2
-    expect(pickNextIndex(4, -1, () => 0.5)).toBe(2);
-  });
-
-  test('avoids repeating the previous index', () => {
-    // rng would pick index 2, but previous is 2, so it advances to 3
-    expect(pickNextIndex(4, 2, () => 0.5)).toBe(3);
-  });
-});

@@ -4,12 +4,16 @@ import {
   clearProgress,
   emptyProgress,
   loadProgress,
+  MASTERY_THRESHOLD,
+  pickAdaptiveWordIndex,
   progressToCsv,
   recordHighScore,
   recordSessionPlayed,
   recordWordSpoken,
   recordWordStruggled,
   saveProgress,
+  WordStats,
+  wordSelectionWeight,
 } from './progress';
 
 // Unit tests for the progress persistence module (Issue #25, US-10).
@@ -163,5 +167,79 @@ describe('progress module', () => {
     const p2 = recordSessionPlayed(p, 'voice-racer');
     expect(p['voice-racer'].sessionsPlayed).toBe(0);
     expect(p2['voice-racer'].sessionsPlayed).toBe(1);
+  });
+});
+
+// Regression / feature tests for issue #105: adaptive word selection driven
+// by progress statistics, instead of uniform randomness.
+describe('wordSelectionWeight', () => {
+  test('an unseen word (no stats, or spoken 0 times) gets the "unseen" weight', () => {
+    expect(wordSelectionWeight(undefined)).toBe(2);
+    expect(wordSelectionWeight({ spoken: 0, struggled: 0 })).toBe(2);
+  });
+
+  test('a struggled word is weighted higher than an unseen or normal word', () => {
+    const struggled: WordStats = { spoken: 3, struggled: 1 };
+    const unseen: WordStats = { spoken: 0, struggled: 0 };
+    const normal: WordStats = { spoken: 2, struggled: 0 };
+    expect(wordSelectionWeight(struggled)).toBeGreaterThan(wordSelectionWeight(unseen));
+    expect(wordSelectionWeight(struggled)).toBeGreaterThan(wordSelectionWeight(normal));
+  });
+
+  test('more struggles increase the weight, up to a cap', () => {
+    const w1 = wordSelectionWeight({ spoken: 5, struggled: 1 });
+    const w3 = wordSelectionWeight({ spoken: 5, struggled: 3 });
+    const w10 = wordSelectionWeight({ spoken: 5, struggled: 10 });
+    const w20 = wordSelectionWeight({ spoken: 5, struggled: 20 });
+    expect(w3).toBeGreaterThan(w1);
+    expect(w10).toBeGreaterThan(w3);
+    expect(w20).toBe(w10); // capped, doesn't keep growing forever
+  });
+
+  test('a word spoken correctly MASTERY_THRESHOLD times without struggling is deprioritized', () => {
+    const mastered: WordStats = { spoken: MASTERY_THRESHOLD, struggled: 0 };
+    const normal: WordStats = { spoken: MASTERY_THRESHOLD - 1, struggled: 0 };
+    expect(wordSelectionWeight(mastered)).toBeLessThan(wordSelectionWeight(normal));
+    expect(wordSelectionWeight(mastered)).toBeGreaterThan(0); // never fully excluded
+  });
+});
+
+describe('pickAdaptiveWordIndex', () => {
+  test('returns -1 for an empty word list and 0 for a single word', () => {
+    expect(pickAdaptiveWordIndex([], {})).toBe(-1);
+    expect(pickAdaptiveWordIndex(['only'], {})).toBe(0);
+  });
+
+  test('a struggled word resurfaces sooner than a mastered one', () => {
+    const words = ['cat', 'dog'];
+    const stats: Record<string, WordStats> = {
+      cat: { spoken: MASTERY_THRESHOLD, struggled: 0 }, // mastered
+      dog: { spoken: 2, struggled: 2 }, // struggled
+    };
+
+    // A roll near the top of the weighted range should land on the
+    // much-higher-weighted struggled word ("dog"), not the mastered one.
+    const idx = pickAdaptiveWordIndex(words, stats, -1, () => 0.99);
+    expect(words[idx]).toBe('dog');
+  });
+
+  test('never repeats the immediately previous index when more than one word exists', () => {
+    const words = ['a', 'b'];
+    // Even with an rng that would otherwise pick index 0 every time, the
+    // previous index must be avoided.
+    const idx = pickAdaptiveWordIndex(words, {}, 0, () => 0);
+    expect(idx).toBe(1);
+  });
+
+  test('introduces unseen words once there is nothing struggled to reinforce', () => {
+    const words = ['known', 'new'];
+    const stats: Record<string, WordStats> = {
+      known: { spoken: 3, struggled: 0 },
+      // 'new' has no stats at all - never seen.
+    };
+    // Unseen words get a higher weight than plain "normal" words, so a
+    // high roll should favor the new word.
+    const idx = pickAdaptiveWordIndex(words, stats, -1, () => 0.9);
+    expect(words[idx]).toBe('new');
   });
 });

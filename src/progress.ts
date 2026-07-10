@@ -215,6 +215,79 @@ export function recordWordStruggled(
 }
 
 // ---------------------------------------------------------------------------
+// Adaptive word selection
+// Issue #105 (Sprint 3 customer review, top Sprint 4 priority): games should
+// pick the next word using recorded progress instead of uniform randomness,
+// so struggled words resurface soon, unseen words get introduced, and
+// well-known words are shown less often.
+// ---------------------------------------------------------------------------
+
+/**
+ * A word spoken correctly this many times, without ever being struggled with,
+ * is considered "mastered" and gets a much lower selection weight (but is
+ * never fully excluded).
+ */
+export const MASTERY_THRESHOLD = 5;
+
+const WEIGHT_UNSEEN = 2;
+const WEIGHT_NORMAL = 1;
+const WEIGHT_MASTERED = 0.2;
+const WEIGHT_STRUGGLED_BASE = 4;
+const WEIGHT_STRUGGLED_CAP = 5;
+
+/**
+ * Selection weight for a single word given its recorded stats. Struggled
+ * words are weighted highest, more so the more times they were struggled with
+ * (capped so one very-struggled word doesn't dominate every round). Unseen
+ * words get a moderate weight so they get introduced once there is nothing
+ * left to reinforce. Mastered words (see MASTERY_THRESHOLD) are shown much
+ * less often, and everything else gets the baseline weight.
+ */
+export function wordSelectionWeight(stats: WordStats | undefined): number {
+  if (!stats || stats.spoken === 0) return WEIGHT_UNSEEN;
+  if (stats.struggled > 0) {
+    return WEIGHT_STRUGGLED_BASE + Math.min(stats.struggled, WEIGHT_STRUGGLED_CAP);
+  }
+  if (stats.spoken >= MASTERY_THRESHOLD) return WEIGHT_MASTERED;
+  return WEIGHT_NORMAL;
+}
+
+/**
+ * Pick the next word index using progress-weighted random selection: words
+ * struggled with in the past are much more likely to come up again, unseen
+ * words get a fair shot, and mastered words are deprioritized without being
+ * excluded. Avoids an immediate repeat of `previous` when there is more than
+ * one word to choose from. `rng` returns a float in [0, 1) (defaults to
+ * Math.random) so callers in tests can inject a fixed value.
+ */
+export function pickAdaptiveWordIndex(
+  words: readonly string[],
+  wordStats: Record<string, WordStats>,
+  previous: number = -1,
+  rng: () => number = Math.random,
+): number {
+  if (words.length === 0) return -1;
+  if (words.length === 1) return 0;
+
+  const weights = words.map((word, i) =>
+    i === previous ? 0 : wordSelectionWeight(wordStats[word]),
+  );
+  const total = weights.reduce((sum, w) => sum + w, 0);
+
+  if (total <= 0) {
+    // Every candidate got zeroed out; fall back to a plain random pick.
+    return Math.min(words.length - 1, Math.floor(rng() * words.length));
+  }
+
+  let roll = rng() * total;
+  for (let i = 0; i < weights.length; i++) {
+    roll -= weights[i];
+    if (roll < 0) return i;
+  }
+  return weights.length - 1; // floating-point rounding fallback
+}
+
+// ---------------------------------------------------------------------------
 // Clear
 // ---------------------------------------------------------------------------
 
