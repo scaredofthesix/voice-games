@@ -61,6 +61,8 @@ interface Asteroid {
   y: number;
   speed: number;
   word: string;
+  /** Русский перевод, показывается под английским словом (issue #107). */
+  translation?: string;
   size: number;
 }
 
@@ -361,12 +363,14 @@ export function AsteWordGame({
             const words = list.map((w) => w.word);
             const wordStats = loadProgress()['aste-word'].words;
             const randomWord = words[pickAdaptiveWordIndex(words, wordStats)];
+            const wordItem = list.find((w) => w.word === randomWord);
             asteroids.current.push({
               id: astIdCounter.current++,
               x: 40 + Math.random() * (canvas.width - 80),
               y: -20,
               speed: baseSpeed + Math.random() * speedRandomRange,
               word: randomWord,
+              translation: wordItem?.translationRu || wordItem?.translation,
               size: 20,
             });
             setActiveAsteroids([...asteroids.current]);
@@ -473,21 +477,37 @@ export function AsteWordGame({
         ctx.font = 'bold 13px sans-serif';
         const textWidth = ctx.measureText(ast.word).width;
 
+        // Русский перевод под английским словом (issue #107): бейдж
+        // растёт вверх, чтобы не наехать на сам астероид.
+        let ruWidth = 0;
+        if (ast.translation) {
+          ctx.font = 'bold 11px sans-serif';
+          ruWidth = ctx.measureText(ast.translation).width;
+        }
+
+        const rw = Math.max(textWidth, ruWidth) + 16;
+        const rh = ast.translation ? 36 : 21;
+        const rx = ast.x - rw / 2;
+        const ry = ast.y - 13 - rh;
+
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#0f172a';
         ctx.lineWidth = 3.5;
-
-        const rx = ast.x - textWidth / 2 - 8;
-        const ry = ast.y - 34;
-        const rw = textWidth + 16;
-        const rh = 21;
 
         drawRoundedRect(ctx, rx, ry, rw, rh, 6);
         ctx.fill();
         ctx.stroke();
 
         ctx.fillStyle = '#0f172a';
-        ctx.fillText(ast.word, ast.x - textWidth / 2, ast.y - 20);
+        ctx.font = 'bold 13px sans-serif';
+        if (ast.translation) {
+          ctx.fillText(ast.word, ast.x - textWidth / 2, ast.y - 35);
+          ctx.font = 'bold 11px sans-serif';
+          ctx.fillStyle = '#4f46e5';
+          ctx.fillText(ast.translation, ast.x - ruWidth / 2, ast.y - 21);
+        } else {
+          ctx.fillText(ast.word, ast.x - textWidth / 2, ast.y - 20);
+        }
       });
 
       // Светящийся щит на дне экрана (вспыхивает при падении астероидов)
