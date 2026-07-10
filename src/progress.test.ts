@@ -44,6 +44,40 @@ describe('progress module', () => {
     expect(p['bubble-popper'].highScore).toBe(0);
   });
 
+  // Regression test for issue #103: the Progress view showed 0 sessions/words
+  // while the high score survived. Root cause: loadProgress() treated any
+  // JSON.parse failure the same as "never saved before", and permanently
+  // overwrote the stored blob with a reset snapshot via saveProgress(fresh).
+  test('loadProgress does not wipe stored data on a parse failure', () => {
+    // Seed real, previously-saved progress plus a legacy high score key.
+    localStorage.setItem('voice_games_progress', '{not valid json');
+    localStorage.setItem('boss_fight_highscore', '120');
+
+    const p = loadProgress();
+
+    // The read recovers what it safely can (the legacy high score)...
+    expect(p['boss-fight'].highScore).toBe(120);
+    expect(p['boss-fight'].sessionsPlayed).toBe(0);
+
+    // ...but must NOT have overwritten the original stored value. A prior
+    // implementation called saveProgress(fresh) here, permanently destroying
+    // any recoverable data on every subsequent read.
+    expect(localStorage.getItem('voice_games_progress')).toBe('{not valid json');
+  });
+
+  test('a parse failure does not affect sessions/words recorded after it', () => {
+    localStorage.setItem('voice_games_progress', 'not json at all');
+
+    // The app keeps working after a bad read: subsequent record calls still
+    // read-modify-write correctly and accumulate normally.
+    saveProgress(recordSessionPlayed(loadProgress(), 'boss-fight'));
+    saveProgress(recordWordSpoken(loadProgress(), 'boss-fight', 'dragon'));
+
+    const p = loadProgress();
+    expect(p['boss-fight'].sessionsPlayed).toBe(1);
+    expect(p['boss-fight'].words['dragon'].spoken).toBe(1);
+  });
+
   test('save and load round-trips correctly', () => {
     let p = emptyProgress();
     p = recordSessionPlayed(p, 'voice-racer');
