@@ -130,7 +130,7 @@ export default function SentenceBirdGame({
   const [pipeEntering, setPipeEntering] = useState(false);
   const [paused, setPaused] = useState(false);
   const [lives, setLives] = useState(5);
-  const [unlockedWords, setUnlockedWords] = useState<Set<number>>(new Set());
+  const [totalWordsInSet, setTotalWordsInSet] = useState(0);
   const [wordStudyStats, setWordStudyStats] = useState<Record<string, { spoken: number; struggled: number }>>(() => {
     try {
       return loadProgress()[GAME_ID].words;
@@ -229,22 +229,18 @@ export default function SentenceBirdGame({
     }));
 
     window.setTimeout(() => {
-      setScore((prev) => prev + 1);
-      setSpokenText('');
+      const newScore = score + 1;
 
-      setUnlockedWords((prev) => {
-        const next = new Set(prev);
-        next.add(currentIdx);
-        return next;
-      });
-
-      if (unlockedWords.size + 1 >= words.length) {
+      if (newScore >= totalWordsInSet) {
         isProcessingSuccessRef.current = false;
+        setScore(newScore);
         stop();
         setPhase('GAME_OVER');
         return;
       }
 
+      setScore(newScore);
+      setSpokenText('');
       const nextIndex = chooseNextWordIndex(currentIdx);
       setTargetIndex(nextIndex);
       setIsFlapping(false);
@@ -252,7 +248,7 @@ export default function SentenceBirdGame({
       window.setTimeout(() => setPipeEntering(false), 30);
       isProcessingSuccessRef.current = false;
     }, 700);
-  }, [chooseNextWordIndex, stop, words.length, unlockedWords.size]);
+  }, [chooseNextWordIndex, score, stop, totalWordsInSet]);
 
   onSuccessHopRef.current = handleSuccessHop;
 
@@ -267,7 +263,7 @@ export default function SentenceBirdGame({
     pausedRef.current = false;
     setLives(5);
     livesRef.current = 5;
-    setUnlockedWords(new Set());
+    setTotalWordsInSet(words.length);
     setPhase('PLAYING');
     window.setTimeout(() => setPipeEntering(false), 30);
     window.setTimeout(() => { start(); }, 150);
