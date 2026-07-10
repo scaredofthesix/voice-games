@@ -5,7 +5,6 @@ import {
   Play,
   RotateCcw,
   Volume2,
-  X,
   CheckCircle,
   AlertCircle,
   Car,
@@ -21,7 +20,6 @@ import {
 import { GameState, WordData, WordCategory, Lane, VoiceStatus, TrackStyle } from './types';
 import { BUILTIN_CATEGORIES } from './data';
 import { GameCanvas } from './components/GameCanvas';
-import { AudioVisualizer } from './components/AudioVisualizer';
 import { BubblePopperGame } from './components/BubblePopperGame';
 import { BossFightGame } from './components/BossFightGame';
 import { WordLadderGame } from './components/WordLadderGame';
@@ -318,7 +316,6 @@ export default function App() {
     createInitialRacerMovementState(1),
   );
   const [vocabIndex, setVocabIndex] = useState(0);
-  const [lastHeardTranscript, setLastHeardTranscript] = useState('');
   const [wordMatchFlash, setWordMatchFlash] = useState(false);
   const [struggleCounter, setStruggleCounter] = useState<Record<string, number>>({});
   const [wordStudyStats, setWordStudyStats] = useState<Record<string, { spoken: number; struggled: number }>>({});
@@ -508,7 +505,6 @@ export default function App() {
         }
         
         if (textResult) {
-          setLastHeardTranscript(textResult);
           evaluateVoiceTrigger(textResult);
         }
       };
@@ -554,7 +550,6 @@ export default function App() {
         saveProgress(recordWordSpoken(loadProgress(), 'voice-racer', target));
 
         speakSound.playCorrect();
-        setLastHeardTranscript('');
         break;
       }
     }
@@ -608,7 +603,6 @@ export default function App() {
     setPlayerLane(1);
     setRacerMovementState(createInitialRacerMovementState(1));
     setVocabIndex(0);
-    setLastHeardTranscript('');
     setWordStudyStats({});
     setRacerPaused(false);
     racerPausedRef.current = false;
@@ -727,8 +721,8 @@ export default function App() {
       <div className="absolute top-28 right-[10%] w-32 h-12 bg-white rounded-full opacity-60 blur-[1px] pointer-events-none animate-pulse" />
       <div className="absolute bottom-20 left-[4%] w-28 h-10 bg-white rounded-full opacity-40 blur-[1px] pointer-events-none" />
 
-      {/* HEADER BAR - hidden for the self-contained Sprint 2 games and Progress */}
-      {currentView !== 'BOSS_FIGHT' && currentView !== 'WORD_LADDER' && currentView !== 'SKATE_WORD' && currentView !== 'ASTE_WORD' && currentView !== 'TREASURE_HUNTER' && currentView !== 'SENTENCE_BIRD' && currentView !== 'ECHO_RECORDER' && currentView !== 'MAGIC_WIZARD' && currentView !== 'PROGRESS' && (
+      {/* The large portal header belongs to the hub only. */}
+      {currentView === 'HUB' && (
       <header className="bg-yellow-400 border-b-8 border-slate-900 py-3.5 px-6 md:px-12 sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
         {currentView === 'HUB' ? (
           <>
@@ -978,6 +972,17 @@ export default function App() {
           </div>
         ) : currentView === 'VOICE_RACER' ? (
           <>
+            <BackToHubButton
+              label={t('shared.backToHub')}
+              onClick={() => {
+                if (recognitionRef.current) {
+                  recognitionRef.current.onend = null;
+                  recognitionRef.current.abort();
+                }
+                setCurrentView('HUB');
+              }}
+            />
+
             {/* STATE A: GAME LOUNGE (KIDS BUBBLE THEMED INTERFACE) */}
             {gameState === 'START_SCREEN' && (
           <div className="max-w-md mx-auto py-4 px-2 flex flex-col items-center justify-center" id="voice-racer-arcade-lounge">
@@ -1108,16 +1113,6 @@ export default function App() {
 
             </div>
 
-            <BackToHubButton
-              label={t('shared.backToHub')}
-              onClick={() => {
-                speakSound.playCoin();
-                setCurrentView('HUB');
-              }}
-              className="mt-4 w-full justify-center"
-              id="btn-quit-to-hub-start-screen"
-            />
-
           </div>
         )}
 
@@ -1138,19 +1133,6 @@ export default function App() {
                 {t('racer.topic')}: {t(`wordSets.${activeCategory.id}`)}
               </div>
 
-              {/* Exit out button */}
-              <button
-                onClick={() => {
-                  setGameState('START_SCREEN');
-                  if (recognitionRef.current) {
-                    recognitionRef.current.abort();
-                  }
-                }}
-                className="bg-rose-500 hover:bg-rose-600 border-2 border-slate-950 px-3 py-1 rounded-xl text-white font-black text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-sm"
-                id="btn-quit-playing-state"
-              >
-                <X className="w-3.5 h-3.5 stroke-[3]" /> {t('shared.quit')}
-              </button>
             </div>
 
             <PauseButton
@@ -1309,34 +1291,12 @@ export default function App() {
               )}
             </div>
 
-            {/* AUDIO EQUALIZER & MONITORING BALLOON */}
-            <div className="space-y-3.5">
-              <AudioVisualizer
-                isListening={voiceStatus.status === 'listening'}
-                isMatched={wordMatchFlash}
-                errorMessage={voiceStatus.status === 'error' ? voiceStatus.message : undefined}
-              />
-
-              <div className="bg-white border-4 border-slate-900 p-4.5 rounded-3xl shadow-md text-left flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-pink-500 border-2 border-slate-900 text-white flex items-center justify-center animate-bounce">
-                    <Mic className="w-5 h-5 stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      {t('shared.wordsHeard')}
-                    </p>
-                    
-                    {/* Speech bubble bubble-gum effect */}
-                    <div className="bg-purple-100 border-2 border-slate-900 text-slate-900 font-black text-sm px-3 py-1 rounded-xl relative mt-1 inline-block">
-                      {lastHeardTranscript ? (
-                        <span className="text-purple-900 italic font-black">"{lastHeardTranscript}"</span>
-                      ) : (
-                  <span className="text-slate-500 font-bold">{t('racer.sayToJump')}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+            <div>
+              <div role="status" aria-live="polite" className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-slate-900 bg-slate-100 px-3 py-1.5">
+                <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${voiceStatus.status === 'listening' ? 'bg-emerald-500 animate-ping' : 'bg-rose-500'}`} />
+                <p className="text-[10px] font-black uppercase tracking-wider text-slate-700">
+                  {voiceStatus.status === 'listening' ? t('shared.micListening') : voiceStatus.message}
+                </p>
               </div>
             </div>
 
@@ -1460,15 +1420,6 @@ export default function App() {
                   </button>
                 </div>
                 
-                <BackToHubButton
-                  label={t('shared.backToHub')}
-                  onClick={() => {
-                    speakSound.playCoin();
-                    setCurrentView('HUB');
-                  }}
-                  className="mt-1.5 w-full justify-center"
-                  id="btn-quit-to-hub-gameover"
-                />
               </div>
 
             </div>

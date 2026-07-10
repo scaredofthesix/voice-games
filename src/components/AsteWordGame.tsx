@@ -6,7 +6,7 @@ import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
-import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
+import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 interface AsteWordGameProps {
@@ -693,6 +693,14 @@ export function AsteWordGame({
   }, [stop]);
 
   const list = wordList();
+  const primaryAsteroid = activeAsteroids.reduce<Asteroid | null>(
+    (closest, asteroid) => (!closest || asteroid.y > closest.y ? asteroid : closest),
+    null,
+  );
+  const displayedTargetWord = primaryAsteroid?.word || list[0]?.word;
+  const primaryWord = displayedTargetWord
+    ? list.find((item) => item.word.toLowerCase() === displayedTargetWord.toLowerCase())
+    : undefined;
 
   return (
     <section className="max-w-md mx-auto py-4 px-2" aria-label={strings.title}>
@@ -828,7 +836,7 @@ export function AsteWordGame({
               ref={canvasRef}
               width={400}
               height={300}
-              className="mx-auto block w-full max-w-[400px] aspect-[4/3]"
+              className="block w-full aspect-[4/3]"
             />
             {paused && (
               <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center gap-1">
@@ -837,6 +845,31 @@ export function AsteWordGame({
               </div>
             )}
           </div>
+
+          {displayedTargetWord && (
+            <TargetWordCard
+              ribbon={t('shared.targetRibbon')}
+              word={displayedTargetWord}
+              translation={primaryWord?.translationRu || primaryWord?.translation}
+              translationRu={primaryWord?.translationRu}
+              heard={lastRecognized}
+              heardLabel={t('shared.youSaidHeard')}
+              onListenEn={() => {
+                speakWord(displayedTargetWord, 'en');
+                setWordStudyStats((previous) => ({
+                  ...previous,
+                  [displayedTargetWord]: {
+                    spoken: previous[displayedTargetWord]?.spoken || 0,
+                    struggled: (previous[displayedTargetWord]?.struggled || 0) + 1,
+                  },
+                }));
+                saveProgress(recordWordStruggled(loadProgress(), 'aste-word', displayedTargetWord));
+              }}
+              onListenRu={() =>
+                primaryWord?.translationRu && speakWord(primaryWord.translationRu, 'ru')
+              }
+            />
+          )}
 
           {/* Active Target Cards with Pronunciation */}
           <div className="bg-slate-50 border-4 border-slate-900 rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
@@ -900,17 +933,6 @@ export function AsteWordGame({
               </div>
             )}
           </div>
-
-          {lastRecognized && (
-            <div className="bg-indigo-50 border-4 border-slate-900 rounded-2xl p-3 text-center shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] flex flex-col items-center justify-center gap-1">
-              <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">
-                {t('shared.youSaidHeard')}
-              </span>
-              <span className="text-sm font-black text-indigo-700 italic font-mono truncate max-w-xs">
-                "{lastRecognized}"
-              </span>
-            </div>
-          )}
 
           <div className="text-center bg-slate-100 border-2 border-slate-900 rounded-xl py-2 px-3">
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-700 animate-pulse">

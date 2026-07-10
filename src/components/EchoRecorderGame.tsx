@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 const MAX_LIVES = 3;
-import { BackToHubButton, CustomWordsSection, GameHeader, GameSetupCard, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
+import { BackToHubButton, CustomWordsSection, GameHeader, GameSetupCard, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { BUILTIN_CATEGORIES } from '../data';
@@ -600,6 +600,8 @@ export default function EchoRecorderGame({
     );
   }
 
+  const currentTarget = currentSequence[userSpeechProgressIdx];
+
   return (
     <div className={`space-y-6 rounded-[2.5rem] p-3 sm:p-5 transition-colors duration-500 ${activeTheme.gameClass}`}>
       <BackToHubButton label={t('shared.backToHub')} onClick={handleBackToHub} />
@@ -624,6 +626,23 @@ export default function EchoRecorderGame({
       />
 
       <PauseButton paused={paused} onToggle={togglePause} />
+
+      {gameState === 'recording' && currentTarget && (
+        <TargetWordCard
+          ribbon={t('shared.targetRibbon')}
+          word={currentTarget.text}
+          translation={currentTarget.translation}
+          translationRu={currentTarget.translation}
+          heard={recentTranscript}
+          heardLabel={t('shared.youSaidHeard')}
+          onListenEn={() => { void speakSequence([currentTarget]); }}
+          onListenRu={() => {
+            const utterance = new SpeechSynthesisUtterance(currentTarget.translation);
+            utterance.lang = 'ru-RU';
+            window.speechSynthesis?.speak(utterance);
+          }}
+        />
+      )}
 
       <div className={`grid grid-cols-1 sm:grid-cols-3 gap-3 ${activeTheme.accentClass}`}>
         <div className="rounded-xl border-4 border-slate-900 bg-amber-100 px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-slate-900">
@@ -765,17 +784,13 @@ export default function EchoRecorderGame({
             <div className="rounded-2xl border-4 border-slate-900 bg-slate-50 p-4 min-h-[60px] flex flex-col items-center justify-center text-center relative overflow-hidden">
               {gameState === 'recording' && showListening ? (
                 <div className="space-y-1 w-full flex flex-col items-center">
-                  {recentTranscript ? (
-                    <p className="text-xs font-black text-slate-800 italic truncate max-w-[180px]">"{recentTranscript}"</p>
-                  ) : (
-                    <div className="flex items-end gap-1.5 h-6">
-                      <motion.span animate={{ height: [6, 16, 6] }} transition={{ repeat: Infinity, duration: 0.4 }} className="w-1 bg-yellow-400 border border-slate-900" />
-                      <motion.span animate={{ height: [8, 24, 8] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-yellow-400 border border-slate-900" />
-                      <motion.span animate={{ height: [5, 12, 5] }} transition={{ repeat: Infinity, duration: 0.3 }} className="w-1 bg-yellow-400 border border-slate-900" />
-                      <motion.span animate={{ height: [10, 20, 10] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1 bg-yellow-400 border border-slate-900" />
-                      <motion.span animate={{ height: [4, 14, 4] }} transition={{ repeat: Infinity, duration: 0.45 }} className="w-1 bg-yellow-400 border border-slate-900" />
-                    </div>
-                  )}
+                  <div className="flex items-end gap-1.5 h-6">
+                    <motion.span animate={{ height: [6, 16, 6] }} transition={{ repeat: Infinity, duration: 0.4 }} className="w-1 bg-yellow-400 border border-slate-900" />
+                    <motion.span animate={{ height: [8, 24, 8] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-yellow-400 border border-slate-900" />
+                    <motion.span animate={{ height: [5, 12, 5] }} transition={{ repeat: Infinity, duration: 0.3 }} className="w-1 bg-yellow-400 border border-slate-900" />
+                    <motion.span animate={{ height: [10, 20, 10] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1 bg-yellow-400 border border-slate-900" />
+                    <motion.span animate={{ height: [4, 14, 4] }} transition={{ repeat: Infinity, duration: 0.45 }} className="w-1 bg-yellow-400 border border-slate-900" />
+                  </div>
                   <span className="text-[8px] uppercase font-black text-slate-500 animate-pulse mt-1">{strings.sayNext}: #{userSpeechProgressIdx + 1}</span>
                 </div>
               ) : (

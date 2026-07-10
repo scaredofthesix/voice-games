@@ -520,7 +520,7 @@ export function WordLadderGame({
                 );
                 return (
                   <TargetWordCard
-                    ribbon="🎯 SAY THIS / ПРОИЗНЕСИ:"
+                    ribbon={t('shared.targetRibbon')}
                     word={target}
                     translation={currentWordItem?.translationRu || currentWordItem?.translation}
                     translationRu={currentWordItem?.translationRu}

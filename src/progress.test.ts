@@ -151,14 +151,15 @@ describe('progress module', () => {
     p = recordWordStruggled(p, 'voice-racer', 'apple');
 
     const csv = progressToCsv(p);
-    const lines = csv.split('\n');
-    expect(lines[0]).toBe(
-      '"Game","Sessions Played","High Score","Word","Times Spoken","Times Struggled"',
+    const lines = csv.split('\r\n');
+    expect(lines[0]).toBe('sep=;');
+    expect(lines[1]).toBe(
+      '"Game";"Sessions Played";"High Score";"Word";"Times Spoken";"Times Struggled"',
     );
     // voice-racer line with word data
     const racerLine = lines.find((l) => l.includes('Voice Lane Racer') && l.includes('apple'));
     expect(racerLine).toBeTruthy();
-    expect(racerLine).toContain('"Voice Lane Racer","1","42","apple","1","1"');
+    expect(racerLine).toContain('"Voice Lane Racer";"1";"42";"apple";"1";"1"');
   });
 
   test('progressToCsv escapes commas and quotes in word fields', () => {
@@ -166,7 +167,7 @@ describe('progress module', () => {
     p = recordWordSpoken(p, 'voice-racer', 'nice, "quoted" word');
 
     const csv = progressToCsv(p);
-    expect(csv).toContain('"Voice Lane Racer","0","0","nice, ""quoted"" word","1","0"');
+    expect(csv).toContain('"Voice Lane Racer";"0";"0";"nice, ""quoted"" word";"1";"0"');
   });
 
   test('does not mutate input when recording', () => {

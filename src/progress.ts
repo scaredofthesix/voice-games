@@ -302,6 +302,7 @@ export function clearProgress(): AllGamesProgress {
 // ---------------------------------------------------------------------------
 
 export function progressToCsv(progress: AllGamesProgress): string {
+  const separator = ';';
   const rows: string[][] = [
     ['Game', 'Sessions Played', 'High Score', 'Word', 'Times Spoken', 'Times Struggled'],
   ];
@@ -320,9 +321,10 @@ export function progressToCsv(progress: AllGamesProgress): string {
     }
   }
 
-  return rows
-    .map((row) => row.map((value) => `"${value.replace(/"/g, '""')}"`).join(','))
-    .join('\n');
+  const dataRows = rows.map((row) =>
+    row.map((value) => `"${value.replace(/"/g, '""')}"`).join(separator),
+  );
+  return [`sep=${separator}`, ...dataRows].join('\r\n');
 }
 
 /** Trigger a CSV file download in the browser. */
