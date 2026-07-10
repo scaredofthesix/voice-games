@@ -293,6 +293,7 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
   const lastTranscriptRef = useRef('');
   const pausedRef = useRef(false);
   const livesRef = useRef(MAX_LIVES);
+  const showListeningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
   useEffect(() => { currentSequenceRef.current = currentSequence; }, [currentSequence]);
@@ -527,8 +528,26 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
       stop();
       cancelFailTimer();
     }
-    return () => { stop(); cancelFailTimer(); };
+    return cancelFailTimer;
   }, [gameState, paused, start, stop]);
+
+  useEffect(() => stop, [stop]);
+
+  const [showListening, setShowListening] = useState(false);
+
+  useEffect(() => {
+    if (isListening) {
+      setShowListening(true);
+      if (showListeningTimerRef.current) clearTimeout(showListeningTimerRef.current);
+    } else {
+      showListeningTimerRef.current = setTimeout(() => {
+        setShowListening(false);
+      }, 300);
+    }
+    return () => {
+      if (showListeningTimerRef.current) clearTimeout(showListeningTimerRef.current);
+    };
+  }, [isListening]);
 
   const handleNextChainStep = () => {
     setUserSpeechProgressIdx(0);
@@ -563,6 +582,7 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
       cancelFailTimer();
     } else {
       window.speechSynthesis?.resume();
+      if (gameState === 'recording') start();
     }
   };
 
@@ -805,7 +825,7 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
               <Mic className="w-3.5 h-3.5 text-indigo-600" /> {strings.voiceFeed}
             </h4>
             <div className="rounded-2xl border-4 border-slate-900 bg-slate-50 p-4 min-h-[60px] flex flex-col items-center justify-center text-center relative overflow-hidden">
-              {gameState === 'recording' && isListening ? (
+              {gameState === 'recording' && showListening ? (
                 <div className="space-y-1 w-full flex flex-col items-center">
                   {recentTranscript ? (
                     <p className="text-xs font-black text-slate-800 italic truncate max-w-[180px]">"{recentTranscript}"</p>
@@ -827,8 +847,8 @@ export default function EchoRecorderGame({ onBackToHub, highScore = 0, onUpdateH
           </div>
           <div className="border-t border-slate-200 pt-2 mt-2 flex items-center justify-between text-[9px] font-black uppercase text-slate-400">
             <span className="flex items-center gap-1">
-              <span className={`w-2 h-2 rounded-full ${isListening ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-              {isListening ? strings.voiceActive : strings.muted}
+              <span className={`w-2 h-2 rounded-full ${showListening ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+              {showListening ? strings.voiceActive : strings.muted}
             </span>
           </div>
         </div>
