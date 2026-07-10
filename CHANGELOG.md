@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 Assignment 6, Sprint 4 (Week 6). Completes the customer's "four more games" request from
-the Sprint 3 review and stands up the maintained handover documentation ahead of the Week 6
-trial release.
+the Sprint 3 review, unifies the interface across the ten-game roster, and stands up the
+maintained handover documentation ahead of the Week 6 trial release.
 
 ### Added
 
@@ -16,6 +16,8 @@ trial release.
   spelling game, #115), **Magic Wizard** (elemental spell-casting battle game, #116),
   **Sentence Bird** (speech-driven cloud jumping), and **Echo Microphone** (speech memory
   chain).
+- A **shared game UI kit** with tested theme and mode pickers, word-set selection,
+  target-word playback cards, and pause/resume controls (#133).
 - **`docs/customer-handover.md`**: the maintained handover artifact describing current
   transition status, what's transferred vs. retained, configuration/secrets, and
   setup/deployment/recovery/verification steps (#124).
@@ -23,6 +25,20 @@ trial release.
 
 ### Changed
 
+- Recurring setup and gameplay controls now use one layout and interaction
+  pattern across all 10 games, including Echo Microphone, while each game's
+  purpose-specific scene and mechanic remain intact (#133).
+- Sentence Bird now starts listening automatically during play, shows heard
+  speech inside the shared target card, and uses a compact listening pill
+  instead of a separate microphone and recognition panel.
+- Sentence Bird is reworked into single-word, one-pipe-at-a-time flappy play
+  with the shared word sets while keeping its bird and sky scenes.
+- Echo Microphone now draws chain words from the shared word sets and includes
+  a theme picker on its setup screen.
+- Voice Racer now fills its race frame responsively instead of rendering as a
+  small letterboxed canvas.
+- Voice Racer and Bubble Popper now place the Start action after configuration,
+  matching the other game setup screens.
 - `README.md` refreshed as the public entry point: current ten-game roster, links to the
   hosted docs site, `docs/customer-handover.md`, `CONTRIBUTING.md`, and `AGENTS.md`.
 - `docs/roadmap.md` and `docs/development-process.md` updated for the Sprint 4 / Sprint 5

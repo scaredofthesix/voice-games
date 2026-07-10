@@ -30,6 +30,7 @@ export type GameId =
   | 'word-ladder'
   | 'skate-word'
   | 'aste-word'
+  | 'treasure-hunter'
   | 'sentence-bird'
   | 'echo-recorder'
   | 'magic-wizard';
@@ -41,6 +42,7 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'word-ladder',
   'skate-word',
   'aste-word',
+  'treasure-hunter',
   'sentence-bird',
   'echo-recorder',
   'magic-wizard',
@@ -53,6 +55,7 @@ export const GAME_LABELS: Record<GameId, { en: string; ru: string; icon: string 
   'word-ladder': { en: 'Voice Rocket Climb', ru: 'Космический Старт', icon: '🚀' },
   'skate-word': { en: 'SkateWord', ru: 'СкейтВорд', icon: '🛹' },
   'aste-word': { en: 'AsteWord Destroyer', ru: 'АстеВорд Разрушитель', icon: '☄️' },
+  'treasure-hunter': { en: 'Voice Treasure Hunter', ru: 'Поиск сокровищ', icon: '🐳' },
   'sentence-bird': { en: 'Sentence Bird', ru: 'Фразоптичка', icon: '🐦' },
   'echo-recorder': { en: 'Echo Microphone', ru: 'Эхо-микрофон', icon: '🎤' },
   'magic-wizard': { en: 'Magic Wizard', ru: 'Магический Волшебник', icon: '🧙' },
@@ -71,6 +74,7 @@ const LEGACY_HIGHSCORE_KEYS: Record<GameId, string> = {
   'word-ladder': 'word_ladder_highscore',
   'skate-word': 'skate_word_highscore',
   'aste-word': 'aste_word_highscore',
+  'treasure-hunter': 'treasure_hunter_highscore',
   'sentence-bird': 'sentence_bird_highscore',
   'echo-recorder': 'echo_recorder_highscore',
   'magic-wizard': 'magic_wizard_highscore',
@@ -94,26 +98,8 @@ export function emptyProgress(): AllGamesProgress {
 // Load / Save
 // ---------------------------------------------------------------------------
 
-/** Load all progress from localStorage. Migrates legacy high scores on first load. */
-export function loadProgress(): AllGamesProgress {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<AllGamesProgress>;
-      // Ensure every game ID is present (new games added after the save).
-      const full = emptyProgress();
-      for (const id of ALL_GAME_IDS) {
-        if (parsed[id]) {
-          full[id] = { ...emptyGameProgress(), ...parsed[id] };
-        }
-      }
-      return full;
-    }
-  } catch {
-    // Corrupt data; fall through to migration / default.
-  }
-
-  // First load: migrate legacy standalone high score keys.
+/** Recover high scores from the old standalone per-game localStorage keys. */
+function progressFromLegacyHighScores(): AllGamesProgress {
   const fresh = emptyProgress();
   for (const id of ALL_GAME_IDS) {
     try {
@@ -128,8 +114,48 @@ export function loadProgress(): AllGamesProgress {
       // Ignore per-key errors.
     }
   }
-  saveProgress(fresh);
   return fresh;
+}
+
+/**
+ * Load all progress from localStorage. Migrates legacy high scores on the very
+ * first load (`voice_games_progress` has never been written).
+ *
+ * If the stored blob exists but cannot be parsed (corrupted data, e.g. from a
+ * cross-tab write race or manual tampering), this returns a fresh, legacy-
+ * high-score-recovered snapshot for the CURRENT call only and does NOT persist
+ * it. Previously this path called saveProgress() on the reset snapshot, which
+ * permanently destroyed every game's sessions/words history on a single bad
+ * read - see issue #103. Not auto-persisting means a transient read failure
+ * cannot turn into permanent data loss, and leaves the original (possibly
+ * still-recoverable) stored value untouched for a future read.
+ */
+export function loadProgress(): AllGamesProgress {
+  const raw = localStorage.getItem(STORAGE_KEY);
+
+  if (raw === null) {
+    // Genuine first load: nothing has ever been saved. Migrate legacy
+    // high-score keys and persist the migrated result as the new baseline.
+    const fresh = progressFromLegacyHighScores();
+    saveProgress(fresh);
+    return fresh;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<AllGamesProgress>;
+    // Ensure every game ID is present (new games added after the save).
+    const full = emptyProgress();
+    for (const id of ALL_GAME_IDS) {
+      if (parsed[id]) {
+        full[id] = { ...emptyGameProgress(), ...parsed[id] };
+      }
+    }
+    return full;
+  } catch {
+    // Stored value exists but is not valid JSON. Do not overwrite it -
+    // return a legacy-recovered snapshot for this read only.
+    return progressFromLegacyHighScores();
+  }
 }
 
 /** Persist the full progress blob to localStorage. */
@@ -186,6 +212,79 @@ export function recordWordStruggled(
   const prev = game.words[word] || { spoken: 0, struggled: 0 };
   game.words[word] = { ...prev, struggled: prev.struggled + 1 };
   return { ...progress, [gameId]: game };
+}
+
+// ---------------------------------------------------------------------------
+// Adaptive word selection
+// Issue #105 (Sprint 3 customer review, top Sprint 4 priority): games should
+// pick the next word using recorded progress instead of uniform randomness,
+// so struggled words resurface soon, unseen words get introduced, and
+// well-known words are shown less often.
+// ---------------------------------------------------------------------------
+
+/**
+ * A word spoken correctly this many times, without ever being struggled with,
+ * is considered "mastered" and gets a much lower selection weight (but is
+ * never fully excluded).
+ */
+export const MASTERY_THRESHOLD = 5;
+
+const WEIGHT_UNSEEN = 2;
+const WEIGHT_NORMAL = 1;
+const WEIGHT_MASTERED = 0.2;
+const WEIGHT_STRUGGLED_BASE = 4;
+const WEIGHT_STRUGGLED_CAP = 5;
+
+/**
+ * Selection weight for a single word given its recorded stats. Struggled
+ * words are weighted highest, more so the more times they were struggled with
+ * (capped so one very-struggled word doesn't dominate every round). Unseen
+ * words get a moderate weight so they get introduced once there is nothing
+ * left to reinforce. Mastered words (see MASTERY_THRESHOLD) are shown much
+ * less often, and everything else gets the baseline weight.
+ */
+export function wordSelectionWeight(stats: WordStats | undefined): number {
+  if (!stats || stats.spoken === 0) return WEIGHT_UNSEEN;
+  if (stats.struggled > 0) {
+    return WEIGHT_STRUGGLED_BASE + Math.min(stats.struggled, WEIGHT_STRUGGLED_CAP);
+  }
+  if (stats.spoken >= MASTERY_THRESHOLD) return WEIGHT_MASTERED;
+  return WEIGHT_NORMAL;
+}
+
+/**
+ * Pick the next word index using progress-weighted random selection: words
+ * struggled with in the past are much more likely to come up again, unseen
+ * words get a fair shot, and mastered words are deprioritized without being
+ * excluded. Avoids an immediate repeat of `previous` when there is more than
+ * one word to choose from. `rng` returns a float in [0, 1) (defaults to
+ * Math.random) so callers in tests can inject a fixed value.
+ */
+export function pickAdaptiveWordIndex(
+  words: readonly string[],
+  wordStats: Record<string, WordStats>,
+  previous: number = -1,
+  rng: () => number = Math.random,
+): number {
+  if (words.length === 0) return -1;
+  if (words.length === 1) return 0;
+
+  const weights = words.map((word, i) =>
+    i === previous ? 0 : wordSelectionWeight(wordStats[word]),
+  );
+  const total = weights.reduce((sum, w) => sum + w, 0);
+
+  if (total <= 0) {
+    // Every candidate got zeroed out; fall back to a plain random pick.
+    return Math.min(words.length - 1, Math.floor(rng() * words.length));
+  }
+
+  let roll = rng() * total;
+  for (let i = 0; i < weights.length; i++) {
+    roll -= weights[i];
+    if (roll < 0) return i;
+  }
+  return weights.length - 1; // floating-point rounding fallback
 }
 
 // ---------------------------------------------------------------------------

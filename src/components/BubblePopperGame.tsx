@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   Play,
-  Pause,
   RotateCcw,
   Volume2,
   X,
@@ -20,6 +19,7 @@ import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { AudioVisualizer } from './AudioVisualizer';
 import { CustomWordsManager } from './CustomWordsManager';
+import { CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 import { speakWord, speakSound, matchesWord, isSpeechSynthesisActive } from '../voice/engine';
 
@@ -83,7 +83,6 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
   const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
 
   // Collapsible drawers
-  const [isCategorySelectorExpanded, setIsCategorySelectorExpanded] = useState(false);
   const [isWarmupExpanded, setIsWarmupExpanded] = useState(false);
   const [isCustomWordsExpanded, setIsCustomWordsExpanded] = useState(false);
 
@@ -1136,8 +1135,8 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
         <div className="flex items-center gap-2">
           <span className="text-xl">🫧</span>
           <div>
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none">Game Selected</span>
-            <span className="text-sm font-black text-slate-900 uppercase">Voice Bubble Popper</span>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block leading-none">{t('bubble.gameSelected')}</span>
+            <span className="text-sm font-black text-slate-900 uppercase">{t('bubble.title')}</span>
           </div>
         </div>
 
@@ -1175,37 +1174,18 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 
           <div className="w-full bg-white rounded-4xl border-8 border-slate-900 p-6 space-y-5 bubble-shadow-pink">
             
-            {/* Play Button */}
-            <button
-              onClick={startGame}
-              className="w-full py-5 bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 border-4 border-slate-900 text-white font-black text-xl rounded-2xl flex items-center justify-center gap-3 cursor-pointer transition-all hover:scale-102 active:translate-y-1.5 active:shadow-none bubble-shadow-green uppercase tracking-wide"
-              id="btn-start-bubble-popper"
-            >
-              <Play className="w-6 h-6 fill-current stroke-[3.5] animate-bounce" /> {t('shared.startPopping')}
-            </button>
-
-            <div className="border-b-4 border-dashed border-slate-300 my-1" />
-
             {/* Atmosphere Sky Theme Choice */}
             <div className="space-y-2 text-left">
-              <label className="block text-xs font-black text-pink-500 uppercase tracking-widest ml-1">
-                {t('bubble.chooseSkyAtmosphere')}
-              </label>
-              <div className="grid grid-cols-2 gap-2.5">
-                {(['sky', 'snow', 'starry', 'nebula'] as BubbleTheme[]).map((theme) => (
-                  <button
-                    key={theme}
-                    onClick={() => setBubbleTheme(theme)}
-                    className={`px-3 py-2.5 border-4 rounded-2xl text-[11px] font-black uppercase transition-all tracking-wider cursor-pointer text-center ${
-                      bubbleTheme === theme
-                        ? 'bg-purple-500 border-slate-900 text-white bubble-shadow-purple -translate-y-0.5'
-                        : 'bg-white border-slate-300 text-slate-700 hover:border-slate-900'
-                    }`}
-                  >
-                    {t(`themes.bubble.${theme}`)}
-                  </button>
-                ))}
-              </div>
+              <OptionPicker
+                label={t('bubble.chooseSkyAtmosphere')}
+                columns={2}
+                options={(['sky', 'snow', 'starry', 'nebula'] as BubbleTheme[]).map((theme) => ({
+                  id: theme,
+                  label: t(`themes.bubble.${theme}`),
+                }))}
+                selected={bubbleTheme}
+                onSelect={setBubbleTheme}
+              />
 
               {/* Dynamic visual preview of selected bubble theme */}
               <div className={`w-full h-24 rounded-2xl border-4 border-slate-900 relative overflow-hidden transition-all duration-300 flex items-center justify-center ${
@@ -1247,158 +1227,35 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                   </>
                 )}
                 <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
-                  Preview
+                  {t('shared.preview')}
                 </div>
               </div>
             </div>
 
-            {/* Task Book Vocabulary list Selection accordion */}
-            <div className="space-y-1 text-left">
-              <button
-                onClick={() => {
-                  setIsCategorySelectorExpanded(!isCategorySelectorExpanded);
-                  setIsWarmupExpanded(false);
-                  setIsCustomWordsExpanded(false);
-                }}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer font-black text-xs text-slate-800"
-              >
-                <span className="flex items-center gap-2">
-                  {t('bubble.wordListTopic')} <span className="text-purple-600 font-black uppercase text-xs">[{activeCategory.name}]</span>
-                </span>
-                <span className="text-xs text-slate-800 bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">{isCategorySelectorExpanded ? '▲' : '▼'}</span>
-              </button>
+            <WordSetPicker
+              legend={t('shared.chooseWordSet')}
+              myWordsLabel={t('shared.myWords')}
+              activeCategoryId={activeCategory.id}
+              customWords={customWords}
+              onSelect={setActiveCategory}
+            />
 
-              {isCategorySelectorExpanded && (
-                <div className="bg-white border-4 border-slate-900 rounded-2xl p-2.5 flex flex-col gap-1.5 max-h-48 overflow-y-auto">
-                  {BUILTIN_CATEGORIES.map(category => (
-                    <button
-                      key={category.id}
-                      onClick={() => {
-                        setActiveCategory(category);
-                        setIsCategorySelectorExpanded(false);
-                      }}
-                      className={`w-full text-left px-3 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-between border-2 ${
-                        activeCategory.id === category.id
-                          ? 'bg-purple-100 border-purple-500 text-purple-900'
-                          : 'bg-slate-50 border-transparent hover:border-slate-300 text-slate-600'
-                      }`}
-                    >
-                      <span>{category.name}</span>
-                      <span className="text-[10px] bg-white border-2 border-slate-400 text-slate-700 px-1.5 py-0.5 rounded-full font-black">{category.words.length} items</span>
-                    </button>
-                  ))}
+            <ListenAndLearnSection words={activeCategory.id === 'custom' ? customWords : vocabularyList} />
 
-                  <button
-                    onClick={() => {
-                      setActiveCategory({ id: 'custom', name: 'My Words', description: '', icon: 'edit', words: customWords });
-                      setIsCategorySelectorExpanded(false);
-                    }}
-                    className={`w-full text-left px-3 py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-between border-2 ${
-                      activeCategory.id === 'custom'
-                        ? 'bg-pink-100 border-pink-400 text-pink-900'
-                        : 'bg-slate-50 border-transparent hover:border-slate-300 text-slate-600'
-                    }`}
-                  >
-                    <span>Custom Words List</span>
-                    <span className="text-[10px] bg-white border-2 border-slate-400 text-slate-700 px-1.5 py-0.5 rounded-full font-black">{customWords.length} items</span>
-                  </button>
-                </div>
-              )}
-            </div>
+            <CustomWordsSection
+              customWords={customWords}
+              onAddWord={onAddCustomWord}
+              onDeleteWord={onDeleteCustomWord}
+              onClearAll={onClearCustomWords}
+            />
 
-            {/* Listen & Speak practice Warmup accordion */}
-            <div className="space-y-1 text-left">
-              <button
-                onClick={() => {
-                  setIsWarmupExpanded(!isWarmupExpanded);
-                  setIsCategorySelectorExpanded(false);
-                  setIsCustomWordsExpanded(false);
-                }}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer font-black text-xs text-slate-800"
-              >
-                <span className="flex items-center gap-2">
-                  {t('bubble.listenAndPractice')} ({vocabularyList.length} {t('shared.wordsLabel')})
-                </span>
-                <span className="text-xs text-slate-800 bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">{isWarmupExpanded ? '▲' : '▼'}</span>
-              </button>
-
-              {isWarmupExpanded && (
-                <div className="bg-white border-4 border-slate-900 rounded-2xl p-3">
-                  {activeCategory.id === 'custom' && customWords.length === 0 ? (
-                    <div className="text-center py-4 bg-amber-50 rounded-xl border-2 border-dashed border-amber-300">
-                      <p className="text-xs text-amber-800 font-black">{t('shared.emptyCustomListBubble')}</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                      {vocabularyList.map((item, index) => (
-                        <div
-                          key={index}
-                          className="bg-yellow-50 border-2 border-slate-900 text-left p-2 rounded-xl flex flex-col justify-between"
-                        >
-                          <div className="flex items-center justify-between gap-1 w-full">
-                            <button
-                              type="button"
-                              onClick={() => speakWord(item.word)}
-                              className="text-slate-900 font-extrabold text-xs flex items-center gap-1 cursor-pointer hover:text-purple-600 truncate flex-1"
-                              aria-label={`Hear the word ${item.word}`}
-                            >
-                              <span className="truncate">{item.word}</span>
-                              <Volume2 className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-                            </button>
-                            {item.translationRu && (
-                              <button
-                                type="button"
-                                onClick={() => item.translationRu && speakWord(item.translationRu, 'ru')}
-                                className="text-blue-600 hover:text-blue-800 text-[10px] font-black uppercase flex items-center gap-0.5 cursor-pointer shrink-0"
-                                aria-label="Listen in Russian"
-                              >
-                                <Volume2 className="w-3 h-3 shrink-0" /> RU
-                              </button>
-                            )}
-                          </div>
-                          {(() => {
-                            const translation = item.translationRu || item.translation;
-                            return translation ? (
-                              <span className="text-[10px] text-purple-700 font-bold truncate mt-0.5">
-                                {translation}
-                              </span>
-                            ) : null;
-                          })()}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Custom Words adding accordion */}
-            <div className="space-y-1 text-left">
-              <button
-                onClick={() => {
-                  setIsCustomWordsExpanded(!isCustomWordsExpanded);
-                  setIsCategorySelectorExpanded(false);
-                  setIsWarmupExpanded(false);
-                }}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-slate-900 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer font-black text-xs text-slate-800"
-              >
-                <span className="flex items-center gap-2">
-                  {t('bubble.customWordsBuilder')} ({customWords.length})
-                </span>
-                <span className="text-xs text-slate-800 bg-slate-100 border-2 border-slate-900 px-1.5 rounded-md">{isCustomWordsExpanded ? '▲' : '▼'}</span>
-              </button>
-
-              {isCustomWordsExpanded && (
-                <div className="bg-white border-4 border-slate-900 rounded-2xl p-4">
-                  <CustomWordsManager
-                    customWords={customWords}
-                    onAddWord={onAddCustomWord}
-                    onDeleteWord={onDeleteCustomWord}
-                    onClearAll={onClearCustomWords}
-                  />
-                </div>
-              )}
-            </div>
+            <button
+              onClick={startGame}
+              className="w-full py-4 bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 border-4 border-slate-900 text-white font-black text-lg rounded-2xl flex items-center justify-center gap-3 cursor-pointer transition-all hover:scale-102 active:translate-y-1.5 active:shadow-none bubble-shadow-green uppercase tracking-wide"
+              id="btn-start-bubble-popper"
+            >
+              <Play className="w-6 h-6 fill-current stroke-[3.5]" /> {t('shared.startPopping')}
+            </button>
 
           </div>
         </div>
@@ -1448,22 +1305,12 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
           </div>
 
           {/* Prominent pause / resume control */}
-          <button
-            onClick={togglePause}
-            aria-pressed={paused}
-            aria-label={paused ? 'Resume the game' : 'Pause the game'}
-            className={`w-full py-3 border-4 border-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 ${
-              paused
-                ? 'bg-orange-400 hover:bg-orange-500 text-slate-900'
-                : 'bg-orange-500 hover:bg-orange-600 text-white'
-            }`}
-          >
-            {paused ? (
-              <><Play className="w-5 h-5 fill-current stroke-[3]" /> Resume</>
-            ) : (
-              <><Pause className="w-5 h-5 fill-current stroke-[3]" /> Pause</>
-            )}
-          </button>
+          <PauseButton
+            paused={paused}
+            onToggle={togglePause}
+            pauseLabel={t('shared.pause')}
+            resumeLabel={t('shared.resume')}
+          />
 
           {/* Gameplay Canvas wrapper */}
           <div className="relative border-8 border-slate-900 rounded-3xl overflow-hidden shadow-2xl bg-indigo-950">
@@ -1608,7 +1455,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
                               <button
                                 onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
                                 className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
-                                aria-label="Listen in Russian"
+                    aria-label={t('shared.listenInRussian')}
                               >
                                 RU
                               </button>

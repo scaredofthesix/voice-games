@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
-import { ArrowLeft, Play, Pause, Volume2, Heart, RotateCcw } from 'lucide-react';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
+import { ArrowLeft, Play, Heart, RotateCcw } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
+import { CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 interface MagicWizardGameProps {
@@ -14,6 +15,9 @@ interface MagicWizardGameProps {
   highScore?: number;
   onUpdateHighScore?: (score: number) => void;
   onScoreChange?: (score: number) => void;
+  onAddCustomWord?: (word: string, translation: string) => void;
+  onDeleteCustomWord?: (index: number) => void;
+  onClearCustomWords?: () => void;
 }
 
 const LOCAL_LANG = {
@@ -92,9 +96,14 @@ export function MagicWizardGame({
   highScore = 0,
   onUpdateHighScore,
   onScoreChange,
+  onAddCustomWord = () => undefined,
+  onDeleteCustomWord = () => undefined,
+  onClearCustomWords = () => undefined,
 }: MagicWizardGameProps) {
-  const { language } = useUiLanguage();
-  const strings = LOCAL_LANG[language as 'en' | 'ru'] || LOCAL_LANG.en;
+  const { language, t } = useUiLanguage();
+  const strings = Object.fromEntries(
+    Object.keys(LOCAL_LANG.en).map((key) => [key, t(`wizard.${key}`)]),
+  ) as Record<keyof typeof LOCAL_LANG.en, string>;
 
   const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
   const [phase, setPhase] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
@@ -156,14 +165,9 @@ export function MagicWizardGame({
     const list = wordList();
     if (list.length === 0) return;
 
-    let nextIdx = wordIndexRef.current;
-    if (list.length > 1) {
-      while (nextIdx === wordIndexRef.current) {
-        nextIdx = Math.floor(Math.random() * list.length);
-      }
-    } else {
-      nextIdx = 0;
-    }
+    const words = list.map((w) => w.word);
+    const wordStats = loadProgress()['magic-wizard'].words;
+    const nextIdx = pickAdaptiveWordIndex(words, wordStats, wordIndexRef.current);
     wordIndexRef.current = nextIdx;
     const word = list[nextIdx].word;
     setTarget(word);
@@ -567,26 +571,15 @@ export function MagicWizardGame({
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6" style={{ fontFamily: 'Fredoka, sans-serif' }}>
       {/* Header Navigation */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex items-center mb-6">
         <button
           onClick={onBackToHub}
           className="flex items-center gap-2 px-4 py-2 text-sm font-black uppercase text-slate-700 bg-white hover:bg-slate-100 border-4 border-slate-900 rounded-2xl cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 stroke-[3]" />
-          {language === 'ru' ? 'Хаб' : 'Hub'}
+          {t('shared.backToHub')}
         </button>
 
-        <div className="flex gap-2">
-          {phase === 'PLAYING' && (
-            <button
-              onClick={() => setPaused(!paused)}
-              className="px-4 py-2 text-sm font-black uppercase text-slate-700 bg-white hover:bg-slate-100 border-4 border-slate-900 rounded-2xl flex items-center gap-2 cursor-pointer"
-            >
-              <Pause className="w-4 h-4 stroke-[3]" />
-              {paused ? strings.resume : strings.pause}
-            </button>
-          )}
-        </div>
       </div>
 
       {phase === 'START' && (
@@ -606,27 +599,18 @@ export function MagicWizardGame({
 
             {/* CHOOSE SPELL ELEMENT */}
             <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
-              <label className="block text-xs font-black text-violet-600 uppercase tracking-widest ml-1">
-                {strings.chooseTheme}
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['fire', 'ice', 'lightning'] as const).map((themeId) => (
-                  <button
-                    key={themeId}
-                    onClick={() => {
-                      speakSound.playCoin();
-                      setTheme(themeId);
-                    }}
-                    className={`px-2 py-2 border-4 rounded-xl text-[9px] font-black uppercase transition-all tracking-wider cursor-pointer text-center ${
-                      theme === themeId
-                        ? 'bg-violet-400 border-slate-900 text-slate-955 shadow-sm -translate-y-0.5'
-                        : 'bg-white border-slate-300 text-slate-700 hover:border-slate-900'
-                    }`}
-                  >
-                    {themeId === 'fire' ? '🔥 FIRE' : themeId === 'ice' ? '❄️ ICE' : '⚡ LIGHTNING'}
-                  </button>
-                ))}
-              </div>
+              <OptionPicker
+                label={strings.chooseTheme}
+                options={(['fire', 'ice', 'lightning'] as const).map((themeId) => ({
+                  id: themeId,
+                  label: t(`themes.wizard.${themeId}`),
+                }))}
+                selected={theme}
+                onSelect={(themeId) => {
+                  speakSound.playCoin();
+                  setTheme(themeId);
+                }}
+              />
 
               {/* Active Animated Preview Canvas */}
               <div className="w-full h-24 rounded-2xl border-4 border-slate-900 relative overflow-hidden bg-white">
@@ -637,53 +621,31 @@ export function MagicWizardGame({
                   className="w-full max-w-[300px] aspect-[3/1] mx-auto block"
                 />
                 <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
-                  Preview
+                  {t('shared.preview')}
                 </div>
               </div>
             </div>
 
-            <fieldset className="text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
-              <legend className="text-xs font-black uppercase tracking-wider text-slate-700 px-1">
-                {strings.chooseSet}
-              </legend>
-              <div className="flex flex-wrap gap-2">
-                {BUILTIN_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide cursor-pointer ${
-                      activeCategory.id === cat.id
-                        ? 'bg-violet-400 border-slate-900 text-slate-900'
-                        : 'bg-white border-slate-300 text-slate-600'
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-                <button
-                  onClick={() =>
-                    setActiveCategory({
-                      id: 'custom',
-                      name: strings.myWords,
-                      description: '',
-                      icon: 'edit',
-                      words: customWords,
-                    })
-                  }
-                  className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide cursor-pointer ${
-                    activeCategory.id === 'custom'
-                      ? 'bg-violet-400 border-slate-900 text-slate-955'
-                      : 'bg-white border-slate-300 text-slate-600'
-                  }`}
-                >
-                  {strings.myWords} ({customWords.length})
-                </button>
-              </div>
-            </fieldset>
+            <WordSetPicker
+              legend={strings.chooseSet}
+              myWordsLabel={strings.myWords}
+              activeCategoryId={activeCategory.id}
+              customWords={customWords}
+              onSelect={setActiveCategory}
+            />
+
+            <ListenAndLearnSection words={activeCategory.id === 'custom' ? customWords : list} />
+
+            <CustomWordsSection
+              customWords={customWords}
+              onAddWord={onAddCustomWord}
+              onDeleteWord={onDeleteCustomWord}
+              onClearAll={onClearCustomWords}
+            />
 
             {!isSupported && (
               <p className="text-xs font-bold text-rose-600 text-center animate-pulse" role="alert">
-                Voice control needs Google Chrome.
+                {t('shared.voiceNeedsChrome')}
               </p>
             )}
 
@@ -706,7 +668,7 @@ export function MagicWizardGame({
               <span className="text-xl font-black text-slate-900">🧙‍♂️ {score}</span>
             </div>
             <div className="text-center border-x-4 border-slate-900 flex flex-col justify-center items-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-rose-600 block">LIVES</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-rose-600 block">{t('shared.lives')}</span>
               <div className="flex gap-0.5 justify-center mt-1">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <Heart
@@ -719,10 +681,17 @@ export function MagicWizardGame({
               </div>
             </div>
             <div className="text-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">BEST</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">{strings.best}</span>
               <span className="text-xl font-black text-emerald-600 block">{highScore}</span>
             </div>
           </div>
+
+          <PauseButton
+            paused={paused}
+            onToggle={() => setPaused((current) => !current)}
+            pauseLabel={strings.pause}
+            resumeLabel={strings.resume}
+          />
 
           <div className="relative border-8 border-slate-900 rounded-3xl overflow-hidden bg-white shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
             <canvas
@@ -739,41 +708,19 @@ export function MagicWizardGame({
             )}
           </div>
 
-          <div className="bg-violet-50 border-4 border-slate-900 rounded-2xl p-5 text-center relative shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
-            <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-violet-600 border-2 border-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full shadow-sm animate-bounce">
-              {strings.sayThis}
-            </span>
-
-            <p className="text-3xl font-black tracking-wide text-slate-900 leading-snug mt-1 animate-pulse">
-              {target}
-            </p>
-
-            {(() => {
-              const currentWordItem = list.find(
-                (item) => item.word.toLowerCase() === target.toLowerCase(),
-              );
-              const translation = currentWordItem?.translationRu || currentWordItem?.translation;
-              return translation ? (
-                <p className="text-sm font-extrabold text-violet-700 mt-1">
-                  {translation}
-                </p>
-              ) : null;
-            })()}
-
-            {lastRecognized && (
-              <div className="mt-4 inline-flex flex-col items-center justify-center bg-indigo-50 border-2 border-indigo-200 rounded-xl px-4 py-1.5 max-w-full">
-                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">
-                  {language === 'ru' ? 'Вы сказали / Слышу:' : 'You said / Heard:'}
-                </span>
-                <span className="text-sm font-black text-indigo-700 italic font-mono truncate max-w-xs">
-                  "{lastRecognized}"
-                </span>
-              </div>
-            )}
-
-            <div className="flex justify-center flex-wrap gap-2.5 mt-3.5">
-              <button
-                onClick={() => {
+          {(() => {
+            const currentWordItem = list.find(
+              (item) => item.word.toLowerCase() === target.toLowerCase(),
+            );
+            return (
+              <TargetWordCard
+                ribbon={strings.sayThis}
+                word={target}
+                translation={currentWordItem?.translationRu || currentWordItem?.translation}
+                translationRu={currentWordItem?.translationRu}
+                heard={lastRecognized}
+                heardLabel={t('shared.youSaidHeard')}
+                onListenEn={() => {
                   playWordTTS(target);
                   setWordStudyStats((p) => ({
                     ...p,
@@ -784,12 +731,13 @@ export function MagicWizardGame({
                   }));
                   saveProgress(recordWordStruggled(loadProgress(), 'magic-wizard', target));
                 }}
-                className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-white border-2 border-slate-900 px-3 py-1.5 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5 cursor-pointer"
-              >
-                <Volume2 className="w-4 h-4 text-violet-600 stroke-[3]" /> Listen (EN)
-              </button>
-            </div>
-          </div>
+                onListenRu={() =>
+                  currentWordItem?.translationRu && speakWord(currentWordItem.translationRu, 'ru')
+                }
+              />
+            );
+          })()}
+
         </div>
       )}
 
@@ -805,11 +753,11 @@ export function MagicWizardGame({
 
             <div className="bg-white border-4 border-slate-900 rounded-2xl p-4 space-y-2">
               <div className="flex justify-between items-center font-bold">
-                <span className="text-slate-500 uppercase text-[10px] tracking-wider">Score</span>
+                <span className="text-slate-500 uppercase text-[10px] tracking-wider">{strings.score}</span>
                 <span className="text-slate-900">🧙‍♂️ {score}</span>
               </div>
               <div className="flex justify-between items-center font-bold border-t border-slate-100 pt-2">
-                <span className="text-slate-500 uppercase text-[10px] tracking-wider">Highscore</span>
+                <span className="text-slate-500 uppercase text-[10px] tracking-wider">{strings.best}</span>
                 <span className="text-slate-900">🏆 {Math.max(highScore, score)}</span>
               </div>
             </div>
