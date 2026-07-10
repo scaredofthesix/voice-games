@@ -105,7 +105,7 @@ export function SkateWordGame({
   const lastTriggerTime = useRef(0);
 
   // Состояние скейта
-  const playerY = useRef(205);
+  const playerY = useRef(215);
   const playerVy = useRef(0);
   const isJumping = useRef(false);
   const isStoppedBeforeObstacle = useRef(false);
@@ -123,6 +123,9 @@ export function SkateWordGame({
   const obstacleX = useRef(650);
   const obstacleSpeed = useRef(2.5);
   const obstacleEmojiRef = useRef('🚧');
+  // Звезда над препятствием уже собрана: препятствие больше не останавливает
+  // скейтера и спокойно уезжает влево под ним (issue #106).
+  const obstacleCleared = useRef(false);
 
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
@@ -253,7 +256,8 @@ export function SkateWordGame({
         stop();
       }, 0);
     } else {
-      obstacleX.current = canvasWidth + 150; 
+      obstacleX.current = canvasWidth + 150;
+      obstacleCleared.current = false;
       isStoppedBeforeObstacle.current = false;
       if (phaseRef.current === 'PLAYING') nextWord();
     }
@@ -345,27 +349,32 @@ export function SkateWordGame({
         playerY.current += playerVy.current;
         playerVy.current += 0.45;
 
-        if (playerY.current >= groundY - 45) {
-          playerY.current = groundY - 45;
+        // В покое низ колёс стоит ровно на дороге (groundY): центр скейтера
+        // рисуется на playerY + 14, колёса на +15 с радиусом 6 (issue #106,
+        // раньше скейтер визуально висел в 10px над асфальтом).
+        if (playerY.current >= groundY - 35) {
+          playerY.current = groundY - 35;
           playerVy.current = 0;
           isJumping.current = false;
         }
 
-        // 2. Движение препятствия
+        // 2. Движение препятствия: подъезжает справа, ждёт слово перед
+        // скейтером, а после прыжка или собранной звезды проезжает под ним и
+        // уходит за левый край, как в динозаврике Chrome (issue #106) -
+        // никаких телепортаций в момент приземления.
         if (obstacleX.current > 200) {
           obstacleX.current -= obstacleSpeed.current;
           isStoppedBeforeObstacle.current = false;
-          obstacleTimer.current = 100; 
+          obstacleTimer.current = 100;
+        } else if (isJumping.current || obstacleCleared.current) {
+          obstacleX.current -= obstacleSpeed.current;
+          isStoppedBeforeObstacle.current = false;
         } else {
-          if (!isJumping.current) {
-            isStoppedBeforeObstacle.current = true;
-            obstacleTimer.current -= 0.17; // Время на ответ ~16 секунд для ребенка
+          isStoppedBeforeObstacle.current = true;
+          obstacleTimer.current -= 0.17; // Время на ответ ~16 секунд для ребенка
 
-            if (obstacleTimer.current <= 0) {
-              handleCollision(canvas.width);
-            }
-          } else {
-            obstacleX.current -= obstacleSpeed.current;
+          if (obstacleTimer.current <= 0) {
+            handleCollision(canvas.width);
           }
         }
 
@@ -404,28 +413,34 @@ export function SkateWordGame({
           }
         }
 
-        // 3. Сбор звездочки прыжком
-        if (isJumping.current && Math.abs(obstacleX.current - 110) < 30 && playerY.current < groundY - 80) {
-          if (obstacleX.current > 0) {
-            speakSound.playSuccess();
-            setScore((s) => s + 1);
-            for (let i = 0; i < 15; i++) {
-              particles.current.push({
-                x: obstacleX.current + 20,
-                y: groundY - 90,
-                vx: (Math.random() - 0.5) * 5,
-                vy: (Math.random() - 0.5) * 5,
-                size: 2 + Math.random() * 4,
-                color: '#f59e0b', 
-                alpha: 1,
-              });
-            }
-            obstacleX.current = -100; 
+        // 3. Сбор звездочки прыжком: звезда исчезает, а само препятствие
+        // остаётся на дороге и уезжает под скейтером влево (issue #106).
+        if (
+          !obstacleCleared.current &&
+          isJumping.current &&
+          Math.abs(obstacleX.current - 110) < 30 &&
+          playerY.current < groundY - 80 &&
+          obstacleX.current > 0
+        ) {
+          speakSound.playSuccess();
+          setScore((s) => s + 1);
+          for (let i = 0; i < 15; i++) {
+            particles.current.push({
+              x: obstacleX.current + 20,
+              y: groundY - 90,
+              vx: (Math.random() - 0.5) * 5,
+              vy: (Math.random() - 0.5) * 5,
+              size: 2 + Math.random() * 4,
+              color: '#f59e0b',
+              alpha: 1,
+            });
           }
+          obstacleCleared.current = true;
         }
 
         if (obstacleX.current < -50) {
           obstacleX.current = canvas.width + 100;
+          obstacleCleared.current = false;
           const emojis = ['🚧', '🪨', '🪵', '📦', '🧱', '🗑️', '⚠️'];
           obstacleEmojiRef.current = emojis[Math.floor(Math.random() * emojis.length)];
         }
@@ -482,8 +497,10 @@ export function SkateWordGame({
         ctx.font = '44px sans-serif';
         ctx.fillText(obstacleEmojiRef.current, obstacleX.current, groundY - 6);
 
-        ctx.font = '28px sans-serif';
-        ctx.fillText('⭐️', obstacleX.current + 8, groundY - 80);
+        if (!obstacleCleared.current) {
+          ctx.font = '28px sans-serif';
+          ctx.fillText('⭐️', obstacleX.current + 8, groundY - 80);
+        }
 
         // Показываем микрофончик 🎤 во время ожидания над преградой
         if (isStoppedBeforeObstacle.current) {
@@ -712,9 +729,13 @@ export function SkateWordGame({
     pausedRef.current = false;
     wordIndexRef.current = -1;
     obstacleX.current = 650;
+    obstacleCleared.current = false;
     particles.current = [];
     lastTriggerTime.current = 0;
     isStoppedBeforeObstacle.current = false;
+    playerY.current = 215;
+    playerVy.current = 0;
+    isJumping.current = false;
     setLastRecognized('');
     nextWord();
     start();
