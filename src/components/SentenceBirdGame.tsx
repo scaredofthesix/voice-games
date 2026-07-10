@@ -129,6 +129,8 @@ export default function SentenceBirdGame({
   const [isFlapping, setIsFlapping] = useState(false);
   const [pipeEntering, setPipeEntering] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [lives, setLives] = useState(5);
+  const [unlockedWords, setUnlockedWords] = useState<Set<number>>(new Set());
   const [wordStudyStats, setWordStudyStats] = useState<Record<string, { spoken: number; struggled: number }>>(() => {
     try {
       return loadProgress()[GAME_ID].words;
@@ -139,10 +141,12 @@ export default function SentenceBirdGame({
 
   const isProcessingSuccessRef = useRef(false);
   const pausedRef = useRef(false);
+  const livesRef = useRef(5);
   const targetWordRef = useRef('');
   const targetIndexRef = useRef(-1);
   const wordStatsRef = useRef<Record<string, { spoken: number; struggled: number }>>({});
   const onSuccessHopRef = useRef<() => void>(() => {});
+  const onLoseLifeRef = useRef<() => void>(() => {});
 
   const words = useMemo(() => normalizeWords(activeCategory), [activeCategory]);
   const activeScene = sceneDefinitions.find((scene) => scene.id === activeSceneId) || sceneDefinitions[0];
@@ -177,6 +181,7 @@ export default function SentenceBirdGame({
     }));
     saveProgress(recordWordStruggled(loadProgress(), GAME_ID, word));
     speakWord(word, 'en');
+    onLoseLifeRef.current();
   }, []);
 
   const handleTranscript = useCallback((text: string) => {
@@ -191,10 +196,27 @@ export default function SentenceBirdGame({
   const { status, isSupported, start, stop } = useSpeechRecognition(handleTranscript);
   const isListening = status.status === 'listening';
 
+  const handleLoseLife = useCallback(() => {
+    if (livesRef.current <= 1) {
+      livesRef.current = 0;
+      setLives(0);
+      stop();
+      setPhase('GAME_OVER');
+      return;
+    }
+    const next = livesRef.current - 1;
+    livesRef.current = next;
+    setLives(next);
+  }, [stop]);
+
+  onLoseLifeRef.current = handleLoseLife;
+
   const handleSuccessHop = useCallback(() => {
     if (isProcessingSuccessRef.current) return;
     const spokenWord = targetWordRef.current;
-    if (!spokenWord) return;
+    const currentIdx = targetIndexRef.current;
+    if (!spokenWord || currentIdx < 0) return;
+
     isProcessingSuccessRef.current = true;
     setIsFlapping(true);
     synths.playFlap();
@@ -209,18 +231,28 @@ export default function SentenceBirdGame({
     window.setTimeout(() => {
       setScore((prev) => prev + 1);
       setSpokenText('');
-      const nextIndex = chooseNextWordIndex(targetIndexRef.current);
+
+      setUnlockedWords((prev) => {
+        const next = new Set(prev);
+        next.add(currentIdx);
+        return next;
+      });
+
+      if (unlockedWords.size + 1 >= words.length) {
+        isProcessingSuccessRef.current = false;
+        stop();
+        setPhase('GAME_OVER');
+        return;
+      }
+
+      const nextIndex = chooseNextWordIndex(currentIdx);
       setTargetIndex(nextIndex);
       setIsFlapping(false);
       setPipeEntering(true);
       window.setTimeout(() => setPipeEntering(false), 30);
       isProcessingSuccessRef.current = false;
-      if (nextIndex === -1) {
-        stop();
-        setPhase('GAME_OVER');
-      }
     }, 700);
-  }, [chooseNextWordIndex, stop]);
+  }, [chooseNextWordIndex, stop, words.length, unlockedWords.size]);
 
   onSuccessHopRef.current = handleSuccessHop;
 
@@ -233,6 +265,9 @@ export default function SentenceBirdGame({
     setPipeEntering(true);
     setPaused(false);
     pausedRef.current = false;
+    setLives(5);
+    livesRef.current = 5;
+    setUnlockedWords(new Set());
     setPhase('PLAYING');
     window.setTimeout(() => setPipeEntering(false), 30);
     window.setTimeout(() => { start(); }, 150);
@@ -319,6 +354,7 @@ export default function SentenceBirdGame({
         subtitle={strings.subtitle}
         stats={[
           { label: strings.score, value: score, icon: <Star className="h-3.5 w-3.5 text-amber-500" />, tone: 'amber' },
+          { label: t('shared.lives'), value: lives, icon: <span className="text-red-500">❤️</span>, tone: 'violet' },
           { label: strings.best, value: Math.max(highScore, score), icon: <Trophy className="h-3.5 w-3.5 text-sky-600" />, tone: 'sky' },
         ]}
       />
