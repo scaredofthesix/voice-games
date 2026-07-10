@@ -701,7 +701,7 @@ export function WordLadderGame({
                           className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-white border-2 border-slate-900 px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5"
                           aria-label={`Hear the word ${target}`}
                         >
-                          <Volume2 className="w-3.5 h-3.5 stroke-[3] text-indigo-500" /> {t('games.wordLadder.hearIt')}
+                          <Volume2 className="w-3.5 h-3.5 stroke-[3] text-indigo-500" /> Listen (EN)
                         </button>
                         {currentWordItem?.translationRu && (
                           <button
@@ -710,7 +710,7 @@ export function WordLadderGame({
                             className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-blue-600 hover:text-blue-800 bg-white border-2 border-slate-900 px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5"
                             aria-label="Listen in Russian"
                           >
-                            <Volume2 className="w-3.5 h-3.5 stroke-[3] text-blue-500" /> Слушать перевод
+                            <Volume2 className="w-3.5 h-3.5 stroke-[3] text-blue-500" /> Слушать (RU)
                           </button>
                         )}
                       </div>
