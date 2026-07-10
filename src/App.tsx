@@ -1428,7 +1428,7 @@ export default function App() {
                               className="text-[9px] text-slate-900 font-black hover:bg-yellow-300 bg-white border-2 border-slate-900 px-2 py-1 rounded-xl cursor-pointer flex items-center gap-0.5 shadow-sm active:translate-y-0.5 duration-100 shrink-0 animate-none"
                               aria-label={`Hear the word ${targetWord}`}
                             >
-                              💡 HELP
+                              🔊 EN
                             </button>
                             {(() => {
                               const found = getSelectedVocabularyList().find(v => v.word.toLowerCase() === targetWord.toLowerCase());

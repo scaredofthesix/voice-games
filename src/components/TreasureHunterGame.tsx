@@ -998,27 +998,37 @@ export function TreasureHunterGame({
                     {strings.sayThis}
                   </span>
                   <div className="flex items-center gap-2">
-                    <span data-testid="target-word" className="text-lg md:text-xl font-black text-slate-900 tracking-wide uppercase">
+                    {/* The word itself is the hear-the-word control (issue #109),
+                        consistent with the other games' "Listen (EN)" pattern. */}
+                    <button
+                      type="button"
+                      data-testid="target-word"
+                      onClick={() => playWordTTS(target)}
+                      className="inline-flex items-center gap-1 text-lg md:text-xl font-black text-slate-900 tracking-wide uppercase cursor-pointer hover:text-purple-700"
+                      aria-label={`Hear the word ${target}`}
+                    >
                       {target}
-                    </span>
-                    {activeCategory.words.find(w => w.word.toLowerCase() === target.toLowerCase())?.translationRu && (
-                      <span className="text-[10px] md:text-xs font-black text-slate-400 px-2 py-0.5 bg-slate-100 rounded-lg border border-slate-300">
-                        {activeCategory.words.find(w => w.word.toLowerCase() === target.toLowerCase())?.translationRu}
-                      </span>
-                    )}
+                      <Volume2 className="w-4 h-4 stroke-[3] text-purple-600" />
+                    </button>
+                    {(() => {
+                      const ru = activeCategory.words.find(w => w.word.toLowerCase() === target.toLowerCase())?.translationRu;
+                      return ru ? (
+                        <button
+                          type="button"
+                          onClick={() => speakWord(ru, 'ru')}
+                          className="inline-flex items-center gap-1 text-[10px] md:text-xs font-black text-blue-700 px-2 py-0.5 bg-slate-100 rounded-lg border border-slate-300 cursor-pointer hover:bg-blue-100"
+                          aria-label="Listen in Russian"
+                        >
+                          {ru}
+                          <Volume2 className="w-3 h-3 stroke-[3]" />
+                        </button>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => playWordTTS(target)}
-                  className="p-3 bg-yellow-400 hover:bg-yellow-500 border-4 border-slate-955 rounded-2xl cursor-pointer active:translate-y-0.5"
-                  aria-label="Listen to target word"
-                >
-                  <Volume2 className="w-5 h-5 text-slate-955 stroke-[2.5]" />
-                </button>
-
                 <button
                   onClick={() => setPaused(!paused)}
                   className="p-3 bg-slate-105 hover:bg-slate-200 border-4 border-slate-955 rounded-2xl cursor-pointer active:translate-y-0.5"

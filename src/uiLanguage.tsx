@@ -63,7 +63,6 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
         winTitle: 'Orbit reached! 🚀',
         winDescription: 'You boosted your rocket through all {total} stages into deep space!',
         sayToLaunch: 'Say this word to boost',
-        hearIt: 'Hear it',
         again: 'Again',
       },
       treasureHunter: {
@@ -195,7 +194,6 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
         winTitle: 'Орбита достигнута! 🚀',
         winDescription: 'Ты успешно вывел ракету на все {total} ступеней в открытый космос!',
         sayToLaunch: 'Произнеси слово для запуска',
-        hearIt: 'Прослушать',
         again: 'Заново',
       },
       treasureHunter: {
