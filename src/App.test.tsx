@@ -33,7 +33,7 @@ describe('UI language toggle', () => {
 
     await user.click(screen.getByRole('button', { name: /play sentence bird/i }));
 
-    expect(screen.getByRole('heading', { name: /sentence bird/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /sentence bird|фразоптичка/i })).toBeInTheDocument();
   });
 
   test('opens the Echo Microphone game from the hub', async () => {

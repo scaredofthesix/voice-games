@@ -140,6 +140,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     };
 
     resizeCanvas();
+    const container = canvas.parentElement;
+    const resizeObserver = new ResizeObserver(resizeCanvas);
+    if (container) resizeObserver.observe(container);
     window.addEventListener('resize', resizeCanvas);
 
     // Initial position
@@ -838,6 +841,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     frame();
 
     return () => {
+      resizeObserver.disconnect();
       window.removeEventListener('resize', resizeCanvas);
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
@@ -846,7 +850,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   }, [lives]); // Redraw triggers on lives adjustment
 
   return (
-    <div className="relative w-full max-w-[400px] mx-auto aspect-[3/5] md:aspect-[9/16] overflow-hidden bg-slate-950 border-4 border-slate-700 rounded-3xl shadow-2xl" style={{ maxHeight: '75vh' }}>
+    <div className="relative h-full min-h-[460px] w-full overflow-hidden bg-slate-950 border-4 border-slate-700 rounded-3xl shadow-2xl">
       <canvas
         ref={canvasRef}
         className="w-full h-full block"

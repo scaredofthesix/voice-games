@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
-import { ArrowLeft, Play, Pause, RotateCcw, Heart, BookOpen, Volume2 } from 'lucide-react';
+import { ArrowLeft, Play, RotateCcw, Heart, BookOpen, Volume2 } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
+import { CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 interface AsteWordGameProps {
@@ -14,6 +15,9 @@ interface AsteWordGameProps {
   highScore?: number;
   onUpdateHighScore?: (score: number) => void;
   onScoreChange?: (score: number) => void;
+  onAddCustomWord?: (word: string, translation: string) => void;
+  onDeleteCustomWord?: (index: number) => void;
+  onClearCustomWords?: () => void;
 }
 
 const LOCAL_LANG = {
@@ -98,9 +102,14 @@ export function AsteWordGame({
   highScore = 0,
   onUpdateHighScore,
   onScoreChange,
+  onAddCustomWord = () => undefined,
+  onDeleteCustomWord = () => undefined,
+  onClearCustomWords = () => undefined,
 }: AsteWordGameProps) {
   const { language, t } = useUiLanguage();
-  const strings = LOCAL_LANG[language as 'en' | 'ru'] || LOCAL_LANG.en;
+  const strings = Object.fromEntries(
+    Object.keys(LOCAL_LANG.en).map((key) => [key, t(`aste.${key}`)]),
+  ) as Record<keyof typeof LOCAL_LANG.en, string>;
 
   const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
   const [phase, setPhase] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
@@ -633,7 +642,7 @@ export function AsteWordGame({
   const list = wordList();
 
   return (
-    <section className="max-w-md mx-auto py-4 px-2" aria-label="AsteWord game">
+    <section className="max-w-md mx-auto py-4 px-2" aria-label={strings.title}>
       <button
         onClick={() => {
           stop();
@@ -660,27 +669,18 @@ export function AsteWordGame({
 
           {/* CHOOSE SPACE SECTOR ENVIRONMENT */}
           <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
-            <label className="block text-xs font-black text-indigo-500 uppercase tracking-widest ml-1">
-              {strings.chooseTheme}
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['galaxy', 'supernova', 'aurora'] as const).map((themeId) => (
-                <button
-                  key={themeId}
-                  onClick={() => {
-                    speakSound.playCoin();
-                    setTheme(themeId);
-                  }}
-                  className={`px-2 py-2 border-4 rounded-xl text-[9px] font-black uppercase transition-all tracking-wider cursor-pointer text-center ${
-                    theme === themeId
-                      ? 'bg-indigo-400 border-slate-900 text-slate-900 shadow-sm -translate-y-0.5'
-                      : 'bg-white border-slate-300 text-slate-650 hover:border-slate-900'
-                  }`}
-                >
-                  {themeId === 'galaxy' ? 'GALAXY' : themeId === 'supernova' ? 'SUPERNOVA' : 'AURORA'}
-                </button>
-              ))}
-            </div>
+            <OptionPicker
+              label={strings.chooseTheme}
+              options={(['galaxy', 'supernova', 'aurora'] as const).map((themeId) => ({
+                id: themeId,
+                label: t(`themes.aste.${themeId}`),
+              }))}
+              selected={theme}
+              onSelect={(themeId) => {
+                speakSound.playCoin();
+                setTheme(themeId);
+              }}
+            />
 
             {/* Активный анимированный Preview Canvas */}
             <div className="w-full h-24 rounded-2xl border-4 border-slate-900 relative overflow-hidden bg-white">
@@ -691,78 +691,47 @@ export function AsteWordGame({
                 className="w-full max-w-[300px] aspect-[3/1] mx-auto block"
               />
               <div className="absolute top-2 left-2 bg-slate-900/80 border border-white/20 text-white font-black text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md z-10">
-                Preview
+                {t('shared.preview')}
               </div>
             </div>
           </div>
 
-          <fieldset className="text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
-            <legend className="text-xs font-black uppercase tracking-wider text-slate-700 px-1">
-              {strings.chooseSet}
-            </legend>
-            <div className="flex flex-wrap gap-2">
-              {BUILTIN_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide cursor-pointer ${
-                    activeCategory.id === cat.id
-                      ? 'bg-indigo-400 border-slate-900 text-slate-900'
-                      : 'bg-white border-slate-300 text-slate-650'
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-              <button
-                onClick={() =>
-                  setActiveCategory({
-                    id: 'custom',
-                    name: strings.myWords,
-                    description: '',
-                    icon: 'edit',
-                    words: customWords,
-                  })
-                }
-                className={`px-3 py-1.5 rounded-xl border-4 text-xs font-black uppercase tracking-wide cursor-pointer ${
-                  activeCategory.id === 'custom'
-                    ? 'bg-pink-400 border-slate-900 text-pink-900'
-                    : 'bg-white border-slate-300 text-slate-650'
-                }`}
-              >
-                {strings.myWords} ({customWords.length})
-              </button>
-            </div>
-          </fieldset>
+          <WordSetPicker
+            legend={strings.chooseSet}
+            myWordsLabel={strings.myWords}
+            activeCategoryId={activeCategory.id}
+            customWords={customWords}
+            onSelect={setActiveCategory}
+          />
+
+          <ListenAndLearnSection words={activeCategory.id === 'custom' ? customWords : list} />
+
+          <CustomWordsSection
+            customWords={customWords}
+            onAddWord={onAddCustomWord}
+            onDeleteWord={onDeleteCustomWord}
+            onClearAll={onClearCustomWords}
+          />
 
           {/* CHOOSE DIFFICULTY */}
           <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
-            <label className="block text-xs font-black text-indigo-500 uppercase tracking-widest ml-1">
-              {strings.chooseDifficulty}
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['easy', 'medium', 'hard'] as const).map((diffId) => (
-                <button
-                  key={diffId}
-                  onClick={() => {
-                    speakSound.playCoin();
-                    setDifficulty(diffId);
-                  }}
-                  className={`px-2 py-2 border-4 rounded-xl text-[9px] font-black uppercase transition-all tracking-wider cursor-pointer text-center ${
-                    difficulty === diffId
-                      ? 'bg-indigo-400 border-slate-900 text-slate-900 shadow-sm -translate-y-0.5'
-                      : 'bg-white border-slate-300 text-slate-650 hover:border-slate-900'
-                  }`}
-                >
-                  {strings[diffId]}
-                </button>
-              ))}
-            </div>
+            <OptionPicker
+              label={strings.chooseDifficulty}
+              options={(['easy', 'medium', 'hard'] as const).map((diffId) => ({
+                id: diffId,
+                label: strings[diffId],
+              }))}
+              selected={difficulty}
+              onSelect={(diffId) => {
+                speakSound.playCoin();
+                setDifficulty(diffId);
+              }}
+            />
           </div>
 
           {!isSupported && (
             <p className="text-xs font-bold text-rose-600 text-center" role="alert">
-              Voice control needs Google Chrome.
+              {t('shared.voiceNeedsChrome')}
             </p>
           )}
 
@@ -784,7 +753,7 @@ export function AsteWordGame({
               <span className="text-xl font-black text-slate-900">☄️ {score}</span>
             </div>
             <div className="text-center border-x-4 border-slate-900 flex flex-col justify-center items-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-cyan-600 block">SHIELD</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-cyan-600 block">{t('aste.shield')}</span>
               <div className="flex gap-0.5 justify-center mt-1">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <Heart
@@ -797,10 +766,17 @@ export function AsteWordGame({
               </div>
             </div>
             <div className="text-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">BEST</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">{strings.best}</span>
               <span className="text-xl font-black text-emerald-600 block">{highScore}</span>
             </div>
           </div>
+
+          <PauseButton
+            paused={paused}
+            onToggle={togglePause}
+            pauseLabel={strings.pause}
+            resumeLabel={strings.resume}
+          />
 
           <div className="relative border-8 border-slate-900 rounded-3xl overflow-hidden bg-slate-950 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
             <canvas
@@ -820,11 +796,11 @@ export function AsteWordGame({
           {/* Active Target Cards with Pronunciation */}
           <div className="bg-slate-50 border-4 border-slate-900 rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
             <span className="block text-xs font-black uppercase tracking-widest text-indigo-500 mb-2.5">
-              {language === 'ru' ? '🎯 ТЕКУЩИЕ ЦЕЛИ (НАЖМИ ДЛЯ ОЗВУЧКИ):' : '🎯 ACTIVE TARGETS (CLICK TO HEAR):'}
+              {t('aste.activeTargets')}
             </span>
             {activeAsteroids.length === 0 ? (
               <p className="text-xs text-slate-500 font-bold py-1.5 text-center bg-white border-2 border-dashed border-slate-300 rounded-xl">
-                {language === 'ru' ? 'Ожидание появления астероидов...' : 'Waiting for asteroids to enter sector...'}
+                {t('aste.waitingTargets')}
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-1">
@@ -883,23 +859,13 @@ export function AsteWordGame({
           {lastRecognized && (
             <div className="bg-indigo-50 border-4 border-slate-900 rounded-2xl p-3 text-center shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] flex flex-col items-center justify-center gap-1">
               <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">
-                {language === 'ru' ? 'Вы сказали / Слышу:' : 'You said / Heard:'}
+                {t('shared.youSaidHeard')}
               </span>
               <span className="text-sm font-black text-indigo-700 italic font-mono truncate max-w-xs">
                 "{lastRecognized}"
               </span>
             </div>
           )}
-
-          <button
-            onClick={togglePause}
-            className={`w-full py-3 border-4 border-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer ${
-              paused ? 'bg-orange-400 hover:bg-orange-500 text-slate-900' : 'bg-orange-500 hover:bg-orange-600 text-white'
-            }`}
-          >
-            {paused ? <Play className="w-4 h-4 fill-current stroke-[3]" /> : <Pause className="w-4 h-4 fill-current stroke-[3]" />}
-            {paused ? strings.resume : strings.pause}
-          </button>
 
           <div className="text-center bg-slate-100 border-2 border-slate-900 rounded-xl py-2 px-3">
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-700 animate-pulse">
@@ -914,27 +880,27 @@ export function AsteWordGame({
           <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
             
             <span className="inline-flex items-center gap-1 bg-rose-400 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest">
-              {language === 'ru' ? 'СЕКТОР ЗАЩИЩЕН!' : 'SECTOR DEFENSE OVER!'}
+              {t('aste.sessionOver')}
             </span>
 
             <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
-              {language === 'ru' ? 'КОНЕЦ ИГРЫ!' : 'GAME OVER!'}
+              {t('aste.gameOver')}
             </h2>
             <p className="text-xs text-slate-500 leading-normal font-bold">
-              {language === 'ru' ? 'Твой космический отчет по сбитым астероидам:' : 'Review your cosmic asteroid spelling stats below:'}
+              {t('aste.report')}
             </p>
 
             {/* Score logs */}
             <div className="grid grid-cols-2 gap-3.5 my-6">
               <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
                 <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest text-center">
-                  {language === 'ru' ? 'СБИТО АСТЕРОИДОВ' : 'ASTEROIDS CRUSHED'}
+                {t('aste.destroyedTotal')}
                 </span>
                 <span className="text-lg font-black text-sky-900 mt-1 font-mono">☄️ {score}</span>
               </div>
               <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
-                  {language === 'ru' ? 'РЕКОРД ГАЛАКТИКИ' : 'GALAXY RECORD'}
+                {t('aste.galaxyRecord')}
                 </span>
                 <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} lasers</span>
               </div>
@@ -945,7 +911,7 @@ export function AsteWordGame({
               <div className="flex items-center gap-2 mb-2.5">
                 <BookOpen className="w-5 h-5 text-indigo-700 stroke-[2.5]" />
                 <h4 className="text-xs font-black text-indigo-900 uppercase tracking-widest">
-                  {language === 'ru' ? 'Словарь космо-сектора:' : 'Your Spelling Scorecard:'}
+              {t('aste.scorecard')}
                 </h4>
               </div>
 
@@ -953,7 +919,7 @@ export function AsteWordGame({
                 {Object.keys(wordStudyStats).length === 0 ? (
                   <div className="text-center py-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl">
                     <p className="text-xs text-slate-500 font-extrabold leading-normal">
-                      {language === 'ru' ? 'Астероидов не сбито. Защити планету в следующий раз!' : 'No asteroids destroyed yet. Fire those lasers!'}
+                  {t('aste.emptyReport')}
                     </p>
                   </div>
                 ) : (
@@ -972,11 +938,11 @@ export function AsteWordGame({
 
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span className="text-[8px] md:text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-1 rounded-full font-black border border-emerald-300">
-                            {language === 'ru' ? 'Сбито:' : 'Kills:'} {spoken}
+                            {t('aste.kills')}: {spoken}
                           </span>
                           {struggled > 0 && (
                             <span className="text-[8px] md:text-[9px] text-amber-800 bg-amber-100 px-1.5 py-1 rounded-full font-black border border-amber-350">
-                              {language === 'ru' ? 'Подсказок:' : 'Clues:'} {struggled}
+                            {t('shared.clues')}: {struggled}
                             </span>
                           )}
                           <button
@@ -994,7 +960,7 @@ export function AsteWordGame({
                               <button
                                 onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
                                 className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
-                                aria-label="Listen in Russian"
+                        aria-label={t('shared.listenInRussian')}
                               >
                                 RU
                               </button>
@@ -1024,7 +990,7 @@ export function AsteWordGame({
                 }}
                 className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-900 text-white font-black text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase"
               >
-                🏰 {language === 'ru' ? 'ВЫЙТИ В ХАБ' : 'EXIT TO PORTAL'}
+            🏰 {t('shared.exitToPortal')}
               </button>
             </div>
 
