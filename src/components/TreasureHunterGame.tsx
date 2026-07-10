@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Play, Pause, Volume2, RotateCcw, BookOpen } from 'lucide-react';
 
-import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled } from '../progress';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex } from '../progress';
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
@@ -154,14 +154,9 @@ export function TreasureHunterGame({
     const list = wordList();
     if (list.length === 0) return;
 
-    let nextIdx = wordIndexRef.current;
-    if (list.length > 1) {
-      while (nextIdx === wordIndexRef.current) {
-        nextIdx = Math.floor(Math.random() * list.length);
-      }
-    } else {
-      nextIdx = 0;
-    }
+    const words = list.map((w) => w.word);
+    const wordStats = loadProgress()['treasure-hunter'].words;
+    const nextIdx = pickAdaptiveWordIndex(words, wordStats, wordIndexRef.current);
 
     wordIndexRef.current = nextIdx;
     const word = list[nextIdx].word;

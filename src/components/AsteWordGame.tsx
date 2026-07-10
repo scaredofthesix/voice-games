@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
+import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
 import { ArrowLeft, Play, Pause, RotateCcw, Heart, BookOpen, Volume2 } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
@@ -358,7 +358,9 @@ export function AsteWordGame({
           spawnTimer.current = 0;
           const list = wordList();
           if (list.length > 0) {
-            const randomWord = list[Math.floor(Math.random() * list.length)].word;
+            const words = list.map((w) => w.word);
+            const wordStats = loadProgress()['aste-word'].words;
+            const randomWord = words[pickAdaptiveWordIndex(words, wordStats)];
             asteroids.current.push({
               id: astIdCounter.current++,
               x: 40 + Math.random() * (canvas.width - 80),
