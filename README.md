@@ -1,16 +1,25 @@
 # Voice Games - Team 40
 
-A browser-based **voice-controlled English learning portal for children**. The child speaks the target word to trigger in-game actions - **voice is the only controller**. Features four games: Voice Racer (lane racing), Voice Bubble Popper, Boss Fight (a 15-boss endless gauntlet), and Voice Rocket Climb (formerly Word Ladder), with more planned.
+A browser-based **voice-controlled English learning portal for children**. The child speaks
+the target word to trigger in-game actions - **voice is the only controller**. The product
+now has **ten games**: Voice Racer, Voice Bubble Popper, Boss Fight, Voice Rocket Climb,
+Skate Word, Aste Word Destroyer, Voice Treasure Hunter, Sentence Bird, Echo Microphone, and
+Magic Wizard, plus a Progress view that tracks each child's practice over time.
 
-- **Live (public, HTTPS):** https://scaredofthesix.github.io/voice-games/ - works in Google Chrome; allow microphone access when prompted.
+- **Live product (public, HTTPS):** https://scaredofthesix.github.io/voice-games/ - works in Google Chrome; allow microphone access when prompted.
   > Note: the GitHub Pages link may not open from some networks or regions without a VPN. This is an external GitHub availability restriction outside the team's control; the same build can always be run locally from this repository (see "Local development setup" below).
+- **Hosted documentation site:** https://scaredofthesix.github.io/voice-games/docs/
+- **Customer handover:** [docs/customer-handover.md](./docs/customer-handover.md) - current transition status, what's transferred vs. retained, setup/recovery steps.
+- **Contributing:** [CONTRIBUTING.md](./CONTRIBUTING.md) · **AI agent guidance:** [AGENTS.md](./AGENTS.md)
 - **Release:** [v0.3.0 - MVP v2 (Sprint 3)](https://github.com/scaredofthesix/voice-games/releases/tag/v0.3.0) · [CHANGELOG](./CHANGELOG.md)
+  > A newer batch of four games has already shipped to `main` since v0.3.0; a new tagged release covering them is part of the current sprint (see [docs/roadmap.md](./docs/roadmap.md)).
+- **Assignment 6 submission index (in progress):** [reports/week6/README.md](./reports/week6/README.md) · [reports/week7/README.md](./reports/week7/README.md)
 - **Assignment 5 submission index:** [reports/week5/README.md](./reports/week5/README.md)
 - **Assignment 4 submission index:** [reports/week4/README.md](./reports/week4/README.md)
 - **Assignment 3 submission index:** [reports/week3/README.md](./reports/week3/README.md)
 - **Assignment 2 submission index:** [reports/week2/README.md](./reports/week2/README.md)
 - **License:** [MIT](./LICENSE)
-- Internal mirror on the Innopolis VM (network/VPN only, runs the released build, currently v0.3.0): https://10.93.26.180:8085/ - see the [MVP v0 report](./reports/week2/mvp-v0-report.md) for the original setup.
+- Internal mirror on the Innopolis VM (network/VPN only, runs a released build): https://10.93.26.180:8085/ - see the [MVP v0 report](./reports/week2/mvp-v0-report.md) for the original setup, and [docs/customer-handover.md](./docs/customer-handover.md) for its current retained-by-the-team status.
 
 > **Browser support:** voice recognition uses the Web Speech API and works only in **Google Chrome**; other browsers are not supported.
 
@@ -23,7 +32,7 @@ A browser-based **voice-controlled English learning portal for children**. The c
 - **Architecture:** [overview + views](./docs/architecture/README.md) · [decision records (ADRs)](./docs/architecture/adr/README.md)
 - **Process:** [development process and configuration management](./docs/development-process.md)
 - **Docs site (MkDocs):** https://scaredofthesix.github.io/voice-games/docs/
-- **Milestones:** [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) · [Sprint 2](https://github.com/scaredofthesix/voice-games/milestone/2) · [Sprint 3 (MVP v2)](https://github.com/scaredofthesix/voice-games/milestone/3)
+- **Milestones:** [Sprint 1](https://github.com/scaredofthesix/voice-games/milestone/1) · [Sprint 2](https://github.com/scaredofthesix/voice-games/milestone/2) · [Sprint 3 (MVP v2)](https://github.com/scaredofthesix/voice-games/milestone/3) · [Sprint 4 (Week 6 trial)](https://github.com/scaredofthesix/voice-games/milestone/4) · [Sprint 5 (MVP v3)](https://github.com/scaredofthesix/voice-games/milestone/5)
 
 ## Tech stack
 
@@ -123,22 +132,30 @@ Since the Web Speech API requires a secure context, modern browsers **block micr
 .
 ├── LICENSE                 # MIT (repository), see Attribution
 ├── README.md               # this file
+├── CONTRIBUTING.md         # how to propose a change
+├── AGENTS.md                # guidance for AI coding agents
 ├── CHANGELOG.md            # Keep a Changelog / SemVer
 ├── index.html              # Vite entry -> src/main.tsx
 ├── package.json
 ├── vite.config.ts
-├── docs/                   # user stories, roadmap, DoD, quality docs, architecture + ADRs, dev process, UAT
+├── docs/                   # user stories, roadmap, DoD, quality docs, architecture + ADRs,
+│                           # dev process, UAT, customer-handover.md
 ├── vitest.config.ts        # test runner + coverage thresholds
 ├── lighthouserc.json       # accessibility audit config (additional QA check)
 ├── src/
-│   ├── App.tsx             # app shell, view routing (HUB / VOICE_RACER / BUBBLE_POPPER / BOSS_FIGHT / WORD_LADDER)
+│   ├── App.tsx             # app shell, view routing (HUB + 10 games + PROGRESS)
 │   ├── data.ts             # built-in word categories
 │   ├── types.ts            # shared TypeScript types
 │   ├── utils.ts            # speech synthesis, word matching helpers
-│   ├── gameLogic.ts        # pure game rules (Boss Fight, Voice Rocket Climb) + tests
-│   ├── useSpeechRecognition.ts  # shared Web Speech API hook
-│   └── components/         # GameCanvas, BubblePopperGame, BossFightGame, WordLadderGame, AudioVisualizer, CustomWordsManager
-└── reports/                # Assignment deliverables (week2, week3, week4)
+│   ├── gameLogic.ts        # pure game rules shared across games + tests
+│   ├── progress.ts         # per-word practice statistics (Progress view), localStorage-backed
+│   ├── voice/              # shared voice-recognition/anti-feedback engine used by all games
+│   ├── useSpeechRecognition.ts  # Web Speech API hook
+│   └── components/         # one file per game (VoiceRacer/BubblePopper/BossFight/RocketClimb/
+│                           # SkateWord/AsteWord/TreasureHunter/SentenceBird/EchoRecorder/
+│                           # MagicWizard), GameCanvas, AudioVisualizer, CustomWordsManager,
+│                           # ProgressView
+└── reports/                # Assignment deliverables (week2 .. week7)
 
 ```
 
