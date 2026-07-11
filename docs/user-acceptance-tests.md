@@ -179,11 +179,20 @@ https://scaredofthesix.github.io/voice-games/.
 | 2026-07-03 | UAT-06 | Customer | Pass | Finite 3-boss mode selected on the setup screen and bosses defeated with phrases and fruit words (Endless unlock shown in the demo). Observations: hit counter font too small and its meaning (total vs remaining) ambiguous; duplicated boss health bar questioned (#108). |
 | 2026-07-03 | UAT-07 | Customer | Pass | Progress view showed the games played and the stats survived a page reload on the customer's device. Related demo-time bug on the team machine: one game showed 0 sessions / 0 words while the record showed 120 (#103); CSV export requested in readable columns (#104). |
 | 2026-07-03 | UAT-08 | Customer | Pass | UI opened in Russian by default; pressing the Help/hear-it control while the microphone was live did not register as the customer's pronunciation (no self-scoring). Observation: rename "Help" to "EN" or a flag icon (#109). |
+| 2026-07-11 | UAT-09 | Customer | Pass | Voice Treasure Hunter: correct pronunciation increased the money counter as expected. |
+| 2026-07-11 | UAT-10 | Customer | Issues found | Sentence Bird: text/background contrast bug; continuous listening scored unrelated speech as an incorrect attempt; game-over flow did not match the customer's expectation (#140). |
+| 2026-07-11 | UAT-11 | Customer | Pass, with one issue | Echo Microphone: the target phrase was visible on screen, undermining the memory mechanic; Short Phrases produced 3 cards for 1 phrase (#141). |
+| 2026-07-11 | UAT-12 | Customer | Issues found | Magic Wizard: spell-cast hitbox problems observed; customer flagged mechanic overlap with Voice Treasure Hunter (#142). |
+| 2026-07-11 | UAT-13 | Customer | Inconclusive | Could not confirm live whether adaptive word selection re-weights within the current round rather than only between rounds; team acknowledged the behavior was unverified (#143). |
+| 2026-07-11 | UAT-14 | Customer | Pass | Both tested games returned to the hub via the same button; audio from the previous game was still audible after switching games (#145). |
 
 Results were recorded during the recorded Sprint Review / UAT sessions of
-2026-06-27 and 2026-07-03 and are summarized (without private customer details)
-in [`reports/week4/customer-review-summary.md`](../reports/week4/customer-review-summary.md)
-and [`reports/week5/sprint-review-summary.md`](../reports/week5/sprint-review-summary.md).
-All executed scenarios passed; the observations above are tracked as
-next-release backlog items and the demonstrated builds (v0.2.1, v0.3.0) are not
-changed in response.
+2026-06-27, 2026-07-03, and 2026-07-11, and are summarized (without private customer
+details) in
+[`reports/week4/customer-review-summary.md`](../reports/week4/customer-review-summary.md),
+[`reports/week5/sprint-review-summary.md`](../reports/week5/sprint-review-summary.md), and
+[`reports/week6/sprint-review-summary.md`](../reports/week6/sprint-review-summary.md). All
+scenarios executed on 2026-06-27 and 2026-07-03 passed and did not change the demonstrated
+builds (v0.2.1, v0.3.0). The 2026-07-11 session found real issues in three of the four new
+games and an unverified adaptive-selection behavior; these are tracked as Sprint 5 issues
+(#140-#143, #145) rather than changing the already-tagged `v0.4.0` release.
