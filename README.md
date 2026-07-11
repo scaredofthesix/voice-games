@@ -35,9 +35,11 @@ Each game trains pronunciation through a different mechanic:
 A built-in **Progress** view tracks sessions, high scores, and practised words per game,
 and exports everything to CSV for parents and teachers.
 
-| A game: Voice Treasure Hunter | Progress tracking and CSV export |
+| Boss Fight | Voice Bubble Popper |
 |---|---|
-| ![Voice Treasure Hunter setup](./docs/images/game-treasure-hunter.png) | ![My Progress view](./docs/images/progress.png) |
+| ![Boss Fight gameplay](./docs/images/game-boss-fight.png) | ![Voice Bubble Popper gameplay](./docs/images/game-bubble-popper.png) |
+
+![My Progress view with CSV export](./docs/images/progress.png)
 
 ## Quick start: add your own words
 

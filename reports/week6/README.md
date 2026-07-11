@@ -189,10 +189,11 @@ item is PR #147, this report). 93% complete at capture time; 100% once #147 merg
 
 ![Sprint 4 milestone](./images/milestone-sprint4.png)
 
-**Sprint 4 Backlog (Project board view)** - the Sprint Backlog view groups items by Sprint;
-the Product Backlog view is the same board without grouping.
+The Sprint 4 milestone above is the authoritative Sprint 4 Backlog view (the milestone is the
+Sprint container per the assignment). The GitHub Projects board below is the full **Product
+Backlog** (all user stories with status and linked PRs).
 
-![Sprint Backlog board grouped by Sprint](./images/sprint4-backlog.png)
+![Product Backlog board](./images/project-board.png)
 
 **`v0.4.0` Week 6 trial release** - tagged on the protected default branch, linking the
 Sprint 4 milestone, `docs/customer-handover.md`, this report, and run instructions.
@@ -204,10 +205,15 @@ approved by a second reviewer, with CI checks green.
 
 ![Reviewed PR #127](./images/reviewed-pr-127.png)
 
-**Week 6 trial build (`v0.4.0`)** - the hub with all ten games, and the Progress view with
-per-game statistics and CSV export.
+**Week 6 trial build (`v0.4.0`)** - the hub with all ten games, two representative games in
+play (Boss Fight, Voice Bubble Popper), and the Progress view with per-game statistics and
+CSV export.
 
 ![App hub with ten games](./images/app-hub-v0.4.0.png)
+
+| Boss Fight | Voice Bubble Popper |
+|---|---|
+| ![Boss Fight gameplay](./images/game-boss-fight.png) | ![Voice Bubble Popper gameplay](./images/game-bubble-popper.png) |
 
 ![Progress view with CSV export](./images/progress-view.png)
 </content>
