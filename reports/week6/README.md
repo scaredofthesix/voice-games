@@ -205,15 +205,21 @@ approved by a second reviewer, with CI checks green.
 
 ![Reviewed PR #127](./images/reviewed-pr-127.png)
 
-**Week 6 trial build (`v0.4.0`)** - the hub with all ten games, two representative games in
-play (Boss Fight, Voice Bubble Popper), and the Progress view with per-game statistics and
-CSV export.
+**Week 6 trial build (`v0.4.0`)** - the hub now lists all ten games.
 
-![App hub with ten games](./images/app-hub-v0.4.0.png)
+![App hub with ten games](../../docs/images/hub.png)
 
-| Boss Fight | Voice Bubble Popper |
+**The four games that completed the ten-game roster in Sprint 4** - Voice Treasure Hunter,
+Sentence Bird, Echo Microphone, and Magic Wizard, all playable with voice input:
+
+| Voice Treasure Hunter | Sentence Bird |
 |---|---|
-| ![Boss Fight gameplay](./images/game-boss-fight.png) | ![Voice Bubble Popper gameplay](./images/game-bubble-popper.png) |
+| ![Voice Treasure Hunter](../../docs/images/game-treasure-hunter.png) | ![Sentence Bird](../../docs/images/game-sentence-bird.png) |
+| **Echo Microphone** | **Magic Wizard** |
+| ![Echo Microphone](../../docs/images/game-echo-microphone.png) | ![Magic Wizard](../../docs/images/game-magic-wizard.png) |
 
-![Progress view with CSV export](./images/progress-view.png)
+**Adaptive word selection and progress export** - the Progress view with per-game statistics
+and the CSV export teachers can download:
+
+![Progress view with CSV export](../../docs/images/progress.png)
 </content>

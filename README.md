@@ -9,13 +9,40 @@ voice is the only controller**. No login, no install, and no accounts.
 **Live product (public, HTTPS):** https://scaredofthesix.github.io/voice-games/
 
 Open it in **Google Chrome** (desktop or Android) and allow microphone access when
-prompted. That is the only step needed to start playing.
+prompted. That is the only step needed to start playing. The hub below lists all ten games;
+tap **Play** on any card to start.
 
 > The GitHub Pages link may not open from some networks or regions without a VPN. This is
 > an external GitHub availability restriction outside the team's control; you can always
 > run the same build locally instead (see [For developers](#for-developers)).
 
 ![Voice Games hub with all ten games](./docs/images/hub.png)
+
+## How to play (example: Boss Fight)
+
+Every game works the same way in four steps.
+
+**1. Set up the game.** Press **Play** on a game, then pick a theme, a word set (or your own
+words), and difficulty, and press **Start**.
+
+![Boss Fight setup screen: theme, word set, and difficulty](./docs/images/game-boss-fight-menu.png)
+
+**2. Play with your voice.** The target word appears on the card at the bottom (here,
+*Peach*). Say it out loud - the microphone listens and your hero acts. Not sure how it
+sounds? Press **Listen (EN)** or **Listen (RU)** first.
+
+![Boss Fight in play: say the word on the card to strike the boss](./docs/images/game-boss-fight.png)
+
+**3. Add your own words.** On any game's setup screen, open **Add my own words**, type an
+English word or phrase and its translation, and press **Add to my list**. Then choose
+**My words** as the word set.
+
+![Add a custom word and its translation](./docs/images/custom-words.png)
+
+**4. Track progress.** The **Progress** screen (top-right of the hub) shows sessions, high
+scores, and practised words per game, and exports everything to CSV for parents and teachers.
+
+![My Progress view with per-game stats and CSV export](./docs/images/progress.png)
 
 ## The ten games
 
@@ -28,29 +55,17 @@ Each game trains pronunciation through a different mechanic:
 5. **SkateWord** - jump the skateboard over obstacles by saying the approaching words.
 6. **AsteWord Destroyer** - shoot down asteroids by pronouncing the words written on them.
 7. **Voice Treasure Hunter** - steer a submarine deeper to collect treasure chests.
-8. **Sentence Bird** - guide a bird through the clouds by speaking sentence steps.
+8. **Sentence Bird** - guide a bird through the pipes by speaking the words.
 9. **Echo Microphone** - listen to a growing word chain and repeat it back from memory.
 10. **Magic Wizard** - cast elemental spells by pronouncing words to defeat dark forces.
 
-A built-in **Progress** view tracks sessions, high scores, and practised words per game,
-and exports everything to CSV for parents and teachers.
-
-| Boss Fight | Voice Bubble Popper |
+| Voice Bubble Popper | Sentence Bird |
 |---|---|
-| ![Boss Fight gameplay](./docs/images/game-boss-fight.png) | ![Voice Bubble Popper gameplay](./docs/images/game-bubble-popper.png) |
-
-![My Progress view with CSV export](./docs/images/progress.png)
-
-## Quick start: add your own words
-
-Every game can practise a custom word list. On a game's setup screen:
-
-1. Open **Add my own words**.
-2. Type an English word or phrase and its translation.
-3. Press **Add to my list**.
-4. Choose **My words** as the word set and start playing.
-
-![Adding a custom word and translation](./docs/images/custom-words.png)
+| ![Voice Bubble Popper](./docs/images/game-bubble-popper.png) | ![Sentence Bird](./docs/images/game-sentence-bird.png) |
+| **Voice Treasure Hunter** | **Magic Wizard** |
+| ![Voice Treasure Hunter](./docs/images/game-treasure-hunter.png) | ![Magic Wizard](./docs/images/game-magic-wizard.png) |
+| **Echo Microphone** | |
+| ![Echo Microphone](./docs/images/game-echo-microphone.png) | |
 
 ## Documentation
 
