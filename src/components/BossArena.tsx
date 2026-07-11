@@ -522,10 +522,10 @@ function drawBoss(c: CanvasRenderingContext2D, s: ArenaState): void {
   c.restore();
 }
 
-function updateOrbs(c: CanvasRenderingContext2D, s: ArenaState): void {
+function updateOrbs(c: CanvasRenderingContext2D, s: ArenaState, dtFactor: number): void {
   for (let i = s.orbs.length - 1; i >= 0; i--) {
     const o = s.orbs[i];
-    o.p += 0.06;
+    o.p += 0.06 * dtFactor;
     const x = o.x + (o.tx - o.x) * o.p;
     const y = o.y + (o.ty - o.y) * o.p - Math.sin(o.p * Math.PI) * 40;
     c.save();
@@ -544,14 +544,14 @@ function updateOrbs(c: CanvasRenderingContext2D, s: ArenaState): void {
   }
 }
 
-function updateParticles(c: CanvasRenderingContext2D, s: ArenaState): void {
+function updateParticles(c: CanvasRenderingContext2D, s: ArenaState, dtFactor: number): void {
   for (let i = s.particles.length - 1; i >= 0; i--) {
     const p = s.particles[i];
-    p.x += p.vx;
-    p.y += p.vy;
-    if (p.gravity) p.vy += 0.25;
-    else p.vy += 0.08;
-    p.life += 1;
+    p.x += p.vx * dtFactor;
+    p.y += p.vy * dtFactor;
+    if (p.gravity) p.vy += 0.25 * dtFactor;
+    else p.vy += 0.08 * dtFactor;
+    p.life += dtFactor;
     const alpha = 1 - p.life / p.maxLife;
     if (alpha <= 0) {
       s.particles.splice(i, 1);
@@ -667,26 +667,34 @@ export function BossArena(props: BossArenaProps) {
     resize();
     window.addEventListener('resize', resize);
 
+    let lastTime = performance.now();
+
     const frame = () => {
       const s = stateRef.current;
-      s.t += 1;
+      const now = performance.now();
+      let dt = now - lastTime;
+      lastTime = now;
+      if (dt > 100) dt = 16.67;
+      const dtFactor = dt / (1000 / 160);
+
+      s.t += dtFactor;
       // ease bossAnim toward present(1) unless dying / won
       const target = s.defeated ? 0 : 1;
-      s.bossAnim += (target - s.bossAnim) * 0.12;
+      s.bossAnim += (target - s.bossAnim) * (1 - Math.pow(1 - 0.12, dtFactor));
 
       drawBackground(c, s);
       drawHero(c, s);
-      updateOrbs(c, s);
+      updateOrbs(c, s, dtFactor);
       drawBoss(c, s);
-      updateParticles(c, s);
+      updateParticles(c, s, dtFactor);
 
-      if (s.victory && s.t % 4 === 0) {
+      if (s.victory && Math.random() < 0.25 * dtFactor) {
         spawnBurst(s, Math.random() * s.w, -4, pick(CONFETTI), 2, true);
       }
-      if (s.shake > 0) s.shake--;
-      if (s.flash > 0) s.flash--;
-      if (s.lunge > 0) s.lunge--;
-      if (s.strikeAnim > 0) s.strikeAnim--;
+      if (s.shake > 0) s.shake = Math.max(0, s.shake - dtFactor);
+      if (s.flash > 0) s.flash = Math.max(0, s.flash - dtFactor);
+      if (s.lunge > 0) s.lunge = Math.max(0, s.lunge - dtFactor);
+      if (s.strikeAnim > 0) s.strikeAnim = Math.max(0, s.strikeAnim - dtFactor);
 
       rafRef.current = requestAnimationFrame(frame);
     };

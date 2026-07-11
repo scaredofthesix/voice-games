@@ -252,13 +252,13 @@ function drawBackground(c: CanvasRenderingContext2D, s: ClimbState): void {
   }
 }
 
-function updateParticles(c: CanvasRenderingContext2D, s: ClimbState): void {
+function updateParticles(c: CanvasRenderingContext2D, s: ClimbState, dtFactor: number): void {
   for (let i = s.particles.length - 1; i >= 0; i--) {
     const p = s.particles[i];
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += 0.12;
-    p.life += 1;
+    p.x += p.vx * dtFactor;
+    p.y += p.vy * dtFactor;
+    p.vy += 0.12 * dtFactor;
+    p.life += dtFactor;
     const alpha = 1 - p.life / p.maxLife;
     if (alpha <= 0) {
       s.particles.splice(i, 1);
@@ -525,28 +525,36 @@ export function RocketClimb(props: RocketClimbProps) {
     resize();
     window.addEventListener('resize', resize);
 
+    let lastTime = performance.now();
+
     const frame = () => {
       const s = stateRef.current;
-      s.t += 1;
-      s.progress += (s.targetProgress - s.progress) * 0.1;
+      const now = performance.now();
+      let dt = now - lastTime;
+      lastTime = now;
+      if (dt > 100) dt = 16.67;
+      const dtFactor = dt / (1000 / 160);
+
+      s.t += dtFactor;
+      s.progress += (s.targetProgress - s.progress) * (1 - Math.pow(1 - 0.1, dtFactor));
 
       drawBackground(c, s);
-      updateParticles(c, s);
+      updateParticles(c, s, dtFactor);
       drawRocket(c, s);
 
-      if (s.won && s.t % 5 === 0) {
+      if (s.won && Math.random() < 0.2 * dtFactor) {
         s.particles.push({
           x: Math.random() * s.w,
           y: 0,
-          vx: (Math.random() - 0.5) * 2,
-          vy: Math.random() * 2 + 1,
+          vx: (Math.random() - 0.5) * 2 * dtFactor,
+          vy: (Math.random() * 2 + 1) * dtFactor,
           life: 0,
           maxLife: 60,
           color: pick(['#fde68a', '#ffffff', '#a5b4fc']),
           size: 2,
         });
       }
-      if (s.shake > 0) s.shake--;
+      if (s.shake > 0) s.shake = Math.max(0, s.shake - dtFactor);
 
       rafRef.current = requestAnimationFrame(frame);
     };

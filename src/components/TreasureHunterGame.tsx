@@ -213,6 +213,7 @@ export function TreasureHunterGame({
 
     let animId: number;
     let frame = 0;
+    let lastTime = performance.now();
 
     // Helper for submarine drawing
     const drawRoundedRect = (ctx2d: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
@@ -230,7 +231,12 @@ export function TreasureHunterGame({
     };
 
     const previewLoop = () => {
-      frame++;
+      const now = performance.now();
+      let dt = now - lastTime;
+      lastTime = now;
+      if (dt > 100) dt = 16.67;
+      const dtFactor = dt / (1000 / 160);
+      frame += dtFactor;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Deep sea background
@@ -461,11 +467,17 @@ export function TreasureHunterGame({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    let lastTime = performance.now();
+
     const updateAndDraw = () => {
       if (phaseRef.current !== 'PLAYING') return;
 
       const w = canvas.width;
       const h = canvas.height;
+
+      const now = performance.now();
+      let dt = now - lastTime;
+      lastTime = now;
 
       // Handle pause state
       if (pausedRef.current) {
@@ -481,8 +493,11 @@ export function TreasureHunterGame({
         return;
       }
 
+      if (dt > 100) dt = 16.67;
+      const dtFactor = dt / (1000 / 160);
+
       // Smooth depth progression
-      depth.current += (targetDepth.current - depth.current) * 0.05;
+      depth.current += (targetDepth.current - depth.current) * (1 - Math.pow(1 - 0.05, dtFactor));
 
       // BACKGROUND - changes depending on depth!
       // shallow (0-200) -> teal/cyan
@@ -517,7 +532,7 @@ export function TreasureHunterGame({
       // UPDATE TIMER PROGRESS
       // Decrements progress. If hits 0, trigger timeout.
       if (!chestCollected.current) {
-        timerProgress.current = Math.max(0, timerProgress.current - 0.25);
+        timerProgress.current = Math.max(0, timerProgress.current - 0.25 * dtFactor);
         if (timerProgress.current <= 0) {
           handleTimeout();
         }
@@ -529,38 +544,38 @@ export function TreasureHunterGame({
         subTargetY.current = chestY.current;
         const dx = chestX.current - 150;
         const dy = chestY.current - subY.current;
-        subY.current += dy * 0.1;
+        subY.current += dy * (1 - Math.pow(1 - 0.1, dtFactor));
         subAngle.current = Math.atan2(dy, dx + 100) * 0.5;
         
         // Propeller bubbles
-        if (Math.random() > 0.4) {
+        if (Math.random() < 0.6 * dtFactor) {
           bubbles.current.push({
             x: 100,
             y: subY.current + 15,
-            vx: -3 - Math.random() * 3,
-            vy: (Math.random() - 0.5) * 2,
+            vx: (-3 - Math.random() * 3) * dtFactor,
+            vy: ((Math.random() - 0.5) * 2) * dtFactor,
             size: 2 + Math.random() * 4,
             alpha: 1,
-            growth: 0.03,
+            growth: 0.03 * dtFactor,
           });
         }
         
-        chestScale.current = Math.max(0, chestScale.current - 0.05);
+        chestScale.current = Math.max(0, chestScale.current - 0.05 * dtFactor);
       } else {
         // Standard idle bobbing
         const targetY = subTargetY.current + Math.sin(Date.now() / 250) * 8;
-        subY.current += (targetY - subY.current) * 0.06;
+        subY.current += (targetY - subY.current) * (1 - Math.pow(1 - 0.06, dtFactor));
         subAngle.current = (targetY - subY.current) * 0.02;
 
-        if (Math.random() > 0.7) {
+        if (Math.random() < 0.3 * dtFactor) {
           bubbles.current.push({
             x: 100,
             y: subY.current + 15,
-            vx: -1 - Math.random() * 2,
-            vy: (Math.random() - 0.5) * 1.5,
+            vx: (-1 - Math.random() * 2) * dtFactor,
+            vy: ((Math.random() - 0.5) * 1.5) * dtFactor,
             size: 1 + Math.random() * 3,
             alpha: 0.8,
-            growth: 0.02,
+            growth: 0.02 * dtFactor,
           });
         }
       }
@@ -570,7 +585,7 @@ export function TreasureHunterGame({
         b.x += b.vx;
         b.y += b.vy;
         b.size += b.growth;
-        b.alpha = Math.max(0, b.alpha - 0.015);
+        b.alpha = Math.max(0, b.alpha - 0.015 * dtFactor);
         if (b.alpha <= 0) {
           bubbles.current.splice(index, 1);
           return;
@@ -587,7 +602,7 @@ export function TreasureHunterGame({
 
       // DRAW SEA LIFE IN BACKGROUND
       seaLifes.current.forEach((fish) => {
-        fish.x -= fish.speed;
+        fish.x -= fish.speed * dtFactor;
         if (fish.x < -100) {
           fish.x = w + 100;
           fish.y = 50 + Math.random() * 300;

@@ -317,9 +317,16 @@ export function MagicWizardGame({
 
     let animId: number;
     let frame = 0;
+    let lastTime = performance.now();
 
     const previewLoop = () => {
-      frame++;
+      const now = performance.now();
+      let dt = now - lastTime;
+      lastTime = now;
+      if (dt > 100) dt = 16.67;
+      const dtFactor = dt / (1000 / 160);
+      frame += dtFactor;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Dark magical background
@@ -376,82 +383,93 @@ export function MagicWizardGame({
     if (!ctx) return;
 
     let animId: number;
+    let lastTime = performance.now();
 
     const gameLoop = () => {
       if (phaseRef.current !== 'PLAYING') return;
 
-      if (!pausedRef.current) {
-        // Shaking update
-        if (wizardPunchEffect.current > 0) {
-          wizardPunchEffect.current *= 0.85;
-          if (wizardPunchEffect.current < 0.1) wizardPunchEffect.current = 0;
-        }
+      const now = performance.now();
+      let dt = now - lastTime;
+      lastTime = now;
 
-        // Timer decrease
-        monsterTimer.current -= 0.24; // Around 7 seconds to say the word (2x speed)
-        if (monsterTimer.current <= 0) {
-          handleCollision();
-        }
+      if (pausedRef.current) {
+        animId = requestAnimationFrame(gameLoop);
+        return;
+      }
 
-        // Spells projectile updates
-        for (let idx = spellProjectiles.current.length - 1; idx >= 0; idx--) {
-          const proj = spellProjectiles.current[idx];
-          proj.x += proj.vx;
-          // Spawn spell sparks trail
-          const colors = { fire: '#ea580c', ice: '#0891b2', lightning: '#ca8a04' };
-          particles.current.push({
-            x: proj.x,
-            y: proj.y + (Math.random() - 0.5) * 6,
-            vx: -2 - Math.random() * 2,
-            vy: (Math.random() - 0.5) * 2,
-            size: 2 + Math.random() * 2,
-            color: colors[proj.element],
-            alpha: 0.8,
-          });
+      if (dt > 100) dt = 16.67;
+      const dtFactor = dt / (1000 / 160);
 
-          // Check hit
-          if (proj.x >= proj.targetX - 20) {
-            spellProjectiles.current.splice(idx, 1);
-            speakSound.playCorrect();
-            setScore((s) => s + 1);
+      // Shaking update
+      if (wizardPunchEffect.current > 0) {
+        wizardPunchEffect.current *= Math.pow(0.85, dtFactor);
+        if (wizardPunchEffect.current < 0.1) wizardPunchEffect.current = 0;
+      }
 
-            // Explode monster particles
-            const colorsMap = { fire: ['#f97316', '#ef4444', '#facc15'], ice: ['#06b6d4', '#3b82f6', '#93c5fd'], lightning: ['#eab308', '#ca8a04', '#fef08a'] };
-            const mExplodeColor = colorsMap[proj.element];
-            for (let i = 0; i < 25; i++) {
-              particles.current.push({
-                x: proj.targetX,
-                y: proj.targetY,
-                vx: (Math.random() - 0.5) * 7,
-                vy: (Math.random() - 0.5) * 7,
-                size: 2 + Math.random() * 4,
-                color: mExplodeColor[Math.floor(Math.random() * mExplodeColor.length)],
-                alpha: 1,
-              });
-            }
-            activeMonster.current = null;
-            setTimeout(() => {
-              spawnMonster();
-            }, 600);
+      // Timer decrease
+      monsterTimer.current -= 0.24 * dtFactor; // Around 7 seconds to say the word (2x speed)
+      if (monsterTimer.current <= 0) {
+        handleCollision();
+      }
+
+      // Spells projectile updates
+      for (let idx = spellProjectiles.current.length - 1; idx >= 0; idx--) {
+        const proj = spellProjectiles.current[idx];
+        proj.x += proj.vx * dtFactor;
+        // Spawn spell sparks trail
+        const colors = { fire: '#ea580c', ice: '#0891b2', lightning: '#ca8a04' };
+        particles.current.push({
+          x: proj.x,
+          y: proj.y + (Math.random() - 0.5) * 6,
+          vx: (-2 - Math.random() * 2) * dtFactor,
+          vy: ((Math.random() - 0.5) * 2) * dtFactor,
+          size: 2 + Math.random() * 2,
+          color: colors[proj.element],
+          alpha: 0.8,
+        });
+
+        // Check hit
+        if (proj.x >= proj.targetX - 20) {
+          spellProjectiles.current.splice(idx, 1);
+          speakSound.playCorrect();
+          setScore((s) => s + 1);
+
+          // Explode monster particles
+          const colorsMap = { fire: ['#f97316', '#ef4444', '#facc15'], ice: ['#06b6d4', '#3b82f6', '#93c5fd'], lightning: ['#eab308', '#ca8a04', '#fef08a'] };
+          const mExplodeColor = colorsMap[proj.element];
+          for (let i = 0; i < 25; i++) {
+            particles.current.push({
+              x: proj.targetX,
+              y: proj.targetY,
+              vx: (Math.random() - 0.5) * 7 * dtFactor,
+              vy: (Math.random() - 0.5) * 7 * dtFactor,
+              size: 2 + Math.random() * 4,
+              color: mExplodeColor[Math.floor(Math.random() * mExplodeColor.length)],
+              alpha: 1,
+            });
           }
+          activeMonster.current = null;
+          setTimeout(() => {
+            spawnMonster();
+          }, 600);
         }
+      }
 
-        // Particles updates
-        for (let idx = particles.current.length - 1; idx >= 0; idx--) {
-          const p = particles.current[idx];
-          p.x += p.vx;
-          p.y += p.vy;
-          p.alpha -= 0.02;
-          if (p.alpha <= 0) {
-            particles.current.splice(idx, 1);
-          }
+      // Particles updates
+      for (let idx = particles.current.length - 1; idx >= 0; idx--) {
+        const p = particles.current[idx];
+        p.x += p.vx * dtFactor;
+        p.y += p.vy * dtFactor;
+        p.alpha -= 0.02 * dtFactor;
+        if (p.alpha <= 0) {
+          particles.current.splice(idx, 1);
         }
+      }
 
-        // Slow monsters approach (for tension)
-        if (activeMonster.current) {
-          const ratio = monsterTimer.current / 100;
-          activeMonster.current.x = 130 + ratio * 390;
-        }
+      // Slow monsters approach (for tension)
+      if (activeMonster.current) {
+        const ratio = monsterTimer.current / 100;
+        activeMonster.current.x = 130 + ratio * 390;
       }
 
       // Drawing
