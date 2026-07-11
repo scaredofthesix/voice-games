@@ -9,7 +9,7 @@ updated whenever access, deployment, limitations, or transition status change.
 
 | | |
 |---|---|
-| **Handover level reached** | **Ready for independent use**, confirmed at the Week 6 transition-readiness meeting (2026-07-11) - the product is reachable by anyone with a link and a Chrome browser, with no account, install, or team involvement required. The customer confirmed public access, GitHub Pages continuous deployment, and repository read access all work as described (see `reports/week6/sprint-review-transcript.md`, Part 3). |
+| **Handover level reached** | **Ready for independent use** as the team's technical assessment for the Week 6 trial: the product is reachable by anyone with a link and a Chrome browser, with no account, install, or team involvement required. The customer verified public access and repository read access during the guided Week 6 session, but independent use outside the session and customer-side deployment were not confirmed. Final customer confirmation of the handover level is a Week 7 activity. |
 | **Customer-confirmation status** | **Accepted with follow-up items.** At the Week 6 meeting the customer explicitly accepted the team's plan to fix the identified game and documentation issues and present the result in Week 7 ("I explicitly accept that plan in this meeting"). This is an interim status for the Week 6 trial, not the final Assignment 6 Part 8 confirmation; the Week 7 transition-confirmation request will determine the final status recorded in `reports/week7/README.md`. |
 
 This table is authoritative for the three levels defined in Assignment 6 Part 8
@@ -136,6 +136,11 @@ first, developer-facing content in its own section, coursework wording removed) 
 any factual correction. That restructuring, a new `docs/README.md` directory index, and the
 pinned TypeScript version were completed during Week 6 finalization
 ([issue #146](https://github.com/scaredofthesix/voice-games/issues/146), closed).
+
+This is the team's Week 6 sufficiency assessment, not a claim that the customer used the
+product independently outside the guided trial or deployed it on their side. The customer
+accepted the Week 7 follow-up plan, and final acceptance against this handover document will
+be requested and recorded during Week 7.
 
 **Known remaining gaps, honestly stated:**
 - The documentation is written for a developer/TA audience. There is no separate,

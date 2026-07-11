@@ -5,18 +5,19 @@ children (Team 40).
 
 ## Sprint 4 - Week 6 trial release
 
-- **Product Backlog board:** https://github.com/scaredofthesix/voice-games/issues
-- **Sprint 4 Backlog board (Project view):** https://github.com/users/scaredofthesix/projects/1
-  (filter the Sprint field to `Sprint 4`).
-- **Sprint 4 milestone:** https://github.com/scaredofthesix/voice-games/milestone/4 (14
-  issues, 0 open, closed on schedule before the 2026-07-12 deadline).
+- **Product Backlog board:** https://github.com/users/scaredofthesix/projects/1/views/1
+- **Sprint 4 Backlog board:** https://github.com/users/scaredofthesix/projects/1/views/3
+  (the `Sprint 4` group is the selected Sprint Backlog view).
+- **Sprint 4 milestone:** https://github.com/scaredofthesix/voice-games/milestone/4 (16
+  completed items, 0 open, closed on schedule on 2026-07-12).
 - **Sprint Goal:** Deliver a stable Week 6 trial / handover-candidate release that responds
   to the Sprint 3 customer review feedback (adaptive word selection above all), stand up the
   maintained customer-handover and contributor/agent guidance the team will need for
   transition, and refresh the public entry-point docs ahead of the Week 6
   transition-readiness meeting.
 - **Sprint dates:** 2026-07-06 to 2026-07-12.
-- **Total Sprint 4 size:** 30 Story Points (issues #103, #105, #106, #107, #108, #109, #124).
+- **Total Sprint 4 size:** 37 Story Points (issues #103, #105, #106, #107, #108, #109,
+  #124, #133, and #150).
 
 ## Week 6 trial-release summary
 
@@ -36,8 +37,8 @@ completes the ten-game roster with the four games merged just before Sprint 4 pl
 - The maintained handover documentation set: `docs/customer-handover.md`, `CONTRIBUTING.md`,
   `AGENTS.md`, refreshed `README.md` and `CHANGELOG.md` (#124, PR #126).
 
-`main` is green at the release commit: `npm run lint` (TypeScript check) clean, 13 test
-files / 99 tests passing, `npm run build` clean.
+`main` is green at the Week 6 release-candidate commit: TypeScript check, 13 test files / 99
+tests, coverage gates, production build, Lighthouse, and the Lychee link check all pass.
 
 ## Access and documentation links
 
@@ -47,6 +48,14 @@ files / 99 tests passing, `npm run build` clean.
 - [docs/customer-handover.md](../../docs/customer-handover.md)
 - [Hosted documentation site](https://scaredofthesix.github.io/voice-games/docs/)
 - [docs/roadmap.md](../../docs/roadmap.md)
+- [Run, verification, and deployment instructions](../../README.md#setup-and-deployment)
+- [CHANGELOG.md](../../CHANGELOG.md)
+- [UAT scenarios and execution history](../../docs/user-acceptance-tests.md)
+- [Testing strategy](../../docs/testing.md)
+- [Quality requirements](../../docs/quality-requirements.md)
+- [Quality requirement tests](../../docs/quality-requirement-tests.md)
+- [Architecture documentation](../../docs/architecture/README.md)
+- [Development process](../../docs/development-process.md)
 - **Week 6 product access:** live build at https://scaredofthesix.github.io/voice-games/,
   and the tagged release: https://github.com/scaredofthesix/voice-games/releases/tag/v0.4.0
 
@@ -104,6 +113,10 @@ things need to be fixed, and then it will be in good shape." Specifically:
   Week 7 as sufficient for now; see `docs/customer-handover.md`'s handover-status table for
   the resulting interim `Accepted with follow-up items` status (final Part 8 confirmation is
   a Week 7 activity).
+- **Use and operation evidence:** the customer executed UAT during a guided Week 6 session.
+  Independent use outside that session was not confirmed. The product was not deployed or
+  operated on the customer side. The team-operated public GitHub Pages deployment remains
+  the agreed access arrangement, and customer-side deployment was not requested.
 
 ## Customer feedback response table
 
@@ -122,7 +135,7 @@ things need to be fixed, and then it will be in good shape." Specifically:
 | Aste Word Destroyer Russian translations | [#107](https://github.com/scaredofthesix/voice-games/issues/107) | Closed, Sprint 4 |
 | Boss Fight HUD clarity | [#108](https://github.com/scaredofthesix/voice-games/issues/108) | Closed, Sprint 4 |
 | Consistent hear-the-word control | [#109](https://github.com/scaredofthesix/voice-games/issues/109) | Closed, Sprint 4 |
-| CSV export readable columns | [#104](https://github.com/scaredofthesix/voice-games/issues/104) | Closed, Sprint 4 (PR #137) |
+| CSV export readable columns | [#104](https://github.com/scaredofthesix/voice-games/issues/104) | Completed during Week 6, tracked in Sprint 5 (PR #137) |
 
 ## Feedback not yet addressed
 
@@ -142,7 +155,7 @@ after this submission, per the Sprint 4/Sprint 5 boundary.
 | UAT-11 | Echo Microphone | Pass, with one issue | Target phrase visible on screen undermines the memory mechanic; short-phrase word sets produced 3 cards for 1 phrase. See #141. |
 | UAT-12 | Magic Wizard | Issues found | Spell-cast hitbox problems; customer flagged mechanic overlap with Voice Treasure Hunter. See #142. |
 | UAT-13 | Adaptive word selection | Inconclusive | Could not confirm live whether selection is dynamic within the current round; team acknowledged the behavior was unverified. See #143. |
-| UAT-14 | Unified hub navigation | Pass | Both tested games returned to the hub via the same button; audio from the previous game was still audible after switching (see #145). |
+| UAT-14 | Unified hub navigation | Pass with issue | Both tested games returned to the hub via the same button; audio from the previous game was still audible after switching (see #145). |
 
 Full detail and quotes are in
 [`sprint-review-transcript.md`](./sprint-review-transcript.md). This session's UAT execution
@@ -176,16 +189,16 @@ release, and run the Week 7 final-transition confirmation against `docs/customer
 
 | Team member | Issues | PRs | Review | Testing / docs / deployment |
 |---|---|---|---|---|
-| scaredofthesix (Maxim) | #103, #105, #106, #107, #108, #109, #124, #133 (author/assignee); ran the Week 6 customer session | #126, #127, #128, #129, #130, #131, #132, #134, #137 | Reviewed/approved #118, #122, #123, #135, #136 | Authored `docs/customer-handover.md`, `CONTRIBUTING.md`, `AGENTS.md`, README refresh; verified lint/tests/build before every PR; wrote this report from the session transcript |
-| Kotumbaa | #116, #115 (pre-Sprint-4 new games) | #119, #122, #123, #138 (version bump + 160 FPS refactor) | Reviewed/approved #129, #130, #131, #132, #134, #137 | - |
-| flikspy | #103 (implementer, per grooming) | #120, #121 (pre-Sprint-4 new games), #135, #136 (Sentence Bird rework, Echo Microphone word-set picker) | Reviewed/approved #127 | - |
+| scaredofthesix (Maxim) | #103, #105, #106, #107, #108, #109, #124, #133, #150 (author/assignee); ran the Week 6 customer session | #126, #127, #128, #129, #130, #131, #132, #134, #137 and the #150 cleanup PR | Reviewed/approved #118, #122, #123, #135, #136 | Authored `docs/customer-handover.md`, `CONTRIBUTING.md`, `AGENTS.md`, README refresh; verified lint/tests/build; wrote and reconciled this report from the session transcript and live GitHub evidence |
+| Kotumbaa | #115, #116 (pre-Sprint-4 new games) | #119, #122, #123, #138 (release documentation), #139 (version bump and 160 FPS refactor) | Reviewed/approved #129, #130, #131, #132, #134, #137 | Release preparation and code review |
+| flikspy | - | #120, #121 (pre-Sprint-4 new games), #135, #136 (Sentence Bird rework, Echo Microphone word-set picker) | Reviewed/approved #127 | Progress-loss fix review |
 | MMavInno | - | - | Reviewed/approved #138, #139 | - |
 | TeraloToxin | - | - | Reviewed/approved #126 | - |
 
 ## Evidence screenshots
 
-**Sprint 4 milestone** - Sprint Goal, dates, and 14 issues/PRs closed (the single "Open"
-item is PR #147, this report). 93% complete at capture time; 100% once #147 merges.
+**Sprint 4 milestone** - Sprint Goal, dates, and all selected work complete. The live
+milestone is closed with 16 completed items and 0 open items.
 
 ![Sprint 4 milestone](./images/milestone-sprint4.png)
 
@@ -208,8 +221,8 @@ approved by a second reviewer, with CI checks green.
 
 ![App hub with ten games](../../docs/images/hub.png)
 
-**The four games that completed the ten-game roster in Sprint 4** - Voice Treasure Hunter,
-Sentence Bird, Echo Microphone, and Magic Wizard, all playable with voice input:
+**The four pre-Sprint-4 games first included in the Week 6 trial release** - Voice Treasure
+Hunter, Sentence Bird, Echo Microphone, and Magic Wizard, all playable with voice input:
 
 | Voice Treasure Hunter | Sentence Bird |
 |---|---|
@@ -221,4 +234,3 @@ Sentence Bird, Echo Microphone, and Magic Wizard, all playable with voice input:
 and the CSV export teachers can download:
 
 ![Progress view with CSV export](../../docs/images/progress.png)
-</content>

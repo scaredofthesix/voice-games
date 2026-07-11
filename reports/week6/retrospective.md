@@ -4,9 +4,10 @@ Held after the Sprint 4 Sprint Review / Week 6 customer meeting (2026-07-11).
 
 ## What went well
 
-- Sprint 4 milestone closed at 14/14 issues with the `v0.4.0` trial release tagged, released,
-  and CI-green before the customer meeting, so the meeting itself covered a real, deployed
-  build rather than a description of planned work.
+- The Sprint 4 implementation scope was complete and the original `v0.4.0` trial release
+  was tagged with green CI before the customer meeting, so the meeting covered a real,
+  deployed build rather than a description of planned work. Final evidence reconciliation
+  later closed the milestone with 16 completed items.
 - Issue-linked branches and PRs with a distinct reviewer (Kotumbaa, flikspy, MMavInno,
   TeraloToxin across #126-#139) kept the review discipline the customer specifically checked
   for during the process discussion (issue 106:10-06:31 of the transcript).
@@ -60,4 +61,3 @@ Held after the Sprint 4 Sprint Review / Week 6 customer meeting (2026-07-11).
 - Get the still-unreviewed adaptive-word-selection code (PR #128) reviewed by someone other
   than its author as part of the #143 work, instead of leaving it as the one unreviewed merge
   in the Sprint 4 milestone.
-</content>
