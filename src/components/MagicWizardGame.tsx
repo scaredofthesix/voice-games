@@ -124,6 +124,9 @@ export function MagicWizardGame({
   const targetRef = useRef(target);
   const themeRef = useRef(theme);
   const wordIndexRef = useRef(-1);
+  const hasCastSpellRef = useRef(false);
+  const lastTTSPlayTime = useRef(0);
+
 
   // Monsters & Spells ref
   const activeMonster = useRef<Monster | null>(null);
@@ -156,6 +159,7 @@ export function MagicWizardGame({
   }, [activeCategory, customWords]);
 
   const playWordTTS = useCallback((word: string) => {
+    lastTTSPlayTime.current = Date.now();
     speakWord(word);
   }, []);
 
@@ -171,6 +175,7 @@ export function MagicWizardGame({
     setTarget(word);
     setFeedback('listening');
     setLastRecognized('');
+    hasCastSpellRef.current = false;
 
     // Emojis for monsters
     const monsterEmojis = ['👹', '👾', '👻', '💀', '👽', '🧛', '🧟', '🦁', '🐉', '🐺'];
@@ -264,7 +269,13 @@ export function MagicWizardGame({
       const current = targetRef.current;
       if (!current) return;
 
+      if (hasCastSpellRef.current) return;
+
+      const now = Date.now();
+      if (now - lastTTSPlayTime.current < 750) return;
+
       if (matchesWord(text, current, true)) {
+        hasCastSpellRef.current = true;
         castSpell();
         setWordStudyStats((prevStats) => ({
           ...prevStats,
