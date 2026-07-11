@@ -31,6 +31,8 @@ exclude = [
   # MVP v0 deployment on the Innopolis VM: private IP + self-signed cert, not
   # reachable from GitHub CI; verified manually on the Innopolis network.
   "^https://10\\.93\\.26\\.180",
+  # Exclude GitHub tag/branch comparisons (chicken-and-egg tag creation issue in CI)
+  "^https://github\\.com/scaredofthesix/voice-games/compare/",
 ]
 
 # Check links inside fenced code blocks too? Keep code-block URLs out to avoid
