@@ -26,16 +26,17 @@ Authoritative current registry of stable user-story IDs and current membership. 
 | US-17 | Localized interface with a language toggle | Should Have | 5 | v2 | [#32](https://github.com/scaredofthesix/voice-games/issues/32) | Done | - |
 | US-12 | Adjust difficulty level | Could Have | 3 | v2 | [#27](https://github.com/scaredofthesix/voice-games/issues/27) | Done | - |
 | US-16 | Pause the game | Could Have | 2 | v2 | [#30](https://github.com/scaredofthesix/voice-games/issues/30) | Done | [Sprint 2](https://github.com/scaredofthesix/voice-games/milestone/2) |
-| US-19 | Download the word list with stats as CSV | Could Have | 3 | v2 | [#52](https://github.com/scaredofthesix/voice-games/issues/52) | To Do | - |
+| US-19 | Download the word list with stats as CSV | Could Have | 3 | v2 | [#52](https://github.com/scaredofthesix/voice-games/issues/52) | Done | v0.4.0 |
 | US-20 | Phrase-based translation game | Could Have | 13 | v3 | [#53](https://github.com/scaredofthesix/voice-games/issues/53) | To Do | - |
-| US-13 | Play on any browser | Won't Have | - | - | [#28](https://github.com/scaredofthesix/voice-games/issues/28) | - | - |
+| US-13 | Play on any browser | Won't Have | - | - | [#28](https://github.com/scaredofthesix/voice-games/issues/28) | Closed (not planned) | - |
 | US-14 | Real-time multiplayer voice race | - | - | - | [#31](https://github.com/scaredofthesix/voice-games/issues/31) | - | - |
 
 ## Estimation summary
 
 - **MVP v1 (Sprint 1) committed:** 26 SP (US-01 2, US-02 8, US-04 8, US-07 3, US-08 5) - delivered as release v0.1.0.
 - **Delivered through v0.3.0 (MVP v2):** 66 SP - every active story except US-19 and US-20. The four extra games requested by the customer were also delivered (issue [#54](https://github.com/scaredofthesix/voice-games/issues/54), closed).
-- **Remaining active backlog:** 16 SP (US-19 CSV export 3 SP, US-20 phrase game 13 SP - MVP v3 candidate).
+- **US-19 (CSV export, 3 SP)** delivered in the v0.4.0 Week 6 trial release (Progress-view Export CSV, [#52](https://github.com/scaredofthesix/voice-games/issues/52) closed).
+- **Remaining active backlog:** 13 SP (US-20 phrase game 13 SP - MVP v3 candidate).
 
 ## MVP v1 scope (Sprint 1)
 
