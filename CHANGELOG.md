@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-11
+
 Assignment 6, Sprint 4 (Week 6). Completes the customer's "four more games" request from
 the Sprint 3 review, unifies the interface across the ten-game roster, and stands up the
 maintained handover documentation ahead of the Week 6 trial release.
@@ -172,7 +174,10 @@ Sprint 3 (MVP v2) release. Every Sprint 2 customer review finding from
 - This is the MVP v1 release for the Sprint 1 customer review.
 - Voice input requires Google Chrome (Web Speech API).
 
+[Unreleased]: https://github.com/scaredofthesix/voice-games/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/scaredofthesix/voice-games/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/scaredofthesix/voice-games/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/scaredofthesix/voice-games/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/scaredofthesix/voice-games/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/scaredofthesix/voice-games/releases/tag/v0.1.0
+

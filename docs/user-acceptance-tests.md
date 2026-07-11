@@ -16,7 +16,7 @@ https://scaredofthesix.github.io/voice-games/.
 - **Goal:** A child can open a game and play it using only their voice.
 - **Preconditions:** App open in Chrome, microphone permission granted.
 - **Steps:**
-  1. On the hub, press Play on Voice Racer (or Bubble Popper).
+  1. On the hub, press Play on Voice Lane Racer (or Voice Bubble Popper).
   2. Press Start to turn on the microphone.
   3. Read aloud the English word shown on screen.
 - **Expected result:** The game reacts to the correctly pronounced word
@@ -51,22 +51,22 @@ https://scaredofthesix.github.io/voice-games/.
 - **Goal:** A child unsure of a word can hear it before saying it.
 - **Preconditions:** A game is in progress.
 - **Steps:**
-  1. While a target word is shown, press the "Hear it" control.
+  1. While a target word is shown, press the "Hear it" control or the speaker icon.
 - **Expected result:** The app speaks the English word aloud at a child-friendly
   pace, and the child can then try to repeat it.
 
 ## UAT-05 Play the new Sprint 3 games by voice
 
-- **Goal:** A child can play Skate Word and Aste Word Destroyer using only
+- **Goal:** A child can play SkateWord and AsteWord Destroyer using only
   their voice.
 - **Preconditions:** App open in Chrome, microphone allowed.
 - **Steps:**
-  1. From the hub, press Play on Skate Word, press Start, and pronounce the
+  1. From the hub, press Play on SkateWord, press Start, and pronounce the
      shown words.
-  2. Return to the hub, press Play on Aste Word Destroyer, press Start, and
+  2. Return to the hub, press Play on AsteWord Destroyer, press Start, and
      pronounce the shown words.
-- **Expected result:** In Skate Word each correct word keeps the skater moving
-  and scores points; in Aste Word Destroyer each correct word destroys the
+- **Expected result:** In SkateWord each correct word keeps the skater moving
+  and scores points; in AsteWord Destroyer each correct word destroys the
   matching asteroid before it hits the base, and the score updates.
 
 ## UAT-06 Choose a Boss Fight mode and unlock Endless
@@ -100,11 +100,71 @@ https://scaredofthesix.github.io/voice-games/.
 - **Preconditions:** Fresh browser profile or cleared site data.
 - **Steps:**
   1. Open the public deployment.
-  2. Start any game and press the "Hear it" control while the microphone is
+  2. Start any game and press the "Hear it" control or the speaker icon while the microphone is
      live.
 - **Expected result:** The UI opens in Russian with a working RU/EN toggle,
   and the spoken hint does not register as the child's answer (no automatic
   score from the app's own voice).
+
+## UAT-09 Navigate deep water in Voice Treasure Hunter
+
+- **Goal:** A child can play the Voice Treasure Hunter game using only their voice.
+- **Preconditions:** App open in Chrome, microphone allowed.
+- **Steps:**
+  1. From the hub, press Play on Voice Treasure Hunter.
+  2. Select a word set, check the submarine preview, and press Start.
+  3. Pronounce the English target words shown on screen.
+- **Expected result:** Correct pronunciation steers the submarine deeper to collect treasure chests, and the money counter increases.
+
+## UAT-10 Fly through the clouds in Sentence Bird
+
+- **Goal:** A child can play the Sentence Bird game, pronouncing full phrases, and experience game over when lives are lost.
+- **Preconditions:** App open in Chrome, microphone allowed.
+- **Steps:**
+  1. From the hub, press Play on Sentence Bird.
+  2. Select a phrase set and press Start.
+  3. Pronounce each shown phrase correctly.
+  4. Intentionally miss a phrase to lose a heart.
+- **Expected result:** Correct pronunciation guides the bird through gates, and losing all hearts triggers the Game Over screen.
+
+## UAT-11 Practice pronunciation memory in Echo Microphone
+
+- **Goal:** A child can practice pronunciation by hearing a word sequence and repeating it back.
+- **Preconditions:** App open in Chrome, microphone allowed.
+- **Steps:**
+  1. From the hub, press Play on Echo Microphone.
+  2. Select a word set, or add a custom word, and press Start.
+  3. Listen to the spoken words, and repeat them when the mic is active.
+- **Expected result:** The microphone records pronunciation, validates it, and highlights correct words.
+
+## UAT-12 Cast spells in Magic Wizard
+
+- **Goal:** A child can cast spells in Magic Wizard, and verify spell graphics/sounds.
+- **Preconditions:** App open in Chrome, microphone allowed.
+- **Steps:**
+  1. From the hub, press Play on Magic Wizard.
+  2. Select a word set and press Start.
+  3. Pronounce the spell words.
+- **Expected result:** Spelling the words casts visual spells (fully opaque emojis) accompanied by a single clean chime sound.
+
+## UAT-13 Reinforce learning with Adaptive Word Selection
+
+- **Goal:** A child who struggles with specific words receives more practice on them.
+- **Preconditions:** App open in Chrome, microphone allowed.
+- **Steps:**
+  1. Start any game.
+  2. Intentionally mispronounce or remain silent on a specific word multiple times.
+  3. Observe the sequence of words presented as the game progresses.
+- **Expected result:** The struggled word is selected and presented again soon in the session rather than being completely randomized.
+
+## UAT-14 Unified Hub Navigation
+
+- **Goal:** A child can return to the learning hub from any game using the unified navigation button.
+- **Preconditions:** A game session is started.
+- **Steps:**
+  1. Open Voice Lane Racer, start the game, and locate the Back to Hub button. Press it.
+  2. Open SkateWord, start the game, locate the Back to Hub button. Press it.
+- **Expected result:** Both games immediately return the player to the hub using the same unified button appearance.
 
 ---
 
