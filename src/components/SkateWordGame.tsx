@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
-import { ArrowLeft, Play, Volume2, Heart, RotateCcw, BookOpen } from 'lucide-react';
+import { Play, Volume2, Heart, RotateCcw, BookOpen } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
-import { CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 interface SkateWordGameProps {
@@ -30,7 +30,6 @@ const LOCAL_LANG = {
     paused: 'Paused',
     resume: 'Resume',
     pause: 'Pause',
-    micListening: '🎤 Say the word out loud...',
     chooseSet: 'Choose Word Set',
     myWords: 'My Words',
     sayThis: '🎯 SPEAK TO DO A FLIP!:',
@@ -45,7 +44,6 @@ const LOCAL_LANG = {
     paused: 'Пауза',
     resume: 'Продолжить',
     pause: 'Пауза',
-    micListening: '🎤 Произнеси слово...',
     chooseSet: 'Выбрать набор слов',
     myWords: 'Мои слова',
     sayThis: '🎯 ПРОИЗНЕСИ ДЛЯ ТРЮКА!:',
@@ -183,7 +181,6 @@ export function SkateWordGame({
       isStoppedBeforeObstacle.current = false;
       playerVy.current = -12.5;
       isJumping.current = true;
-      speakSound.playAccelerate();
       setFeedback('correct');
 
       for (let i = 0; i < 20; i++) {
@@ -237,7 +234,7 @@ export function SkateWordGame({
   // Безопасный вызов конца игры
   const handleCollision = useCallback((canvasWidth: number) => {
     if (livesRef.current <= 0) return;
-    speakSound.playCrash();
+    speakSound.playLose();
     const nextL = livesRef.current - 1;
     setLives(nextL);
     livesRef.current = nextL;
@@ -426,7 +423,7 @@ export function SkateWordGame({
           playerY.current < groundY - 80 &&
           obstacleX.current > 0
         ) {
-          speakSound.playSuccess();
+          speakSound.playCorrect();
           setScore((s) => s + 1);
           for (let i = 0; i < 15; i++) {
             particles.current.push({
@@ -765,15 +762,7 @@ export function SkateWordGame({
 
   return (
     <section className="max-w-md mx-auto py-4 px-2" aria-label={strings.title}>
-      <button
-        onClick={() => {
-          stop();
-          onBackToHub();
-        }}
-        className="mb-3 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 cursor-pointer"
-      >
-        <ArrowLeft className="w-4 h-4 stroke-[3]" /> {t('shared.backToHub')}
-      </button>
+      <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} />
 
       {phase === 'START' && (
         <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-rose-50 bubble-shadow-pink">
@@ -837,7 +826,7 @@ export function SkateWordGame({
 
           {!isSupported && (
             <p className="text-xs font-bold text-rose-600 text-center" role="alert">
-              Voice control needs Google Chrome.
+              {t('shared.voiceNeedsChrome')}
             </p>
           )}
 
@@ -931,7 +920,7 @@ export function SkateWordGame({
 
           <div className="text-center bg-slate-100 border-2 border-slate-900 rounded-xl py-2 px-3">
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-700 animate-pulse">
-              {status.status === 'listening' ? strings.micListening : status.message}
+              {status.status === 'listening' ? t('shared.micListening') : status.message}
             </p>
           </div>
         </div>
@@ -1045,15 +1034,11 @@ export function SkateWordGame({
                 <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {strings.start}
               </button>
               
-              <button
-                onClick={() => {
-                  stop();
-                  onBackToHub();
-                }}
-                className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-900 text-white font-black text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase"
-              >
-            🏰 {t('shared.exitToPortal')}
-              </button>
+              <BackToHubButton
+                label={t('shared.backToHub')}
+                onClick={() => { stop(); onBackToHub(); }}
+                className="w-full justify-center"
+              />
             </div>
 
           </div>

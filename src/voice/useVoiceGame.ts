@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isSpeechSynthesisActive } from './engine';
+import { useUiLanguage } from '../uiLanguage';
 
 export type SpeechRecognitionStatus =
   | 'unsupported'
@@ -31,11 +32,17 @@ export function useSpeechRecognition(
   const recognitionRef = useRef<any>(null);
   const wantActiveRef = useRef(false);
   const callbackRef = useRef(onTranscript);
+  const { t } = useUiLanguage();
+  const translationRef = useRef(t);
   const [lastTranscript, setLastTranscript] = useState('');
   const [status, setStatus] = useState<SpeechStatus>({
     status: 'idle',
-    message: 'Press Start to turn on the microphone.',
+    message: t('shared.voiceStartPrompt'),
   });
+
+  useEffect(() => {
+    translationRef.current = t;
+  }, [t]);
 
   useEffect(() => {
     callbackRef.current = onTranscript;
@@ -55,7 +62,7 @@ export function useSpeechRecognition(
       }
       recognitionRef.current = null;
     }
-    setStatus({ status: 'idle', message: 'Microphone stopped.' });
+    setStatus({ status: 'idle', message: translationRef.current('shared.voiceStopped') });
   }, []);
 
   const start = useCallback(() => {
@@ -63,7 +70,7 @@ export function useSpeechRecognition(
     if (!Ctor) {
       setStatus({
         status: 'unsupported',
-        message: 'Voice API not found. Please play inside Google Chrome.',
+        message: translationRef.current('shared.voiceUnsupported'),
       });
       return;
     }
@@ -85,7 +92,7 @@ export function useSpeechRecognition(
     rec.onstart = () => {
       setStatus({
         status: 'listening',
-        message: 'Listening! Say the English word out loud.',
+        message: translationRef.current('shared.micListening'),
       });
     };
 
@@ -93,7 +100,7 @@ export function useSpeechRecognition(
       if (event?.error === 'not-allowed') {
         setStatus({
           status: 'error',
-          message: 'Microphone blocked. Please allow the mic in the address bar.',
+          message: translationRef.current('shared.micAccessBlocked'),
         });
       }
     };

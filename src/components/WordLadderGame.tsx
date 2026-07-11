@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
-import { ArrowLeft, BookOpen, Mic, Pause, Play, Rocket, RotateCcw, Volume2 } from 'lucide-react';
+import { BookOpen, Mic, Pause, Play, Rocket, RotateCcw, Volume2 } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
@@ -16,7 +16,7 @@ import { matchesWord, speakSound, speakWord } from '../voice/engine';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { RocketClimb, RocketTheme } from './RocketClimb';
 import { CustomWordsManager } from './CustomWordsManager';
-import { CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 // Word Ladder (rocket climb): each correctly pronounced word lifts the rocket
@@ -142,9 +142,9 @@ export function WordLadderGame({
       saveProgress(recordWordSpoken(loadProgress(), 'word-ladder', current));
 
       if (updated.status === 'won') {
-        speakSound.playSuccess();
+        speakSound.playCorrect();
       } else {
-        speakSound.playCoin();
+        speakSound.playCorrect();
         nextWord();
       }
     },
@@ -198,16 +198,7 @@ export function WordLadderGame({
 
   return (
     <section className="max-w-md mx-auto py-4 px-2" aria-label={t('games.wordLadder.title')}>
-      <button
-        onClick={() => {
-          stop();
-          onBackToHub();
-        }}
-        className="mb-3 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900"
-        aria-label={t('shared.backToHub')}
-      >
-        <ArrowLeft className="w-4 h-4 stroke-[3]" /> {t('shared.backToHub')}
-      </button>
+      <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} />
 
       {phase === 'START' ? (
         <div className={`space-y-4 p-6 border-8 border-slate-900 rounded-4xl transition-all duration-300 ${
@@ -333,7 +324,7 @@ export function WordLadderGame({
               >
                 <span className="text-4xl" aria-hidden="true">⏸️</span>
                 <span className="text-lg font-black uppercase tracking-widest text-orange-400">
-                  Paused
+                  {t('shared.paused')}
                 </span>
               </div>
             )}
@@ -398,10 +389,10 @@ export function WordLadderGame({
                     <span className="text-2xl" aria-hidden="true">👽</span>
                     <div>
                       <p className="text-xs font-black uppercase tracking-wider text-slate-700">
-                        Alien encounter
+                        {t('ladder.alienEncounter')}
                       </p>
                       <p className="text-sm font-bold text-slate-800">
-                        A friendly alien is waving from orbit.
+                        {t('ladder.alienDescription')}
                       </p>
                     </div>
                   </div>
@@ -411,11 +402,11 @@ export function WordLadderGame({
                     className="mt-4 w-full py-3 bg-white hover:bg-slate-50 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl"
                     aria-label={t('ladder.sayHello')}
                   >
-                    Say hello to the alien
+                    {t('ladder.sayHello')}
                   </button>
                   {isAlienGreetingOpen && (
                     <p className="mt-3 rounded-xl border-2 border-slate-900 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
-                      The alien says: “You did it! Keep practicing and your rocket will shine brighter.”
+                      {t('ladder.alienGreeting')}
                     </p>
                   )}
                 </div>
@@ -425,13 +416,13 @@ export function WordLadderGame({
                     <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest text-center">
                       {t('ladder.altitude')}
                     </span>
-                    <span className="text-lg font-black text-sky-900 mt-1 font-mono">{ladder.currentStep} steps</span>
+                    <span className="text-lg font-black text-sky-900 mt-1 font-mono">{ladder.currentStep} {t('ladder.steps')}</span>
                   </div>
                   <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
                     <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
                       {t('ladder.personalHigh')}
                     </span>
-                    <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} steps</span>
+                    <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} {t('ladder.steps')}</span>
                   </div>
                 </div>
 
@@ -512,15 +503,11 @@ export function WordLadderGame({
                     <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {t('games.wordLadder.again')}
                   </button>
                   
-                  <button
-                    onClick={() => {
-                      stop();
-                      onBackToHub();
-                    }}
-                    className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-900 text-white font-black text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase"
-                  >
-                🏰 {t('shared.exitToPortal')}
-                  </button>
+                  <BackToHubButton
+                    label={t('shared.backToHub')}
+                    onClick={() => { stop(); onBackToHub(); }}
+                    className="w-full justify-center"
+                  />
                 </div>
 
               </div>
@@ -533,7 +520,7 @@ export function WordLadderGame({
                 );
                 return (
                   <TargetWordCard
-                    ribbon="🎯 SAY THIS / ПРОИЗНЕСИ:"
+                    ribbon={t('shared.targetRibbon')}
                     word={target}
                     translation={currentWordItem?.translationRu || currentWordItem?.translation}
                     translationRu={currentWordItem?.translationRu}
@@ -560,7 +547,7 @@ export function WordLadderGame({
               <div className="flex items-center justify-center gap-2 bg-slate-100 border-2 border-slate-900 rounded-xl py-1.5 px-3 inline-flex mx-auto">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
                 <p className="text-[10px] font-black uppercase tracking-wider text-slate-700">
-                  {status.status === 'listening' ? '🎤 Mic is listening...' : status.message}
+                  {status.status === 'listening' ? t('shared.micListening') : status.message}
                 </p>
               </div>
 

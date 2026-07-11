@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Play, Volume2, RotateCcw, BookOpen } from 'lucide-react';
+import { Play, Volume2, RotateCcw, BookOpen } from 'lucide-react';
 
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex } from '../progress';
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
-import { CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 interface TreasureHunterGameProps {
@@ -30,7 +30,6 @@ const LOCAL_LANG = {
     paused: 'Paused',
     resume: 'Resume',
     pause: 'Pause',
-    micListening: '🎤 Say the word out loud...',
     chooseSet: 'Choose Word Set',
     myWords: 'My Words',
     sayThis: '🎯 PRONOUNCE TO DIVE!:',
@@ -45,7 +44,6 @@ const LOCAL_LANG = {
     paused: 'Пауза',
     resume: 'Продолжить',
     pause: 'Пауза',
-    micListening: '🎤 Произнеси слово...',
     chooseSet: 'Выбрать набор слов',
     myWords: 'Мои слова',
     sayThis: '🎯 ПРОИЗНЕСИ ДЛЯ ПОГРУЖЕНИЯ!:',
@@ -187,7 +185,7 @@ export function TreasureHunterGame({
   const triggerDive = useCallback(() => {
     if (phaseRef.current === 'PLAYING' && !pausedRef.current) {
       chestCollected.current = true;
-      speakSound.playAccelerate();
+      speakSound.playCorrect();
       setFeedback('correct');
 
       // Create burst of bubbles!
@@ -380,7 +378,7 @@ export function TreasureHunterGame({
   const { status, isSupported, start, stop } = useSpeechRecognition(handleTranscript);
 
   const handleTimeout = useCallback(() => {
-    speakSound.playCrash();
+    speakSound.playLose();
     const nextL = livesRef.current - 1;
     setLives(nextL);
     livesRef.current = nextL;
@@ -835,15 +833,7 @@ export function TreasureHunterGame({
     <section className="flex-1 flex flex-col justify-between p-4 md:p-8 max-w-6xl w-full mx-auto select-none relative animate-fade-in">
       {/* Top action header bar */}
       <div className="flex items-center justify-between mb-4 bg-slate-900/90 text-white p-4 rounded-3xl border-4 border-slate-950 shadow-md">
-        <button
-          onClick={() => {
-            stop();
-            onBackToHub();
-          }}
-          className="flex items-center gap-1 text-slate-400 hover:text-white font-black text-xs uppercase cursor-pointer"
-        >
-        <ArrowLeft className="w-4 h-4 stroke-[3]" /> {t('shared.back')}
-        </button>
+        <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} className="mb-0 text-slate-200 hover:text-white" />
 
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-1">
@@ -993,7 +983,7 @@ export function TreasureHunterGame({
             <div className="text-center font-extrabold text-[10px] uppercase tracking-widest text-slate-600 bg-slate-100/60 py-1.5 px-3 rounded-full inline-block mx-auto border-2 border-slate-300">
               {status.status === 'listening' ? (
                 <span className="text-cyan-800 animate-pulse">
-                  {strings.micListening}
+                  {t('shared.micListening')}
                 </span>
               ) : (
                 <span className="text-slate-500">{status.message}</span>
@@ -1111,15 +1101,11 @@ export function TreasureHunterGame({
                 <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {strings.start}
               </button>
               
-              <button
-                onClick={() => {
-                  stop();
-                  onBackToHub();
-                }}
-                className="w-full bg-purple-500 hover:bg-purple-600 border-4 border-slate-955 text-white font-black text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md uppercase"
-              >
-            🏰 {t('shared.exitToPortal')}
-              </button>
+              <BackToHubButton
+                label={t('shared.backToHub')}
+                onClick={() => { stop(); onBackToHub(); }}
+                className="w-full justify-center"
+              />
             </div>
           </div>
         )}

@@ -31,14 +31,20 @@ import { CustomWordsManager } from './CustomWordsManager';
 interface BackToHubButtonProps {
   label: string;
   onClick: () => void;
+  className?: string;
+  id?: string;
 }
 
-export function BackToHubButton({ label, onClick }: BackToHubButtonProps) {
+export function BackToHubButton({ label, onClick, className = '', id }: BackToHubButtonProps) {
+  const { t } = useUiLanguage();
+
   return (
     <button
       type="button"
+      id={id}
       onClick={onClick}
-      className="mb-3 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 cursor-pointer"
+      aria-label={t('shared.backToHubAria')}
+      className={`mb-3 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 cursor-pointer ${className}`}
     >
       <ArrowLeft className="w-4 h-4 stroke-[3]" /> {label}
     </button>

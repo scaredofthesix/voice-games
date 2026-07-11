@@ -40,40 +40,6 @@ class AudioSynthesizer {
     }
   }
 
-  playSuccess() {
-    try {
-      this.init();
-      if (!this.ctx) return;
-
-      const now = this.ctx.currentTime;
-      const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
-
-      notes.forEach((freq, idx) => {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-
-        gain.gain.setValueAtTime(0.15, now + idx * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 0.3);
-
-        const filter = this.ctx!.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(2000, now);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx!.destination);
-
-        osc.start(now + idx * 0.08);
-        osc.stop(now + idx * 0.08 + 0.35);
-      });
-    } catch (e) {
-      console.warn("Synth failed", e);
-    }
-  }
-
   playSentenceComplete() {
     try {
       this.init();
@@ -105,35 +71,6 @@ class AudioSynthesizer {
     }
   }
 
-  playError() {
-    try {
-      this.init();
-      if (!this.ctx) return;
-
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(140, this.ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(90, this.ctx.currentTime + 0.25);
-
-      gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
-
-      const filter = this.ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(400, this.ctx.currentTime);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.25);
-    } catch (e) {
-      console.warn("Synth failed", e);
-    }
-  }
 }
 
 export const synths = new AudioSynthesizer();
