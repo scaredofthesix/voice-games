@@ -29,7 +29,8 @@ permitted by the customer at the start of the session).
 
 ## What was demonstrated
 
-- Sprint 4 milestone (14 issues, all closed) and the Sprint 4 Project board view.
+- Sprint 4 milestone and the Sprint 4 Project board view. Final evidence reconciliation
+  closed the milestone with 16 completed items and 0 open items.
 - The Progress view, including per-game statistics and the CSV export.
 - The four new games completing the ten-game roster.
 
@@ -45,9 +46,10 @@ recommendation for future work, not a Sprint 4/5 defect.
 ## Customer trial / UAT results
 
 Full detail, expected results, and pass/fail per scenario are in
-[`reports/week6/README.md`](./README.md#uat--customer-trial-results). Summary: UAT-09 and
-UAT-14 passed cleanly; UAT-11 passed with one display issue noted; UAT-10, UAT-12, and UAT-13
-surfaced real defects or open questions that became Sprint 5 issues.
+[`reports/week6/README.md`](./README.md#uat--customer-trial-results). Summary: UAT-09 passed;
+UAT-14 passed its navigation outcome but exposed the audio cleanup issue tracked in #145;
+UAT-11 passed with one display issue noted; UAT-10, UAT-12, and UAT-13 surfaced real defects
+or open questions that became Sprint 5 issues.
 
 ## Requested changes and resulting issues
 
@@ -86,4 +88,3 @@ feedback-to-issue mapping is the traceability table in
 Created issues [#140](https://github.com/scaredofthesix/voice-games/issues/140) through
 [#146](https://github.com/scaredofthesix/voice-games/issues/146) in the Sprint 5 milestone,
 covering every requested change above. No Sprint 4 scope changed as a result of this meeting.
-</content>

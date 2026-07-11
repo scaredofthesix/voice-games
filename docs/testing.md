@@ -72,8 +72,11 @@ by the integration tests `src/components/BossFightGame.test.tsx` and
 emit the on-screen target words, and assert the win state. The manual smoke
 confirms the identical outcome on a real microphone and the live deployment.
 
-Latest recorded smoke result: _TODO date, tester, and link to the win-screen
-evidence for Boss Fight and Voice Rocket Climb_.
+Latest recorded verification result: on 2026-07-12, @scaredofthesix reran the automated
+Boss Fight and Voice Rocket Climb win-path integration tests as part of the full 99-test
+suite. Both passed. A separate real-microphone win-screen recording was not captured during
+Week 6, so no manual smoke result is claimed here. Customer-executed Week 6 UAT instead
+covered UAT-09 through UAT-14 and is recorded in `docs/user-acceptance-tests.md`.
 
 ## Critical modules and coverage
 

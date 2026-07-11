@@ -50,4 +50,3 @@ verified its exact behavior against the customer's specific acceptance criteria.
   not yet reconciled with the actual repository state.
 - None of these block the Week 6 trial release itself; they are the confirmed Sprint 5 scope
   needed before the customer can be asked to confirm final transition in Week 7.
-</content>

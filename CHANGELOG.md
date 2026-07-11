@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-12
+
+Assignment 6, Sprint 4 corrective Week 6 trial release. This patch aligns the SemVer tag,
+package metadata, deployed code, and final public evidence after the original `v0.4.0` tag
+was created before the version-bump and final Week 6 commits reached `main`.
+
+### Added
+
+- Completed the public game gallery with real gameplay screenshots for all ten games.
+- Added the final Week 6 public report, Sprint Review transcript and summary, retrospective,
+  reflection, LLM usage report, UAT results, and inspectable evidence screenshots (#150).
+- Added `docs/README.md` as a customer-facing index of the maintained documentation set
+  (#146).
+
 ### Changed
 
 - Restructured `README.md` into a product-first public entry point (live-product link, the
@@ -14,6 +28,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   documentation index, per the Week 6 customer review (#146).
 - Pinned the TypeScript dev dependency to an exact version (`5.8.3`) for reproducible
   builds (#146).
+- Refactored the canvas game loops to use frame-rate-independent movement calibrated to the
+  existing 160 FPS baseline, so game speed stays stable across devices.
+- Reconciled the Sprint 4 report, milestone totals, Story Points, backlog links, contribution
+  traceability, and handover wording with the final GitHub state (#150).
+
+### Fixed
+
+- Fixed the Sentence Bird failure-message Russian translation fallback.
+- Prevented Magic Wizard from casting multiple spells from one recognized word and adjusted
+  the monster and spell speeds for the reviewed gameplay pace.
+- Corrected the Week 6 release traceability mismatch by bumping package metadata to `0.4.1`
+  before creating the replacement trial tag from protected `main` (#150).
+- Removed generated content markers, stale evidence captions, and public exact recording
+  timecodes from the Week 6 report set (#150).
 
 ## [0.4.0] - 2026-07-11
 

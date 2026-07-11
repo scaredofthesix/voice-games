@@ -63,7 +63,7 @@ has **ten games total**, meeting the "ten games total in the final version" targ
 This work has not yet been cut into a tagged release; that happens as part of the Sprint 4
 trial release below.
 
-## Sprint 4 (Week 6, 2026-07-06 to 2026-07-12) - Week 6 trial release
+## Done - Sprint 4 (Week 6, 2026-07-06 to 2026-07-12) - release v0.4.1
 
 Assignment 6 Sprint 4. Selected Sprint Backlog = [milestone #4](https://github.com/scaredofthesix/voice-games/milestone/4).
 Fixes the customer's Sprint 3 review feedback and stands up the handover artifacts needed
@@ -79,7 +79,8 @@ for transition, ahead of the Week 6 trial/transition-readiness meeting.
   "EN"/flag - issue #109.
 - Maintained handover documentation: `docs/customer-handover.md`, `CONTRIBUTING.md`,
   `AGENTS.md`, refreshed `README.md` and `CHANGELOG.md` - issue #124.
-- A new SemVer trial release for the customer to try before Week 7 transition.
+- Corrective SemVer release `v0.4.1`, the canonical Week 6 trial release after the original
+  `v0.4.0` tag was found to precede its package-version and final code commits.
 
 ## Sprint 5 (Week 7, 2026-07-13 to 2026-07-19) - final MVP v3 and transition
 
@@ -87,9 +88,12 @@ Assignment 6 Sprint 5. Selected Sprint Backlog = [milestone #5](https://github.c
 This is the state the product reaches by the end of the course; no post-course versions are
 planned beyond it.
 
-- CSV export in readable columns - issue #104 (relates to US-19, issue #52).
-- Any remaining Week 6 customer trial feedback (added to this milestone once the Week 6
-  trial has run - see `docs/customer-handover.md`).
+- CSV export in readable columns - issue #104 (relates to US-19, issue #52), completed early
+  during Week 6 and retained in Sprint 5 traceability.
+- Week 6 customer trial follow-up: Sentence Bird #140, Echo Microphone #141, Magic Wizard
+  #142, adaptive word selection #143, bulk custom-word input #144, and cross-game audio and
+  internationalization polish #145.
+- README and documentation restructuring #146, completed during Week 6 finalization.
 - Confirm the final transition outcome and handover level with the customer against
   `docs/customer-handover.md` - issue #125.
 - Final SemVer release mapped to **MVP v3**, the last course version, plus a public

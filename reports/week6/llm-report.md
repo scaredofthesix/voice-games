@@ -59,9 +59,8 @@ report-writing work, all completed ahead of the 2026-07-12 submission.
 ## Limitations observed
 
 - The assistant cannot independently verify facts that only exist outside the repository and
-  transcript (for example, which specific team members attended the meeting beyond the
-  transcript's generic "Team" label, or whether screenshots exist) - those are left as
-  explicit `_TODO_` items rather than guessed.
+  transcript, such as which specific team members attended beyond the transcript's generic
+  "Team" label. Unverified external facts are stated as not confirmed rather than guessed.
 - The assistant flagged, but did not resolve, the discrepancy between the team's verbal
   TypeScript-version answer in the meeting ("7.0.2") and `package.json` (`~5.8.2`); resolving
   which is correct requires a team decision, tracked as part of issue #146.
