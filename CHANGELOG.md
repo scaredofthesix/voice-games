@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Restructured `README.md` into a product-first public entry point (live-product link, the
+  ten-game list, screenshots, a custom-word Quick Start, then a "For Developers" section),
+  removed coursework and internal-mirror wording, and added `docs/README.md` as a
+  documentation index, per the Week 6 customer review (#146).
+- Pinned the TypeScript dev dependency to an exact version (`5.8.3`) for reproducible
+  builds (#146).
+
 ## [0.4.0] - 2026-07-11
 
 Assignment 6, Sprint 4 (Week 6). Completes the customer's "four more games" request from

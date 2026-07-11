@@ -1,13 +1,17 @@
 # Week 6 LLM Usage Report - Team 40
 
-> **Status: IN PROGRESS.** Covers Sprint 4 planning and documentation work so far; will be
-> extended as the rest of Sprint 4 (issues #103, #105, #106, #107, #108, #109) is
-> implemented.
+Covers Sprint 4 backlog planning, code implementation, release preparation, and the Week 6
+report-writing work, all completed ahead of the 2026-07-12 submission.
 
 ## Tools used
 
-- Claude (Anthropic), via an agentic coding assistant (Claude Code), used for Sprint 4
-  backlog planning and the handover-documentation work.
+- Claude (Anthropic), via an agentic coding assistant (Claude Code), used throughout Sprint 4
+  for backlog planning, implementation of the six Sprint 4 fix/feature issues, release
+  preparation, and this report set.
+- Codex, used by team members for parts of the Sprint 4 game-polish and release-prep work
+  (PRs #137, #138, #139) alongside Claude Code; both tools follow the same repository
+  conventions (Conventional Commits, issue-linked PRs, no AI-tool mentions outside this
+  report).
 
 ## How it was used
 
@@ -23,22 +27,43 @@
 - Drafting `docs/customer-handover.md`, `CONTRIBUTING.md`, `AGENTS.md`, and the README
   refresh, based on the actual current state of the repository (config, secrets handling,
   deployment paths, ownership) rather than assumptions.
-- Drafting `docs/roadmap.md` updates and this report scaffold.
+- Implementing issues #103, #105, #106, #107, #108, #109 end to end (branch, fix, local
+  verification, PR), and preparing the `v0.4.0` release (tag, GitHub Release, `CHANGELOG.md`
+  update).
+- Turning the Week 6 customer interview transcript into the Sprint 5 backlog: reading the
+  full transcript, mapping every distinct feedback point to a new tracked issue (#140-#146)
+  in the Sprint 5 milestone, without inventing scope the customer did not actually raise.
+- Auditing the Sprint 4 PR history (via the GitHub CLI) for this report's contribution
+  traceability table and retrospective, which surfaced a real process gap: PR #128 (adaptive
+  word selection) had a review requested but never submitted, and was merged by its own
+  author.
+- Drafting `reports/week6/sprint-review-transcript.md`, `sprint-review-summary.md`,
+  `reflection.md`, `retrospective.md`, and this file, and updating
+  `docs/customer-handover.md`'s status table from the actual meeting outcome.
 
 ## Human oversight
 
-- The team's actual Sprint 3 customer feedback (issues #103-#109) and the resulting Sprint
-  4/5 scope decisions are the customer's and team's, not the assistant's; the assistant
-  organized and documented them.
+- The team's actual Sprint 3 customer feedback (issues #103-#109), the Week 6 interview
+  content, and the resulting Sprint 4/5 scope decisions are the customer's and team's, not
+  the assistant's; the assistant organized and documented them.
 - Every fact stated in `docs/customer-handover.md` (no secrets required, what's tracked vs.
-  gitignored, VM/repo ownership) was verified against the actual repository content before
-  being written down, rather than assumed.
-- The handover level and customer-confirmation status in `docs/customer-handover.md` are
-  explicitly marked as pending the real Week 6 customer meeting - not filled with a guessed
-  answer.
-- All generated changes were verified locally (`npm run lint`, `npm test`, `npm run build`)
-  and via CI before merge.
+  gitignored, VM/repo ownership, the Week 6 handover-status update) was verified against the
+  actual repository content or the session transcript before being written down.
+- The transcript published in `reports/week6/sprint-review-transcript.md` is reproduced from
+  the customer-approved clean transcript; no quotes, decisions, or UAT outcomes were invented
+  or altered.
+- All generated code changes were verified locally (`npm run lint`, `npx vitest run`,
+  `npm run build`) and via CI before merge; this report's claims about test counts (99
+  tests, 13 files) and CI status were checked against the current `main` branch, not assumed.
 
 ## Limitations observed
 
-_TODO - to be extended once the Sprint 4 code changes are implemented._
+- The assistant cannot independently verify facts that only exist outside the repository and
+  transcript (for example, which specific team members attended the meeting beyond the
+  transcript's generic "Team" label, or whether screenshots exist) - those are left as
+  explicit `_TODO_` items rather than guessed.
+- The assistant flagged, but did not resolve, the discrepancy between the team's verbal
+  TypeScript-version answer in the meeting ("7.0.2") and `package.json` (`~5.8.2`); resolving
+  which is correct requires a team decision, tracked as part of issue #146.
+- The assistant identified the unreviewed PR #128 from GitHub PR metadata, but getting it
+  reviewed by a second person is a human action the assistant cannot perform.

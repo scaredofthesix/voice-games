@@ -9,8 +9,8 @@ updated whenever access, deployment, limitations, or transition status change.
 
 | | |
 |---|---|
-| **Handover level reached** | *To be confirmed at the Week 6 transition-readiness meeting (Assignment 6, Sprint 4). Provisional assessment as of this writing: **Ready for independent use** - the product is reachable by anyone with a link and a Chrome browser, with no account, install, or team involvement required.* |
-| **Customer-confirmation status** | *Not yet confirmed - pending the Week 6 meeting. Will be updated to `Accepted`, `Accepted with follow-up items`, or `Not yet accepted` after that meeting, and again after the Week 7 transition-confirmation request.* |
+| **Handover level reached** | **Ready for independent use**, confirmed at the Week 6 transition-readiness meeting (2026-07-11) - the product is reachable by anyone with a link and a Chrome browser, with no account, install, or team involvement required. The customer confirmed public access, GitHub Pages continuous deployment, and repository read access all work as described (see `reports/week6/sprint-review-transcript.md`, Part 3). |
+| **Customer-confirmation status** | **Accepted with follow-up items.** At the Week 6 meeting the customer explicitly accepted the team's plan to fix the identified game and documentation issues and present the result in Week 7 ("I explicitly accept that plan in this meeting"). This is an interim status for the Week 6 trial, not the final Assignment 6 Part 8 confirmation; the Week 7 transition-confirmation request will determine the final status recorded in `reports/week7/README.md`. |
 
 This table is authoritative for the three levels defined in Assignment 6 Part 8
 (`Ready for independent use`, `Independently used by customer`, `Deployed or operated on
@@ -128,21 +128,30 @@ summary of what the customer needs to be able to do.
 As of Sprint 4 (Week 6), the documentation set above is **sufficient for the "Ready for
 independent use" level**: a first-time reader (customer or TA) can reach the product, run it
 locally, understand what it does, and see how quality is checked, without asking the team
-anything. It has not yet been confirmed sufficient by the customer directly - that
-confirmation, and any resulting follow-up items, will be recorded here and in
-`reports/week6/README.md` after the Week 6 meeting.
+anything. The customer reviewed `README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `CHANGELOG.md`,
+and this document directly at the Week 6 meeting (2026-07-11) and confirmed the underlying
+facts (no secrets required, repository ownership, access model, MIT license) are correct and
+sufficient. The customer requested a restructuring of `README.md` (product-facing content
+first, developer-facing content in its own section, coursework wording removed) rather than
+any factual correction. That restructuring, a new `docs/README.md` directory index, and the
+pinned TypeScript version were completed during Week 6 finalization
+([issue #146](https://github.com/scaredofthesix/voice-games/issues/146), closed).
 
 **Known remaining gaps, honestly stated:**
 - The documentation is written for a developer/TA audience. There is no separate,
-  non-technical "how to play with your child" quick-start; the README's setup section
-  doubles as the only user-facing instructions. Whether this is a real gap depends on the
-  Week 6 customer feedback.
+  non-technical "how to play with your child" quick-start beyond the README. The customer
+  confirmed this is a real gap and requested a short visual Quick Start showing how to add a
+  custom word; that Quick Start (with a screenshot) was added to `README.md` during Week 6
+  finalization (issue #146, closed).
 - Repository ownership and CI/CD stay with the team for the course; a future maintainer who
   is not a current team member would need to fork the repository to gain publish rights (see
-  "Setup, deployment, recovery, and verification" above for how that fork would work).
+  "Setup, deployment, recovery, and verification" above for how that fork would work). The
+  customer confirmed at the Week 6 meeting that this arrangement is acceptable and that write
+  access is not needed.
 - The customer has not yet been asked to deploy or operate a copy of the product themselves;
   until that happens (or is explicitly declined), the handover level above cannot move past
   `Ready for independent use`.
 
-This section, and the status table at the top, will be updated after the Week 6
-transition-readiness meeting and again after the Week 7 final-transition confirmation.
+This section, and the status table at the top, were updated after the Week 6
+transition-readiness meeting (2026-07-11) and will be updated again after the Week 7
+final-transition confirmation.
