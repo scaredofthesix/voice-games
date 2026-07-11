@@ -59,13 +59,17 @@ Each game trains pronunciation through a different mechanic:
 9. **Echo Microphone** - listen to a growing word chain and repeat it back from memory.
 10. **Magic Wizard** - cast elemental spells by pronouncing words to defeat dark forces.
 
-| Voice Bubble Popper | Sentence Bird |
+| Voice Lane Racer | Voice Bubble Popper |
 |---|---|
-| ![Voice Bubble Popper](./docs/images/game-bubble-popper.png) | ![Sentence Bird](./docs/images/game-sentence-bird.png) |
-| **Voice Treasure Hunter** | **Magic Wizard** |
-| ![Voice Treasure Hunter](./docs/images/game-treasure-hunter.png) | ![Magic Wizard](./docs/images/game-magic-wizard.png) |
-| **Echo Microphone** | |
-| ![Echo Microphone](./docs/images/game-echo-microphone.png) | |
+| ![Voice Lane Racer](./docs/images/game-voice-racer.png) | ![Voice Bubble Popper](./docs/images/game-bubble-popper.png) |
+| **Boss Fight** | **Voice Rocket Climb** |
+| ![Boss Fight](./docs/images/game-boss-fight.png) | ![Voice Rocket Climb](./docs/images/game-rocket-climb.png) |
+| **SkateWord** | **AsteWord Destroyer** |
+| ![SkateWord](./docs/images/game-skateword.png) | ![AsteWord Destroyer](./docs/images/game-asteword.png) |
+| **Voice Treasure Hunter** | **Sentence Bird** |
+| ![Voice Treasure Hunter](./docs/images/game-treasure-hunter.png) | ![Sentence Bird](./docs/images/game-sentence-bird.png) |
+| **Echo Microphone** | **Magic Wizard** |
+| ![Echo Microphone](./docs/images/game-echo-microphone.png) | ![Magic Wizard](./docs/images/game-magic-wizard.png) |
 
 ## Documentation
 
