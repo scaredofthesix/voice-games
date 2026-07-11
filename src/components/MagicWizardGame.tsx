@@ -233,7 +233,7 @@ export function MagicWizardGame({
       spellProjectiles.current.push({
         x: 100,
         y: 190,
-        vx: 8,
+        vx: 16,
         vy: 0,
         targetX: activeMonster.current.x,
         targetY: activeMonster.current.y,
@@ -388,7 +388,7 @@ export function MagicWizardGame({
         }
 
         // Timer decrease
-        monsterTimer.current -= 0.12; // Around 14 seconds to say the word
+        monsterTimer.current -= 0.24; // Around 7 seconds to say the word (2x speed)
         if (monsterTimer.current <= 0) {
           handleCollision();
         }
