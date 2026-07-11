@@ -332,119 +332,130 @@ export function SkateWordGame({
 
     let animId: number;
     const groundY = 250;
+    let lastTime = performance.now();
 
     const gameLoop = () => {
       if (phaseRef.current !== 'PLAYING') return;
 
-      if (!pausedRef.current) {
-        clouds.current.forEach((c) => {
-          c.x -= c.speed;
-          if (c.x < -c.w) c.x = canvas.width + 20;
+      const now = performance.now();
+      let dt = now - lastTime;
+      lastTime = now;
+
+      if (pausedRef.current) {
+        animId = requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      if (dt > 100) dt = 16.67;
+      const dtFactor = dt / (1000 / 160);
+
+      clouds.current.forEach((c) => {
+        c.x -= c.speed * dtFactor;
+        if (c.x < -c.w) c.x = canvas.width + 20;
+      });
+
+      const currentSpeed = isStoppedBeforeObstacle.current ? 0 : obstacleSpeed.current;
+      bgScrollX.current = (bgScrollX.current + currentSpeed * 0.4 * dtFactor) % canvas.width;
+      wheelAngle.current = (wheelAngle.current + currentSpeed * 0.15 * dtFactor) % (Math.PI * 2);
+
+      // 1. Физика прыжка скейтера
+      playerY.current += playerVy.current * dtFactor;
+      playerVy.current += 0.45 * dtFactor;
+
+      // В покое низ колёс стоит ровно на дороге (groundY): центр скейтера
+      // рисуется на playerY + 14, колёса на +15 с радиусом 6 (issue #106,
+      // раньше скейтер визуально висел в 10px над асфальтом).
+      if (playerY.current >= groundY - 35) {
+        playerY.current = groundY - 35;
+        playerVy.current = 0;
+        isJumping.current = false;
+      }
+
+      // 2. Движение препятствия: подъезжает справа, ждёт слово перед
+      // скейтером, а после прыжка или собранной звезды проезжает под ним и
+      // уходит за левый край, как в динозаврике Chrome (issue #106) -
+      // никаких телепортаций в момент приземления.
+      if (obstacleX.current > 200) {
+        obstacleX.current -= obstacleSpeed.current * dtFactor;
+        isStoppedBeforeObstacle.current = false;
+        obstacleTimer.current = 100;
+      } else if (isJumping.current || obstacleCleared.current) {
+        obstacleX.current -= obstacleSpeed.current * dtFactor;
+        isStoppedBeforeObstacle.current = false;
+      } else {
+        isStoppedBeforeObstacle.current = true;
+        obstacleTimer.current -= 0.17 * dtFactor; // Время на ответ ~16 секунд для ребенка
+
+        if (obstacleTimer.current <= 0) {
+          handleCollision(canvas.width);
+        }
+      }
+
+      if (!isJumping.current && !isStoppedBeforeObstacle.current && Math.random() < 0.4 * dtFactor) {
+        particles.current.push({
+          x: 105,
+          y: groundY - 2,
+          vx: (-obstacleSpeed.current * 0.8 - Math.random() * 2) * dtFactor,
+          vy: (-Math.random() * 1.5) * dtFactor,
+          size: 2 + Math.random() * 3,
+          color: themeRef.current === 'cyber' ? '#22d3ee' : '#cbd5e1', 
+          alpha: 0.8,
         });
+      }
 
-        const currentSpeed = isStoppedBeforeObstacle.current ? 0 : obstacleSpeed.current;
-        bgScrollX.current = (bgScrollX.current + currentSpeed * 0.4) % canvas.width;
-        wheelAngle.current = (wheelAngle.current + currentSpeed * 0.15) % (Math.PI * 2);
+      // Эффект светящейся ауры во время ожидания (для красоты)
+      if (isStoppedBeforeObstacle.current && Math.random() < 0.25 * dtFactor) {
+        particles.current.push({
+          x: 80 + Math.random() * 50,
+          y: groundY - 10,
+          vx: ((Math.random() - 0.5) * 1) * dtFactor,
+          vy: (-1 - Math.random() * 1.5) * dtFactor,
+          size: 2 + Math.random() * 2,
+          color: themeRef.current === 'cyber' ? '#f43f5e' : '#38bdf8', 
+          alpha: 1,
+        });
+      }
 
-        // 1. Физика прыжка скейтера
-        playerY.current += playerVy.current;
-        playerVy.current += 0.45;
-
-        // В покое низ колёс стоит ровно на дороге (groundY): центр скейтера
-        // рисуется на playerY + 14, колёса на +15 с радиусом 6 (issue #106,
-        // раньше скейтер визуально висел в 10px над асфальтом).
-        if (playerY.current >= groundY - 35) {
-          playerY.current = groundY - 35;
-          playerVy.current = 0;
-          isJumping.current = false;
+      for (let index = particles.current.length - 1; index >= 0; index--) {
+        const p = particles.current[index];
+        p.x += p.vx * dtFactor;
+        p.y += p.vy * dtFactor;
+        p.alpha -= 0.03 * dtFactor;
+        if (p.alpha <= 0) {
+          particles.current.splice(index, 1);
         }
+      }
 
-        // 2. Движение препятствия: подъезжает справа, ждёт слово перед
-        // скейтером, а после прыжка или собранной звезды проезжает под ним и
-        // уходит за левый край, как в динозаврике Chrome (issue #106) -
-        // никаких телепортаций в момент приземления.
-        if (obstacleX.current > 200) {
-          obstacleX.current -= obstacleSpeed.current;
-          isStoppedBeforeObstacle.current = false;
-          obstacleTimer.current = 100;
-        } else if (isJumping.current || obstacleCleared.current) {
-          obstacleX.current -= obstacleSpeed.current;
-          isStoppedBeforeObstacle.current = false;
-        } else {
-          isStoppedBeforeObstacle.current = true;
-          obstacleTimer.current -= 0.17; // Время на ответ ~16 секунд для ребенка
-
-          if (obstacleTimer.current <= 0) {
-            handleCollision(canvas.width);
-          }
-        }
-
-        if (!isJumping.current && !isStoppedBeforeObstacle.current && Math.random() < 0.4) {
+      // 3. Сбор звездочки прыжком: звезда исчезает, а само препятствие
+      // остаётся на дороге и уезжает под скейтером влево (issue #106).
+      if (
+        !obstacleCleared.current &&
+        isJumping.current &&
+        Math.abs(obstacleX.current - 110) < 30 &&
+        playerY.current < groundY - 80 &&
+        obstacleX.current > 0
+      ) {
+        speakSound.playCorrect();
+        setScore((s) => s + 1);
+        for (let i = 0; i < 15; i++) {
           particles.current.push({
-            x: 105,
-            y: groundY - 2,
-            vx: -obstacleSpeed.current * 0.8 - Math.random() * 2,
-            vy: -Math.random() * 1.5,
-            size: 2 + Math.random() * 3,
-            color: themeRef.current === 'cyber' ? '#22d3ee' : '#cbd5e1', 
-            alpha: 0.8,
-          });
-        }
-
-        // Эффект светящейся ауры во время ожидания (для красоты)
-        if (isStoppedBeforeObstacle.current && Math.random() < 0.25) {
-          particles.current.push({
-            x: 80 + Math.random() * 50,
-            y: groundY - 10,
-            vx: (Math.random() - 0.5) * 1,
-            vy: -1 - Math.random() * 1.5,
-            size: 2 + Math.random() * 2,
-            color: themeRef.current === 'cyber' ? '#f43f5e' : '#38bdf8', 
+            x: obstacleX.current + 20,
+            y: groundY - 90,
+            vx: (Math.random() - 0.5) * 5 * dtFactor,
+            vy: (Math.random() - 0.5) * 5 * dtFactor,
+            size: 2 + Math.random() * 4,
+            color: '#f59e0b',
             alpha: 1,
           });
         }
+        obstacleCleared.current = true;
+      }
 
-        for (let index = particles.current.length - 1; index >= 0; index--) {
-          const p = particles.current[index];
-          p.x += p.vx;
-          p.y += p.vy;
-          p.alpha -= 0.03;
-          if (p.alpha <= 0) {
-            particles.current.splice(index, 1);
-          }
-        }
-
-        // 3. Сбор звездочки прыжком: звезда исчезает, а само препятствие
-        // остаётся на дороге и уезжает под скейтером влево (issue #106).
-        if (
-          !obstacleCleared.current &&
-          isJumping.current &&
-          Math.abs(obstacleX.current - 110) < 30 &&
-          playerY.current < groundY - 80 &&
-          obstacleX.current > 0
-        ) {
-          speakSound.playCorrect();
-          setScore((s) => s + 1);
-          for (let i = 0; i < 15; i++) {
-            particles.current.push({
-              x: obstacleX.current + 20,
-              y: groundY - 90,
-              vx: (Math.random() - 0.5) * 5,
-              vy: (Math.random() - 0.5) * 5,
-              size: 2 + Math.random() * 4,
-              color: '#f59e0b',
-              alpha: 1,
-            });
-          }
-          obstacleCleared.current = true;
-        }
-
-        if (obstacleX.current < -50) {
-          obstacleX.current = canvas.width + 100;
-          obstacleCleared.current = false;
-          const emojis = ['🚧', '🪨', '🪵', '📦', '🧱', '🗑️', '⚠️'];
-          obstacleEmojiRef.current = emojis[Math.floor(Math.random() * emojis.length)];
-        }
+      if (obstacleX.current < -50) {
+        obstacleX.current = canvas.width + 100;
+        obstacleCleared.current = false;
+        const emojis = ['🚧', '🪨', '🪵', '📦', '🧱', '🗑️', '⚠️'];
+        obstacleEmojiRef.current = emojis[Math.floor(Math.random() * emojis.length)];
       }
 
       // --- ОТРИСОВКА ---
@@ -686,11 +697,18 @@ export function SkateWordGame({
 
     let animId: number;
     let scrollX = 0;
+    let lastTime = performance.now();
 
     const previewLoop = () => {
       if (phaseRef.current !== 'START') return;
 
-      scrollX = (scrollX + 0.8) % canvas.width;
+      const now = performance.now();
+      let dt = now - lastTime;
+      lastTime = now;
+      if (dt > 100) dt = 16.67;
+      const dtFactor = dt / (1000 / 160);
+
+      scrollX = (scrollX + 0.8 * dtFactor) % canvas.width;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawThemeBackground(ctx, canvas.width, canvas.height, scrollX, 80);

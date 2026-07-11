@@ -896,9 +896,16 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
     };
 
     // Single unified loop frame handler
+    let lastTime = performance.now();
+
     const frameLoop = () => {
       const s = stateRef.current;
       if (s.gameState !== 'PLAYING') return;
+
+      const now = Date.now();
+      const nowPerf = performance.now();
+      let dt = nowPerf - lastTime;
+      lastTime = nowPerf;
 
       // Frozen while paused: keep the last frame and the loop alive, but stop
       // spawning, floating and the danger-line checks until the player resumes.
@@ -907,7 +914,9 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
         return;
       }
 
-      const now = Date.now();
+      if (dt > 100) dt = 16.67;
+      const dtFactor = dt / (1000 / 160);
+
       const w = s.canvasWidth;
       const h = s.canvasHeight;
 
@@ -984,7 +993,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
         const b = s.bubbles[i];
 
         if (b.bursting) {
-          b.burstProgress += 0.14;
+          b.burstProgress += 0.14 * dtFactor;
           if (b.burstProgress >= 1) {
             s.bubbles.splice(i, 1);
             continue;
@@ -1000,8 +1009,8 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
         }
 
         // float physics upward
-        b.y -= b.speed;
-        b.wobbleTime += b.wobbleSpeed;
+        b.y -= b.speed * dtFactor;
+        b.wobbleTime += b.wobbleSpeed * dtFactor;
         const wobbleX = Math.sin(b.wobbleTime) * b.wobbleAmount;
         const cx = (b.x / 100) * w + wobbleX;
 
@@ -1100,10 +1109,10 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       // Update & Render splattered cartoon watercolor burst droplets particles
       for (let k = s.particles.length - 1; k >= 0; k--) {
         const p = s.particles[k];
-        p.life += 1;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.082; // small gravitation pull
+        p.life += dtFactor;
+        p.x += p.vx * dtFactor;
+        p.y += p.vy * dtFactor;
+        p.vy += 0.082 * dtFactor; // small gravitation pull
 
         ctx.fillStyle = p.color;
         ctx.beginPath();

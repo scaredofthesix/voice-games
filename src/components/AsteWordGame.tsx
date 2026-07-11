@@ -385,107 +385,118 @@ export function AsteWordGame({
     if (!ctx) return;
 
     let animId: number;
+    let lastTime = performance.now();
 
     const gameLoop = () => {
       if (phaseRef.current !== 'PLAYING') return;
 
-      if (!pausedRef.current) {
-        // 1. Медленный плавный спавн
-        spawnTimer.current++;
+      const now = performance.now();
+      let dt = now - lastTime;
+      lastTime = now;
 
-        // Pacing budget: a child needs ~3-4s per word including recognition
-        // latency, so even Hard must leave that much time per asteroid.
-        const diff = difficultyRef.current;
-        let spawnDelay = Math.max(280, 440 - scoreRef.current * 5);
-        let maxAsteroids = 2;
-        let baseSpeed = 0.35 + scoreRef.current * 0.007;
-        let speedRandomRange = 0.12;
+      if (pausedRef.current) {
+        animId = requestAnimationFrame(gameLoop);
+        return;
+      }
 
-        if (diff === 'easy') {
-          spawnDelay = Math.max(360, 540 - scoreRef.current * 5);
-          maxAsteroids = 1; // Only 1 asteroid at a time for extremely relaxed play
-          baseSpeed = 0.2 + scoreRef.current * 0.004;
-          speedRandomRange = 0.08;
-        } else if (diff === 'medium') {
-          spawnDelay = Math.max(280, 440 - scoreRef.current * 5);
-          maxAsteroids = 2;
-          baseSpeed = 0.35 + scoreRef.current * 0.007;
-          speedRandomRange = 0.12;
-        } else if (diff === 'hard') {
-          spawnDelay = Math.max(220, 340 - scoreRef.current * 4);
-          maxAsteroids = 3;
-          baseSpeed = 0.55 + scoreRef.current * 0.012;
-          speedRandomRange = 0.2;
+      if (dt > 100) dt = 16.67;
+      const dtFactor = dt / (1000 / 160);
+
+      // 1. Медленный плавный спавн
+      spawnTimer.current += dtFactor;
+
+      // Pacing budget: a child needs ~3-4s per word including recognition
+      // latency, so even Hard must leave that much time per asteroid.
+      const diff = difficultyRef.current;
+      let spawnDelay = Math.max(280, 440 - scoreRef.current * 5);
+      let maxAsteroids = 2;
+      let baseSpeed = 0.35 + scoreRef.current * 0.007;
+      let speedRandomRange = 0.12;
+
+      if (diff === 'easy') {
+        spawnDelay = Math.max(360, 540 - scoreRef.current * 5);
+        maxAsteroids = 1; // Only 1 asteroid at a time for extremely relaxed play
+        baseSpeed = 0.2 + scoreRef.current * 0.004;
+        speedRandomRange = 0.08;
+      } else if (diff === 'medium') {
+        spawnDelay = Math.max(280, 440 - scoreRef.current * 5);
+        maxAsteroids = 2;
+        baseSpeed = 0.35 + scoreRef.current * 0.007;
+        speedRandomRange = 0.12;
+      } else if (diff === 'hard') {
+        spawnDelay = Math.max(220, 340 - scoreRef.current * 4);
+        maxAsteroids = 3;
+        baseSpeed = 0.55 + scoreRef.current * 0.012;
+        speedRandomRange = 0.2;
+      }
+
+      if (spawnTimer.current >= spawnDelay && asteroids.current.length < maxAsteroids) {
+        spawnTimer.current = 0;
+        const list = wordList();
+        if (list.length > 0) {
+          const words = list.map((w) => w.word);
+          const wordStats = loadProgress()['aste-word'].words;
+          const randomWord = words[pickAdaptiveWordIndex(words, wordStats)];
+          const wordItem = list.find((w) => w.word === randomWord);
+          asteroids.current.push({
+            id: astIdCounter.current++,
+            x: 40 + Math.random() * (canvas.width - 80),
+            y: -20,
+            speed: baseSpeed + Math.random() * speedRandomRange,
+            word: randomWord,
+            translation: wordItem?.translationRu || wordItem?.translation,
+            size: 20,
+          });
+          setActiveAsteroids([...asteroids.current]);
+        }
+      }
+
+      // 2. Движение астероидов и шлейф пыли комет ☄️
+      for (let index = asteroids.current.length - 1; index >= 0; index--) {
+        const ast = asteroids.current[index];
+        ast.y += ast.speed * dtFactor;
+
+        if (Math.random() < 0.25 * dtFactor) {
+          particles.current.push({
+            x: ast.x + (Math.random() - 0.5) * 6,
+            y: ast.y - 12,
+            vx: ((Math.random() - 0.5) * 1) * dtFactor,
+            vy: -ast.speed * 0.5 * dtFactor,
+            size: 1 + Math.random() * 2,
+            color: themeRef.current === 'supernova' ? '#ea580c' : '#22d3ee', 
+            alpha: 0.8,
+          });
         }
 
-        if (spawnTimer.current >= spawnDelay && asteroids.current.length < maxAsteroids) {
-          spawnTimer.current = 0;
-          const list = wordList();
-          if (list.length > 0) {
-            const words = list.map((w) => w.word);
-            const wordStats = loadProgress()['aste-word'].words;
-            const randomWord = words[pickAdaptiveWordIndex(words, wordStats)];
-            const wordItem = list.find((w) => w.word === randomWord);
-            asteroids.current.push({
-              id: astIdCounter.current++,
-              x: 40 + Math.random() * (canvas.width - 80),
-              y: -20,
-              speed: baseSpeed + Math.random() * speedRandomRange,
-              word: randomWord,
-              translation: wordItem?.translationRu || wordItem?.translation,
-              size: 20,
-            });
-            setActiveAsteroids([...asteroids.current]);
-          }
+        if (ast.y > canvas.height - 35) {
+          handleShieldHit(index);
         }
+      }
 
-        // 2. Движение астероидов и шлейф пыли комет ☄️
-        for (let index = asteroids.current.length - 1; index >= 0; index--) {
-          const ast = asteroids.current[index];
-          ast.y += ast.speed;
+      // 3. Обновление лазера
+      if (laser.current) {
+        laser.current.life -= dtFactor;
+        if (laser.current.life <= 0) laser.current = null;
+      }
 
-          if (Math.random() < 0.25) {
-            particles.current.push({
-              x: ast.x + (Math.random() - 0.5) * 6,
-              y: ast.y - 12,
-              vx: (Math.random() - 0.5) * 1,
-              vy: -ast.speed * 0.5,
-              size: 1 + Math.random() * 2,
-              color: themeRef.current === 'supernova' ? '#ea580c' : '#22d3ee', 
-              alpha: 0.8,
-            });
-          }
-
-          if (ast.y > canvas.height - 35) {
-            handleShieldHit(index);
-          }
+      // 4. Обновление частиц
+      for (let index = particles.current.length - 1; index >= 0; index--) {
+        const p = particles.current[index];
+        p.x += p.vx * dtFactor;
+        p.y += p.vy * dtFactor;
+        p.alpha -= 0.03 * dtFactor;
+        if (p.alpha <= 0) {
+          particles.current.splice(index, 1);
         }
+      }
 
-        // 3. Обновление лазера
-        if (laser.current) {
-          laser.current.life--;
-          if (laser.current.life <= 0) laser.current = null;
-        }
-
-        // 4. Обновление частиц
-        for (let index = particles.current.length - 1; index >= 0; index--) {
-          const p = particles.current[index];
-          p.x += p.vx;
-          p.y += p.vy;
-          p.alpha -= 0.03;
-          if (p.alpha <= 0) {
-            particles.current.splice(index, 1);
-          }
-        }
-
-        // 5. Обновление ударных волн
-        for (let index = shockwaves.current.length - 1; index >= 0; index--) {
-          const sw = shockwaves.current[index];
-          sw.r += 2.2;
-          sw.alpha -= 0.04;
-          if (sw.alpha <= 0) {
-            shockwaves.current.splice(index, 1);
-          }
+      // 5. Обновление ударных волн
+      for (let index = shockwaves.current.length - 1; index >= 0; index--) {
+        const sw = shockwaves.current[index];
+        sw.r += 2.2 * dtFactor;
+        sw.alpha -= 0.04 * dtFactor;
+        if (sw.alpha <= 0) {
+          shockwaves.current.splice(index, 1);
         }
       }
 

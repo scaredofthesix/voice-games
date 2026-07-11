@@ -159,6 +159,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     };
 
     // The main engine rendering loop
+    let lastTime = performance.now();
+
     const frame = () => {
       const s = stateRef.current;
       // Frozen while paused: keep the last rendered frame on screen and stop
@@ -167,6 +169,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         animationFrameId.current = requestAnimationFrame(frame);
         return;
       }
+      const nowPerf = performance.now();
+      let dt = nowPerf - lastTime;
+      lastTime = nowPerf;
+
+      if (dt > 100) dt = 16.67;
+      const dtFactor = dt / (1000 / 160);
+
       const now = Date.now();
       const ctx = context;
       const w = s.canvasWidth;
@@ -319,7 +328,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
       // 2. SCROLLING ROAD STRIPES (Slowing down to 5% speed during bullet-time!)
       const speedMultiplier = s.isBulletTime ? 0.05 : 1.0;
-      s.roadOffset = (s.roadOffset + s.gameSpeed * speedMultiplier) % 80;
+      s.roadOffset = (s.roadOffset + s.gameSpeed * speedMultiplier * dtFactor) % 80;
       ctx.strokeStyle = '#FFFFFF';
       ctx.lineWidth = 4;
       ctx.setLineDash([30, 50]);
@@ -378,7 +387,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         // Once dodged (the player changes lane, obs.lane !== s.playerLane), it zooms downward at 3x normal speed!
         const isDodged = obs.lane !== s.playerLane;
         const speedFactor = isDodged ? 3.0 : speedMultiplier;
-        obs.y += (obs.speed + s.gameSpeed * 0.5) * speedFactor;
+        obs.y += (obs.speed + s.gameSpeed * 0.5) * speedFactor * dtFactor;
 
         // Draw obstacle
         const obsX = laneW * obs.lane + laneW / 2;
@@ -640,11 +649,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
       // 5. UPDATE PLAYER VEHICLE RENDER (Slide LERP transition)
       const targetX = laneW * s.playerLane + laneW / 2;
-      s.playerX += (targetX - s.playerX) * 0.18; // smooth horizontal glide
+      s.playerX += (targetX - s.playerX) * (1 - Math.pow(1 - 0.18, dtFactor)); // smooth horizontal glide
 
       // Handle blink logic for invincibility flash
       if (s.blinkTimer > 0) {
-        s.blinkTimer--;
+        s.blinkTimer = Math.max(0, s.blinkTimer - dtFactor);
         s.blinkState = Math.floor(s.blinkTimer / 4) % 2 === 0;
       } else {
         s.blinkState = false;
@@ -813,9 +822,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // 6. DRAW PARTICLES (Exhaust fire, sparkles, lane switch debris, coin pop, crash dust)
       for (let index = s.particles.length - 1; index >= 0; index--) {
         const part = s.particles[index];
-        part.x += part.vx;
-        part.y += part.vy;
-        part.life++;
+        part.x += part.vx * dtFactor;
+        part.y += part.vy * dtFactor;
+        part.life += dtFactor;
 
         const alpha = Math.max(0, 1 - part.life / part.maxLife);
         ctx.fillStyle = part.color;
