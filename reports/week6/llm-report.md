@@ -9,9 +9,9 @@ report-writing work, all completed ahead of the 2026-07-12 submission.
   for backlog planning, implementation of the six Sprint 4 fix/feature issues, release
   preparation, and this report set.
 - Codex, used by team members for parts of the Sprint 4 game-polish and release-prep work
-  (PRs #137, #138, #139) alongside Claude Code; both tools follow the same repository
-  conventions (Conventional Commits, issue-linked PRs, no AI-tool mentions outside this
-  report).
+  (PRs #137, #138, #139), the final Week 6 compliance audit, evidence reconciliation,
+  Project board update, and corrective `v0.4.1` release preparation alongside Claude Code.
+  Both tools follow the same repository conventions.
 
 ## How it was used
 
@@ -37,6 +37,9 @@ report-writing work, all completed ahead of the 2026-07-12 submission.
   traceability table and retrospective, which surfaced a real process gap: PR #128 (adaptive
   word selection) had a review requested but never submitted, and was merged by its own
   author.
+- Running the final Week 6 compliance audit, correcting report counts and links, adding
+  missing Project board metadata, removing exact public transcript timecodes, closing
+  completed milestones, and preparing the reviewed `v0.4.1` corrective release (#150).
 - Drafting `reports/week6/sprint-review-transcript.md`, `sprint-review-summary.md`,
   `reflection.md`, `retrospective.md`, and this file, and updating
   `docs/customer-handover.md`'s status table from the actual meeting outcome.

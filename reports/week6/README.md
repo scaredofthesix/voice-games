@@ -21,7 +21,7 @@ children (Team 40).
 
 ## Week 6 trial-release summary
 
-[Release `v0.4.0`](https://github.com/scaredofthesix/voice-games/releases/tag/v0.4.0)
+[Release `v0.4.1`](https://github.com/scaredofthesix/voice-games/releases/tag/v0.4.1)
 completes the ten-game roster with the four games merged just before Sprint 4 planning
 (Voice Treasure Hunter, Magic Wizard, Sentence Bird, Echo Microphone), and adds:
 
@@ -37,7 +37,7 @@ completes the ten-game roster with the four games merged just before Sprint 4 pl
 - The maintained handover documentation set: `docs/customer-handover.md`, `CONTRIBUTING.md`,
   `AGENTS.md`, refreshed `README.md` and `CHANGELOG.md` (#124, PR #126).
 
-`main` is green at the Week 6 release-candidate commit: TypeScript check, 13 test files / 99
+`main` is green at the corrective release commit: TypeScript check, 13 test files / 99
 tests, coverage gates, production build, Lighthouse, and the Lychee link check all pass.
 
 ## Access and documentation links
@@ -57,7 +57,7 @@ tests, coverage gates, production build, Lighthouse, and the Lychee link check a
 - [Architecture documentation](../../docs/architecture/README.md)
 - [Development process](../../docs/development-process.md)
 - **Week 6 product access:** live build at https://scaredofthesix.github.io/voice-games/,
-  and the tagged release: https://github.com/scaredofthesix/voice-games/releases/tag/v0.4.0
+  and the tagged release: https://github.com/scaredofthesix/voice-games/releases/tag/v0.4.1
 
 ## Customer-facing documentation review
 
@@ -176,7 +176,7 @@ is also recorded in `docs/user-acceptance-tests.md`'s execution history.
 
 ## Current product status and expected Week 7 follow-up
 
-`v0.4.0` is live with all ten games, adaptive word selection, and unified UI/hub navigation.
+`v0.4.1` is live with all ten games, adaptive word selection, and unified UI/hub navigation.
 The customer confirmed the product is close to transition-ready but identified concrete
 defects in three of the newest games plus documentation and usability follow-ups (see the
 feedback table above). The documentation follow-up (#146) was already completed during Week 6
@@ -207,17 +207,18 @@ the Sprint 4 group shows each item with its assignee, `Done` status, and linked 
 
 ![Sprint 4 Backlog board](./images/project-board.png)
 
-**`v0.4.0` Week 6 trial release** - tagged on the protected default branch, linking the
-Sprint 4 milestone, `docs/customer-handover.md`, this report, and run instructions.
+**`v0.4.1` Week 6 corrective trial release** - tagged on the protected default branch,
+with package metadata matching the tag and links to the Sprint 4 milestone,
+`docs/customer-handover.md`, this report, and run instructions.
 
-![v0.4.0 release page](./images/release-v0.4.0.png)
+![v0.4.1 release page](./images/release-v0.4.1.png)
 
 **Example reviewed, issue-linked PR (#127)** - merged into `main`, linked to issue #103,
 approved by a second reviewer, with CI checks green.
 
 ![Reviewed PR #127](./images/reviewed-pr-127.png)
 
-**Week 6 trial build (`v0.4.0`)** - the hub now lists all ten games.
+**Week 6 trial build (`v0.4.1`)** - the hub now lists all ten games.
 
 ![App hub with ten games](../../docs/images/hub.png)
 
