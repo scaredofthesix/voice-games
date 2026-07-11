@@ -189,11 +189,10 @@ item is PR #147, this report). 93% complete at capture time; 100% once #147 merg
 
 ![Sprint 4 milestone](./images/milestone-sprint4.png)
 
-The Sprint 4 milestone above is the authoritative Sprint 4 Backlog view (the milestone is the
-Sprint container per the assignment). The GitHub Projects board below is the full **Product
-Backlog** (all user stories with status and linked PRs).
+The Sprint 4 Backlog on the GitHub Projects board (Sprint Backlog view, grouped by Sprint) -
+the Sprint 4 group shows each item with its assignee, `Done` status, and linked pull request.
 
-![Product Backlog board](./images/project-board.png)
+![Sprint 4 Backlog board](./images/project-board.png)
 
 **`v0.4.0` Week 6 trial release** - tagged on the protected default branch, linking the
 Sprint 4 milestone, `docs/customer-handover.md`, this report, and run instructions.
