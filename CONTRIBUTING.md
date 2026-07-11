@@ -50,6 +50,13 @@ No API keys, accounts, or secrets are needed - see
 7. **Address review feedback**, then the reviewer merges once CI is green and the review
    is approved.
 
+**Issue roles.** Record two people on every issue: the **assignee** (responsible - the
+person who implements it) and the **accountable reviewer** (the person accountable for the
+issue being fully done, who verifies completion). GitHub assignees cover the first; name the
+accountable reviewer in the issue body or as a checklist item, especially when one issue
+spans several pull requests reviewed by different people, so it stays clear who verifies the
+whole issue is finished rather than just an individual PR.
+
 ## What CI checks
 
 Every PR and every push to `main` runs (see

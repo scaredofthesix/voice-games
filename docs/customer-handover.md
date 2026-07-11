@@ -133,14 +133,16 @@ and this document directly at the Week 6 meeting (2026-07-11) and confirmed the 
 facts (no secrets required, repository ownership, access model, MIT license) are correct and
 sufficient. The customer requested a restructuring of `README.md` (product-facing content
 first, developer-facing content in its own section, coursework wording removed) rather than
-any factual correction; that restructuring is tracked as
-[issue #146](https://github.com/scaredofthesix/voice-games/issues/146) for Sprint 5.
+any factual correction. That restructuring, a new `docs/README.md` directory index, and the
+pinned TypeScript version were completed during Week 6 finalization
+([issue #146](https://github.com/scaredofthesix/voice-games/issues/146), closed).
 
 **Known remaining gaps, honestly stated:**
 - The documentation is written for a developer/TA audience. There is no separate,
-  non-technical "how to play with your child" quick-start; the README's setup section
-  doubles as the only user-facing instructions. The customer confirmed this is a real gap and
-  requested a short visual Quick Start section showing how to add a custom word (issue #146).
+  non-technical "how to play with your child" quick-start beyond the README. The customer
+  confirmed this is a real gap and requested a short visual Quick Start showing how to add a
+  custom word; that Quick Start (with a screenshot) was added to `README.md` during Week 6
+  finalization (issue #146, closed).
 - Repository ownership and CI/CD stay with the team for the course; a future maintainer who
   is not a current team member would need to fork the repository to gain publish rights (see
   "Setup, deployment, recovery, and verification" above for how that fork would work). The

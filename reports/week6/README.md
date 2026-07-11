@@ -75,7 +75,15 @@ pinned TypeScript version in `package.json` (the team's verbal answer at the mee
 "7.0.2", does not match `package.json`'s `~5.8.2` - this needs reconciling before pinning).
 
 All of the above became [issue #146](https://github.com/scaredofthesix/voice-games/issues/146)
-(README/docs restructuring and TypeScript-version reconciliation).
+(README/docs restructuring and TypeScript-version reconciliation). The documentation part of
+this feedback was addressed immediately as part of the Week 6 public-entry-point polish: the
+`README.md` was restructured to the customer's requested order (live-product link, ten-game
+list, screenshots, a custom-word Quick Start, hosted-docs and handover links, then a "For
+Developers" section), a `docs/README.md` directory index was added, coursework/internal-mirror
+wording was removed, and the TypeScript version was pinned to the actual `5.8.3` (the "7.0.2"
+stated verbally at the meeting did not match the repository and was reconciled to what is
+really installed). `#146` is closed; the remaining Week 6 feedback is the game and cross-game
+work tracked for Sprint 5.
 
 ## Transition-readiness summary
 
@@ -89,8 +97,9 @@ things need to be fixed, and then it will be in good shape." Specifically:
 - **Needs changes before Week 7 transition confirmation:** the Sentence Bird, Echo
   Microphone, and Magic Wizard issues found live during UAT (see below); confirming adaptive
   word selection is dynamic within a round, not just between rounds; bulk custom-word import;
-  audio not stopping when switching games; internationalizing the preview screen; the
-  README/docs restructuring described above.
+  audio not stopping when switching games; internationalizing the preview screen. (The
+  README/docs restructuring the customer asked for was completed during Week 6 finalization,
+  see #146.)
 - The customer explicitly accepted the plan to fix these items and present the result in
   Week 7 as sufficient for now; see `docs/customer-handover.md`'s handover-status table for
   the resulting interim `Accepted with follow-up items` status (final Part 8 confirmation is
@@ -106,7 +115,7 @@ things need to be fixed, and then it will be in good shape." Specifically:
 | Adaptive word selection: dynamic within-round reweighting, algorithm tests | [#143](https://github.com/scaredofthesix/voice-games/issues/143) | Open, Sprint 5 |
 | Bulk custom-word import (multiline, `\|`/`;` delimiter) | [#144](https://github.com/scaredofthesix/voice-games/issues/144) | Open, Sprint 5 |
 | Stop audio on hub/game switch; internationalize preview screen; keep CSV in English | [#145](https://github.com/scaredofthesix/voice-games/issues/145) | Open, Sprint 5 |
-| README/docs restructuring; reconcile and pin TypeScript version; implementer/accountable-reviewer process note | [#146](https://github.com/scaredofthesix/voice-games/issues/146) | Open, Sprint 5 |
+| README/docs restructuring; reconcile and pin TypeScript version; implementer/accountable-reviewer process note | [#146](https://github.com/scaredofthesix/voice-games/issues/146) | Done (Week 6 finalization) |
 | Progress-view lost counters | [#103](https://github.com/scaredofthesix/voice-games/issues/103) | Closed, Sprint 4 |
 | Adaptive word selection (initial implementation) | [#105](https://github.com/scaredofthesix/voice-games/issues/105) | Closed, Sprint 4 (dynamism re-verified as #143) |
 | Skate Word ground/jump physics | [#106](https://github.com/scaredofthesix/voice-games/issues/106) | Closed, Sprint 4 |
@@ -117,9 +126,12 @@ things need to be fixed, and then it will be in good shape." Specifically:
 
 ## Feedback not yet addressed
 
-All Week 6 feedback points above have a tracked issue in the Sprint 5 milestone; none were
-left untracked. None are fixed yet as of this report - Sprint 5 work starts after this
-submission, per the Sprint 4/Sprint 5 boundary.
+Every Week 6 feedback point has a tracked issue; none were left untracked. The documentation
+feedback (#146: README/docs restructuring, `docs/README.md`, TypeScript-version pin, and the
+implementer/accountable-reviewer process note in `CONTRIBUTING.md`) was completed during Week
+6 finalization and is closed. The remaining points - the game defects and cross-game UX work
+in #140-#145 - are open in the Sprint 5 milestone and are not fixed yet; that work starts
+after this submission, per the Sprint 4/Sprint 5 boundary.
 
 ## UAT / customer-trial results
 
@@ -154,7 +166,8 @@ is also recorded in `docs/user-acceptance-tests.md`'s execution history.
 `v0.4.0` is live with all ten games, adaptive word selection, and unified UI/hub navigation.
 The customer confirmed the product is close to transition-ready but identified concrete
 defects in three of the newest games plus documentation and usability follow-ups (see the
-feedback table above). Sprint 5 (Week 7) will fix issues #140-#146, re-verify the adaptive
+feedback table above). The documentation follow-up (#146) was already completed during Week 6
+finalization. Sprint 5 (Week 7) will fix issues #140-#145, re-verify the adaptive
 word-selection feature's in-round dynamism with automated tests, get the still-unreviewed
 adaptive-word-selection PR (#128) reviewed by a second person, cut the final `MVP v3`
 release, and run the Week 7 final-transition confirmation against `docs/customer-handover.md`.
@@ -171,7 +184,30 @@ release, and run the Week 7 final-transition confirmation against `docs/customer
 
 ## Evidence screenshots
 
-_TODO - add screenshots to `reports/week6/images/` for: the Sprint 4 milestone view, the
-`v0.4.0` release page, and one example reviewed issue-linked PR (for example PR #127 or
-#134). Not generated in this pass; add before the Week 6 Moodle PDF is assembled._
+**Sprint 4 milestone** - Sprint Goal, dates, and 14 issues/PRs closed (the single "Open"
+item is PR #147, this report). 93% complete at capture time; 100% once #147 merges.
+
+![Sprint 4 milestone](./images/milestone-sprint4.png)
+
+**Sprint 4 Backlog (Project board view)** - the Sprint Backlog view groups items by Sprint;
+the Product Backlog view is the same board without grouping.
+
+![Sprint Backlog board grouped by Sprint](./images/sprint4-backlog.png)
+
+**`v0.4.0` Week 6 trial release** - tagged on the protected default branch, linking the
+Sprint 4 milestone, `docs/customer-handover.md`, this report, and run instructions.
+
+![v0.4.0 release page](./images/release-v0.4.0.png)
+
+**Example reviewed, issue-linked PR (#127)** - merged into `main`, linked to issue #103,
+approved by a second reviewer, with CI checks green.
+
+![Reviewed PR #127](./images/reviewed-pr-127.png)
+
+**Week 6 trial build (`v0.4.0`)** - the hub with all ten games, and the Progress view with
+per-game statistics and CSV export.
+
+![App hub with ten games](./images/app-hub-v0.4.0.png)
+
+![Progress view with CSV export](./images/progress-view.png)
 </content>
