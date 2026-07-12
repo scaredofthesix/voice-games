@@ -189,11 +189,11 @@ release, and run the Week 7 final-transition confirmation against `docs/customer
 
 | Team member | Issues | PRs | Review | Testing / docs / deployment |
 |---|---|---|---|---|
-| scaredofthesix (Maxim) | #103, #105, #106, #107, #108, #109, #124, #133, #150 (author/assignee); ran the Week 6 customer session | #126, #127, #128, #129, #130, #131, #132, #134, #137, #151, #152 | Reviewed/approved #118, #122, #123, #135, #136 | Authored `docs/customer-handover.md`, `CONTRIBUTING.md`, `AGENTS.md`, README refresh; verified lint/tests/build; wrote and reconciled this report from the session transcript and live GitHub evidence |
+| scaredofthesix (Maxim) | #103, #105, #106, #107, #108, #109, #124, #133, #150 (author/assignee) | #126, #127, #128, #129, #130, #131, #132, #134, #137, #151, #152 | Reviewed/approved #118, #122, #123, #135, #136 | Authored `docs/customer-handover.md`, `CONTRIBUTING.md`, `AGENTS.md`, README refresh; verified lint/tests/build; wrote and reconciled this report from the session transcript and live GitHub evidence |
 | Kotumbaa | #115, #116 (pre-Sprint-4 new games) | #119, #122, #123, #138 (release documentation), #139 (version bump and 160 FPS refactor) | Reviewed/approved #129, #130, #131, #132, #134, #137 | Release preparation and code review |
 | flikspy | - | #120, #121 (pre-Sprint-4 new games), #135, #136 (Sentence Bird rework, Echo Microphone word-set picker) | Reviewed/approved #127 | Progress-loss fix review |
-| MMavInno | - | - | Reviewed/approved #138, #139 | - |
-| TeraloToxin | - | - | Reviewed/approved #126 | - |
+| MMavInno | Product Backlog refinement for Sprint 4 and the Sprint 5 follow-up scope; facilitated the Week 6 customer session (Sprint Review, customer-executed UAT, documentation review, transition discussion) | - | Reviewed/approved #138, #139 | Ran the recorded customer session and screen-share |
+| TeraloToxin | - | - | Reviewed/approved #126 | Review of the customer-handover documentation set (`docs/customer-handover.md`, `CONTRIBUTING.md`, `AGENTS.md`, README) |
 
 ## Evidence screenshots
 
