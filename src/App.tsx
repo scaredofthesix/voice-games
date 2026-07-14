@@ -38,6 +38,7 @@ import {
   matchesWord,
   isSpeechSynthesisActive,
   updateRacerMovement,
+  stopAllAudio,
 } from './voice/engine';
 import { useUiLanguage } from './uiLanguage';
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, recordHighScore } from './progress';
@@ -45,6 +46,14 @@ import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, reco
 export default function App() {
   const { language, setLanguage, t } = useUiLanguage();
   const [currentView, setCurrentView] = useState<'HUB' | 'VOICE_RACER' | 'BUBBLE_POPPER' | 'BOSS_FIGHT' | 'WORD_LADDER' | 'SKATE_WORD' | 'ASTE_WORD' | 'TREASURE_HUNTER' | 'SENTENCE_BIRD' | 'ECHO_RECORDER' | 'MAGIC_WIZARD' | 'PROGRESS'>('HUB');
+
+  // Stop any lingering game audio (word pronunciation, chain playback) whenever
+  // the view changes, so returning to the hub or switching games never leaves
+  // sound from the previous game playing. Games show a non-speaking setup screen
+  // on entry, so this never cuts off a game's own intro speech.
+  useEffect(() => {
+    stopAllAudio();
+  }, [currentView]);
 
   // Game states
   const [gameState, setGameState] = useState<GameState>('START_SCREEN');
