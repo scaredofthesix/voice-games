@@ -79,6 +79,22 @@ export function speakWord(word: string, lang: VoiceLanguage = 'en') {
   window.speechSynthesis.speak(utterance);
 }
 
+/**
+ * Immediately stop any in-flight speech synthesis (word pronunciation, chain
+ * playback, etc.). Call this when navigating away from a game so a game's audio
+ * does not keep playing after the child returns to the hub or opens another
+ * game. Safe to call when nothing is speaking or when speechSynthesis is
+ * unavailable.
+ */
+export function stopAllAudio(): void {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    return;
+  }
+  window.speechSynthesis.cancel();
+  (window as any).speechSynthesisActive = false;
+  (window as any).lastSpeechSynthesisEndTime = Date.now();
+}
+
 export function levenshteinDistance(s1: string, s2: string): number {
   const a = s1.toLowerCase().trim();
   const b = s2.toLowerCase().trim();
