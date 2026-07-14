@@ -408,7 +408,10 @@ export function MagicWizardGame({
 
       // Timer decrease
       monsterTimer.current -= 0.24 * dtFactor; // Around 7 seconds to say the word (2x speed)
-      if (monsterTimer.current <= 0) {
+      // Only collide (lose a life) if the word has NOT been cast correctly yet.
+      // Once a correct spell is in flight the monster is as good as defeated, so
+      // a late-arriving timeout must not steal a life from a correct answer.
+      if (monsterTimer.current <= 0 && !hasCastSpellRef.current) {
         handleCollision();
       }
 
@@ -428,8 +431,19 @@ export function MagicWizardGame({
           alpha: 0.8,
         });
 
-        // Check hit
-        if (proj.x >= proj.targetX - 20) {
+        // Home the spell onto the monster's CURRENT position: the monster keeps
+        // approaching after the cast, so a target captured at cast time would
+        // leave the spell exploding in empty space where the monster used to be.
+        const monster = activeMonster.current;
+        if (monster) {
+          proj.targetX = monster.x;
+          proj.targetY = monster.y;
+        }
+        const HIT_RADIUS = 28;
+        const hitX = monster ? monster.x : proj.targetX;
+
+        // Check hit against the live monster position.
+        if (monster && proj.x >= hitX - HIT_RADIUS) {
           spellProjectiles.current.splice(idx, 1);
           speakSound.playCorrect();
           setScore((s) => s + 1);
@@ -439,8 +453,8 @@ export function MagicWizardGame({
           const mExplodeColor = colorsMap[proj.element];
           for (let i = 0; i < 25; i++) {
             particles.current.push({
-              x: proj.targetX,
-              y: proj.targetY,
+              x: monster.x,
+              y: monster.y,
               vx: (Math.random() - 0.5) * 7 * dtFactor,
               vy: (Math.random() - 0.5) * 7 * dtFactor,
               size: 2 + Math.random() * 4,
@@ -452,6 +466,9 @@ export function MagicWizardGame({
           setTimeout(() => {
             spawnMonster();
           }, 600);
+        } else if (!monster && proj.x > canvas.width + 40) {
+          // Monster already gone: let the orphan spell fly off, then drop it.
+          spellProjectiles.current.splice(idx, 1);
         }
       }
 
