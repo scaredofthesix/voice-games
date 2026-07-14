@@ -1,10 +1,15 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 
-import { OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import { BackToHubButton, GameResultCard, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
 import { UiLanguageProvider } from '../uiLanguage';
 
 describe('shared game UI', () => {
+  test('BackToHubButton uses the same high-contrast color in every game', () => {
+    render(<BackToHubButton label="Hub" onClick={() => undefined} />);
+    expect(screen.getByRole('button')).toHaveClass('bg-yellow-300');
+  });
+
   test('OptionPicker exposes and updates the selected option', () => {
     const onSelect = vi.fn();
 
@@ -117,5 +122,33 @@ describe('shared game UI', () => {
     fireEvent.click(screen.getByRole('button', { name: /слушать по-русски/i }));
     expect(onListenEn).toHaveBeenCalledOnce();
     expect(onListenRu).toHaveBeenCalledOnce();
+  });
+
+  test('GameResultCard reports per-word attempts and exposes EN/RU playback', () => {
+    window.localStorage.setItem('ui_language', 'en');
+    const onReplay = vi.fn();
+    render(
+      <UiLanguageProvider>
+        <GameResultCard
+          title="Round complete"
+          description="Review"
+          scoreLabel="Score"
+          score={40}
+          bestLabel="Best"
+          best={80}
+          wordStats={{ Dolphin: { spoken: 2, struggled: 1 } }}
+          words={[{ word: 'Dolphin', translation: 'Дельфин', translationRu: 'Дельфин' }]}
+          replayLabel="Play again"
+          onReplay={onReplay}
+        />
+      </UiLanguageProvider>,
+    );
+
+    expect(screen.getByText('Dolphin')).toBeInTheDocument();
+    expect(screen.getByText(/Correct: 2/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /hear the word dolphin/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /listen in russian/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /play again/i }));
+    expect(onReplay).toHaveBeenCalledOnce();
   });
 });

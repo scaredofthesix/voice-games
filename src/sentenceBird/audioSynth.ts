@@ -3,12 +3,14 @@
  * Generates instant sound effects for game states without external files.
  */
 
+import { createGameAudioContext } from '../voice/engine';
+
 class AudioSynthesizer {
   private ctx: AudioContext | null = null;
 
   private init() {
-    if (!this.ctx) {
-      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    if (!this.ctx || this.ctx.state === 'closed') {
+      this.ctx = createGameAudioContext();
     }
     if (this.ctx.state === 'suspended') {
       this.ctx.resume();

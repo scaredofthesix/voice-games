@@ -7,6 +7,8 @@ export {
   matchesWord,
   updateRacerMovement,
   speakSound,
+  createGameAudioContext,
+  stopAllAudio,
   type VoiceLanguage,
   type RacerMovementState,
 } from './voice/engine';

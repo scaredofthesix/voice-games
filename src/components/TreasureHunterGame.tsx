@@ -853,13 +853,15 @@ export function TreasureHunterGame({
     };
   }, [phase, language, feedback]);
 
-  return (
-    <section className="flex-1 flex flex-col justify-between p-4 md:p-8 max-w-6xl w-full mx-auto select-none relative animate-fade-in">
-      {/* Top action header bar */}
-      <div className="flex items-center justify-between mb-4 bg-slate-900/90 text-white p-4 rounded-3xl border-4 border-slate-950 shadow-md">
-        <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} className="mb-0 text-slate-200 hover:text-white" />
+  const list = wordList();
 
-        <div className="flex items-center gap-6">
+  return (
+    <section className="flex-1 flex flex-col justify-between p-2 sm:p-4 md:p-8 max-w-6xl w-full mx-auto select-none relative animate-fade-in">
+      {/* Top action header bar */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 bg-slate-900/90 text-white p-3 sm:p-4 rounded-3xl border-4 border-slate-950 shadow-md">
+        <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} className="mb-0" />
+
+        <div className="flex flex-wrap items-center gap-2 sm:gap-6">
           <div className="flex items-center gap-1">
             <span className="text-yellow-400 font-extrabold text-sm">💰:</span>
             <span className="font-mono font-black text-lg bg-slate-800 border-2 border-slate-955 px-2 py-0.5 rounded-xl text-emerald-400">${score * 100}</span>
@@ -984,7 +986,7 @@ export function TreasureHunterGame({
             />
 
             {(() => {
-              const currentWordItem = wordList().find(
+              const currentWordItem = list.find(
                 (item) => item.word.toLowerCase() === target.toLowerCase(),
               );
               return (
@@ -1045,7 +1047,7 @@ export function TreasureHunterGame({
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
                 {t('treasure.bestRecord')}
                 </span>
-                <span className="text-lg font-black text-amber-850 mt-1 font-mono">{highScore}</span>
+                <span className="text-lg font-black text-amber-850 mt-1 font-mono">{Math.max(highScore, score)}</span>
               </div>
             </div>
 
@@ -1069,7 +1071,7 @@ export function TreasureHunterGame({
                   Object.keys(wordStudyStats).map((word, idx) => {
                     const spoken = wordStudyStats[word].spoken;
                     const struggled = wordStudyStats[word].struggled;
-                    const matchedObj = activeCategory.words.find(
+                    const matchedObj = list.find(
                       (item) => item.word.toLowerCase() === word.toLowerCase()
                     );
                     
