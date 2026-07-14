@@ -244,10 +244,15 @@ const WEIGHT_STRUGGLED_CAP = 5;
  * less often, and everything else gets the baseline weight.
  */
 export function wordSelectionWeight(stats: WordStats | undefined): number {
-  if (!stats || stats.spoken === 0) return WEIGHT_UNSEEN;
+  if (!stats) return WEIGHT_UNSEEN;
+  // A struggled word is prioritized even if it has never been said correctly
+  // yet (spoken === 0). This is what makes an incorrect/silent attempt in the
+  // current round immediately raise the word's chance of coming back, instead
+  // of it being mistaken for a fresh unseen word.
   if (stats.struggled > 0) {
     return WEIGHT_STRUGGLED_BASE + Math.min(stats.struggled, WEIGHT_STRUGGLED_CAP);
   }
+  if (stats.spoken === 0) return WEIGHT_UNSEEN;
   if (stats.spoken >= MASTERY_THRESHOLD) return WEIGHT_MASTERED;
   return WEIGHT_NORMAL;
 }
