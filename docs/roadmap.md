@@ -93,6 +93,13 @@ planned beyond it.
 - Week 6 customer trial follow-up: Sentence Bird #140, Echo Microphone #141, Magic Wizard
   #142, adaptive word selection #143, bulk custom-word input #144, and cross-game audio and
   internationalization polish #145.
+- Cross-game completion audit: all ten games use progress-weighted word scheduling, expose
+  English and Russian playback for built-in and newly added custom words, and finish with
+  score, record, and per-word practice reporting.
+- Product decision for #142: keep both Magic Wizard and Treasure Hunter in the final ten-game
+  roster. Magic Wizard keeps the approaching-monster spell battle, while Treasure Hunter
+  keeps the submarine, depth, and chest-collection loop with a more visible timer. No game is
+  merged or retired without a later customer-backed roster decision.
 - README and documentation restructuring #146, completed during Week 6 finalization.
 - Confirm the final transition outcome and handover level with the customer against
   `docs/customer-handover.md` - issue #125.

@@ -16,7 +16,7 @@
  * reuse the pickers and pause control.
  */
 import { useState, type ReactNode } from 'react';
-import { ArrowLeft, Pause, Play, Volume2 } from 'lucide-react';
+import { ArrowLeft, Pause, Play, RotateCcw, Volume2 } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
@@ -44,7 +44,7 @@ export function BackToHubButton({ label, onClick, className = '', id }: BackToHu
       id={id}
       onClick={onClick}
       aria-label={t('shared.backToHubAria')}
-      className={`mb-3 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 cursor-pointer ${className}`}
+      className={`mb-3 inline-flex items-center gap-1.5 rounded-xl border-4 border-slate-900 bg-yellow-300 px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-900 shadow-[3px_3px_0_0_rgba(15,23,42,1)] hover:bg-yellow-400 cursor-pointer ${className}`}
     >
       <ArrowLeft className="w-4 h-4 stroke-[3]" /> {label}
     </button>
@@ -548,6 +548,130 @@ export function TargetWordCard({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// GameResultCard - the detailed Boss-Fight-style report used by every game
+// that previously ended with only a score. Existing games with an equivalent
+// detailed report can migrate without changing the visual contract.
+// ---------------------------------------------------------------------------
+
+interface GameResultCardProps {
+  title: string;
+  description: string;
+  scoreLabel: string;
+  score: number;
+  bestLabel: string;
+  best: number;
+  wordStats: Record<string, { spoken: number; struggled: number }>;
+  words: readonly Pick<WordData, 'word' | 'translation' | 'translationRu'>[];
+  replayLabel: string;
+  onReplay: () => void;
+  summary?: ReactNode;
+  icon?: ReactNode;
+  toneClass?: string;
+  shadowClass?: string;
+}
+
+export function GameResultCard({
+  title,
+  description,
+  scoreLabel,
+  score,
+  bestLabel,
+  best,
+  wordStats,
+  words,
+  replayLabel,
+  onReplay,
+  summary,
+  icon,
+  toneClass = 'bg-violet-50',
+  shadowClass = 'bubble-shadow-purple',
+}: GameResultCardProps) {
+  const { t } = useUiLanguage();
+  const entries = Object.entries(wordStats);
+  const findWord = (word: string) => words.find(
+    (item) => item.word.toLocaleLowerCase() === word.toLocaleLowerCase(),
+  );
+
+  return (
+    <div className={`space-y-4 rounded-4xl border-8 border-slate-900 p-6 text-center ${toneClass} ${shadowClass}`}>
+      {icon}
+      <h2 className="text-3xl font-black uppercase tracking-wide text-slate-900">{title}</h2>
+      <p className="text-xs font-bold text-slate-700">{description}</p>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border-4 border-slate-900 bg-white p-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">{scoreLabel}</p>
+          <p className="text-3xl font-black text-slate-900">{score}</p>
+        </div>
+        <div className="rounded-2xl border-4 border-slate-900 bg-white p-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-sky-600">{bestLabel}</p>
+          <p className="text-3xl font-black text-slate-900">{best}</p>
+        </div>
+      </div>
+
+      {summary}
+
+      <div className="rounded-2xl border-4 border-slate-900 bg-white p-3 text-left">
+        <h3 className="mb-2 text-xs font-black uppercase tracking-wider text-violet-700">
+          {t('shared.wordReport')}
+        </h3>
+        {entries.length === 0 ? (
+          <p className="text-xs font-bold text-slate-500">{t('shared.emptyWordReport')}</p>
+        ) : (
+          <div className="space-y-2">
+            {entries.map(([word, stats]) => {
+              const item = findWord(word);
+              const russian = item?.translationRu || item?.translation;
+              return (
+                <div key={word} className="rounded-xl border-2 border-slate-200 bg-slate-50 p-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-black text-slate-900">{word}</p>
+                      {russian && <p className="text-[10px] font-bold text-violet-700">{russian}</p>}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => speakWord(word, 'en')}
+                        aria-label={`${t('shared.hearWord')} ${word}`}
+                        className="inline-flex items-center gap-1 rounded-lg border-2 border-slate-900 bg-white px-2 py-1 text-[10px] font-black uppercase text-indigo-700"
+                      >
+                        <Volume2 className="h-3 w-3" /> EN
+                      </button>
+                      {russian && (
+                        <button
+                          type="button"
+                          onClick={() => speakWord(russian, 'ru')}
+                          aria-label={t('shared.listenInRussian')}
+                          className="inline-flex items-center gap-1 rounded-lg border-2 border-slate-900 bg-white px-2 py-1 text-[10px] font-black uppercase text-blue-700"
+                        >
+                          <Volume2 className="h-3 w-3" /> RU
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="mt-1 text-[10px] font-bold text-slate-600">
+                    {t('shared.correctAttempts')}: {stats.spoken} · {t('shared.struggledAttempts')}: {stats.struggled}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={onReplay}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border-4 border-slate-900 bg-pink-500 py-3 font-black uppercase tracking-wider text-white hover:bg-pink-600"
+      >
+        <RotateCcw className="h-4 w-4 stroke-[3]" /> {replayLabel}
+      </button>
     </div>
   );
 }

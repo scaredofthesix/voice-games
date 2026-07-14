@@ -17,6 +17,42 @@ export interface RacerMovementState {
   lastAppliedAt: number;
 }
 
+type AudioWindow = Window &
+  typeof globalThis & {
+    webkitAudioContext?: typeof AudioContext;
+    speechSynthesisActive?: boolean;
+    lastSpeechSynthesisEndTime?: number;
+  };
+
+const activeAudioContexts = new Set<AudioContext>();
+const audioContextCloseTimers = new Map<AudioContext, number>();
+
+/**
+ * Create a Web Audio context that can be stopped centrally on navigation.
+ * Short sound effects may provide an auto-close delay so contexts do not leak.
+ */
+export function createGameAudioContext(autoCloseAfterMs?: number): AudioContext {
+  const audioWindow = window as AudioWindow;
+  const AudioContextConstructor = audioWindow.AudioContext || audioWindow.webkitAudioContext;
+  if (!AudioContextConstructor) {
+    throw new Error('Web Audio API is unavailable');
+  }
+
+  const context = new AudioContextConstructor();
+  activeAudioContexts.add(context);
+
+  if (autoCloseAfterMs !== undefined) {
+    const timer = window.setTimeout(() => {
+      audioContextCloseTimers.delete(context);
+      activeAudioContexts.delete(context);
+      void context.close().catch(() => undefined);
+    }, autoCloseAfterMs);
+    audioContextCloseTimers.set(context, timer);
+  }
+
+  return context;
+}
+
 export function createInitialRacerMovementState(lane: 0 | 1 | 2 = 1): RacerMovementState {
   return {
     lane,
@@ -32,8 +68,9 @@ export function isSpeechSynthesisActive(): boolean {
 
   const isSpeaking = window.speechSynthesis.speaking;
   const isPending = window.speechSynthesis.pending;
-  const globalActive = (window as any).speechSynthesisActive;
-  const lastEndTime = (window as any).lastSpeechSynthesisEndTime || 0;
+  const audioWindow = window as AudioWindow;
+  const globalActive = audioWindow.speechSynthesisActive;
+  const lastEndTime = audioWindow.lastSpeechSynthesisEndTime || 0;
   const now = Date.now();
 
   return Boolean(isSpeaking || isPending || globalActive || (now - lastEndTime < 500));
@@ -54,16 +91,17 @@ export function speakWord(word: string, lang: VoiceLanguage = 'en') {
   utterance.rate = 0.85;
   utterance.pitch = 1.15;
 
-  (window as any).speechSynthesisActive = true;
-  (window as any).lastSpeechSynthesisEndTime = Date.now();
+  const audioWindow = window as AudioWindow;
+  audioWindow.speechSynthesisActive = true;
+  audioWindow.lastSpeechSynthesisEndTime = Date.now();
 
   const handleSpeechEnd = () => {
-    (window as any).speechSynthesisActive = false;
-    (window as any).lastSpeechSynthesisEndTime = Date.now();
+    audioWindow.speechSynthesisActive = false;
+    audioWindow.lastSpeechSynthesisEndTime = Date.now();
   };
 
   utterance.onstart = () => {
-    (window as any).speechSynthesisActive = true;
+    audioWindow.speechSynthesisActive = true;
   };
   utterance.onend = handleSpeechEnd;
   utterance.onerror = handleSpeechEnd;
@@ -80,19 +118,28 @@ export function speakWord(word: string, lang: VoiceLanguage = 'en') {
 }
 
 /**
- * Immediately stop any in-flight speech synthesis (word pronunciation, chain
- * playback, etc.). Call this when navigating away from a game so a game's audio
- * does not keep playing after the child returns to the hub or opens another
- * game. Safe to call when nothing is speaking or when speechSynthesis is
- * unavailable.
+ * Immediately stop speech synthesis and generated Web Audio effects. Call this
+ * when navigating away from a game so audio from the previous view cannot keep
+ * playing in the hub or another game.
  */
 export function stopAllAudio(): void {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-    return;
+  if (typeof window === 'undefined') return;
+
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
   }
-  window.speechSynthesis.cancel();
-  (window as any).speechSynthesisActive = false;
-  (window as any).lastSpeechSynthesisEndTime = Date.now();
+
+  for (const context of activeAudioContexts) {
+    const timer = audioContextCloseTimers.get(context);
+    if (timer !== undefined) window.clearTimeout(timer);
+    void context.close().catch(() => undefined);
+  }
+  activeAudioContexts.clear();
+  audioContextCloseTimers.clear();
+
+  const audioWindow = window as AudioWindow;
+  audioWindow.speechSynthesisActive = false;
+  audioWindow.lastSpeechSynthesisEndTime = Date.now();
 }
 
 export function levenshteinDistance(s1: string, s2: string): number {
@@ -270,7 +317,7 @@ export function updateRacerMovement(
 export const speakSound = {
   playCoin: () => {
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const ctx = createGameAudioContext(500);
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
@@ -290,7 +337,7 @@ export const speakSound = {
 
   playLose: () => {
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const ctx = createGameAudioContext(750);
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
@@ -310,7 +357,7 @@ export const speakSound = {
 
   playCorrect: () => {
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const ctx = createGameAudioContext(750);
       const now = ctx.currentTime;
       const notes = [261.63, 329.63, 392.0, 523.25];
 

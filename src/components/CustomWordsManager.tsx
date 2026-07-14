@@ -1,39 +1,123 @@
 import React, { useState } from 'react';
 import { WordData } from '../types';
 import { speakWord } from '../voice/engine';
-import { Plus, Trash2, Volume2, AlertCircle, ListPlus } from 'lucide-react';
+import { Plus, Trash2, Volume2, AlertCircle, FileUp, ListPlus } from 'lucide-react';
 import { useUiLanguage } from '../uiLanguage';
 
 const WORD_PATTERN = /^[a-zA-Z0-9\s\-\?\!\,\.\'\"’]+$/;
-const BULK_DELIMITER = /[|;]/;
-
-interface BulkParseResult {
+interface WordPairParseResult {
   pairs: { word: string; translation: string }[];
   skipped: number;
 }
 
 /**
- * Parse a multiline "word | translation" (or "word ; translation") block.
- * Splits each line on the FIRST delimiter only, so spaces inside words and
- * phrases are preserved. Blank lines are ignored; malformed lines are counted
- * as skipped without dropping the valid ones.
+ * Both input surfaces (CSV file and pasted list) share one parser, so a pair
+ * behaves the same whether it comes from a spreadsheet export or is typed by
+ * hand. Pipes cover the hand-written "word | translation" style; commas,
+ * semicolons and tabs cover spreadsheet locales.
  */
-export function parseBulkWords(raw: string): BulkParseResult {
-  const pairs: { word: string; translation: string }[] = [];
-  let skipped = 0;
+type WordDelimiter = ',' | ';' | '\t' | '|';
 
-  for (const line of raw.split('\n')) {
-    const trimmedLine = line.trim();
-    if (!trimmedLine) continue;
+/**
+ * Ordered most to least explicit. On a tie the earlier one wins: a pipe or tab
+ * is deliberate, while a comma often appears inside a translation itself
+ * ("hello | привет, друг" must split on the pipe, not the comma).
+ */
+const WORD_DELIMITERS: readonly WordDelimiter[] = ['|', '\t', ';', ','];
 
-    const match = trimmedLine.match(BULK_DELIMITER);
-    if (!match || match.index === undefined) {
-      skipped++;
-      continue;
+function isWordDelimiter(character: string): character is WordDelimiter {
+  return (WORD_DELIMITERS as readonly string[]).includes(character);
+}
+
+function detectDelimiter(raw: string): WordDelimiter {
+  const firstLine = raw.replace(/^\uFEFF/, '').split(/\r?\n/).find((line) => line.trim()) || '';
+  const counts: Record<WordDelimiter, number> = { '|': 0, '\t': 0, ';': 0, ',': 0 };
+  let quoted = false;
+
+  for (let index = 0; index < firstLine.length; index++) {
+    const character = firstLine[index];
+    if (character === '"') {
+      if (quoted && firstLine[index + 1] === '"') index++;
+      else quoted = !quoted;
+    } else if (!quoted && isWordDelimiter(character)) {
+      counts[character]++;
     }
+  }
 
-    const word = trimmedLine.slice(0, match.index).trim();
-    const translation = trimmedLine.slice(match.index + 1).trim();
+  return WORD_DELIMITERS.reduce(
+    (best, candidate) => (counts[candidate] > counts[best] ? candidate : best),
+    WORD_DELIMITERS[0],
+  );
+}
+
+function parseDelimitedRows(raw: string, delimiter: WordDelimiter): { rows: string[][]; malformed: number } {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let quoted = false;
+  let malformed = 0;
+
+  const finishRow = () => {
+    row.push(field.trim());
+    if (row.some((value) => value.length > 0)) rows.push(row);
+    row = [];
+    field = '';
+  };
+
+  const text = raw.replace(/^\uFEFF/, '');
+  for (let index = 0; index < text.length; index++) {
+    const character = text[index];
+    if (character === '"') {
+      if (quoted && text[index + 1] === '"') {
+        field += '"';
+        index++;
+      } else if (quoted || field.trim().length === 0) {
+        quoted = !quoted;
+      } else {
+        field += character;
+      }
+    } else if (character === delimiter && !quoted) {
+      row.push(field.trim());
+      field = '';
+    } else if ((character === '\n' || character === '\r') && !quoted) {
+      if (character === '\r' && text[index + 1] === '\n') index++;
+      finishRow();
+    } else {
+      field += character;
+    }
+  }
+
+  if (quoted) {
+    malformed++;
+  } else if (field.length > 0 || row.length > 0) {
+    finishRow();
+  }
+
+  return { rows, malformed };
+}
+
+function isHeaderRow(row: string[]): boolean {
+  const first = (row[0] || '').trim().toLocaleLowerCase();
+  const second = (row[1] || '').trim().toLocaleLowerCase();
+  return ['word', 'words', 'english', 'слово', 'слова'].includes(first)
+    && ['translation', 'translations', 'russian', 'перевод', 'переводы'].includes(second);
+}
+
+/**
+ * Parse two-column word pairs from a CSV file or a pasted list: column 1 is the
+ * English word, column 2 its translation. The delimiter is detected per input,
+ * and a header row is optional.
+ */
+export function parseWordPairs(raw: string): WordPairParseResult {
+  const pairs: { word: string; translation: string }[] = [];
+  const delimiter = detectDelimiter(raw);
+  const parsed = parseDelimitedRows(raw, delimiter);
+  let skipped = parsed.malformed;
+  const rows = parsed.rows.slice(isHeaderRow(parsed.rows[0] || []) ? 1 : 0);
+
+  for (const row of rows) {
+    const word = (row[0] || '').trim();
+    const translation = (row[1] || '').trim();
     if (!word || !translation || !WORD_PATTERN.test(word)) {
       skipped++;
       continue;
@@ -43,6 +127,16 @@ export function parseBulkWords(raw: string): BulkParseResult {
   }
 
   return { pairs, skipped };
+}
+
+function readTextFile(file: File): Promise<string> {
+  if (typeof file.text === 'function') return file.text();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error || new Error('Unable to read file'));
+    reader.readAsText(file);
+  });
 }
 
 interface CustomWordsManagerProps {
@@ -62,15 +156,18 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
   const [newWord, setNewWord] = useState('');
   const [newTranslation, setNewTranslation] = useState('');
   const [error, setError] = useState('');
-  const [bulkText, setBulkText] = useState('');
   const [bulkFeedback, setBulkFeedback] = useState('');
+  const [csvFileName, setCsvFileName] = useState('');
+  const [pasteText, setPasteText] = useState('');
 
-  const handleBulkImport = () => {
-    const { pairs, skipped } = parseBulkWords(bulkText);
+  /** Import parsed pairs and report how many rows landed. Returns false if nothing was valid. */
+  const importPairs = (raw: string): boolean => {
+    const { pairs, skipped } = parseWordPairs(raw);
     if (pairs.length === 0) {
       setBulkFeedback(t('customWords.bulkEmpty'));
-      return;
+      return false;
     }
+
     for (const pair of pairs) {
       onAddWord(pair.word, pair.translation);
     }
@@ -79,7 +176,27 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
         .replace('{added}', String(pairs.length))
         .replace('{skipped}', String(skipped)),
     );
-    setBulkText('');
+    return true;
+  };
+
+  const handleCsvImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    if (!file) return;
+    setCsvFileName(file.name);
+    setBulkFeedback('');
+
+    try {
+      importPairs(await readTextFile(file));
+    } catch {
+      setBulkFeedback(t('customWords.csvReadError'));
+    } finally {
+      input.value = '';
+    }
+  };
+
+  const handlePasteImport = () => {
+    if (importPairs(pasteText)) setPasteText('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -159,7 +276,7 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
         </button>
       </form>
 
-      {/* Bulk multiline import */}
+      {/* Two-column CSV import */}
       <div className="space-y-2 border-t-4 border-dashed border-slate-200 pt-4" id="custom-words-bulk">
         <label className="block text-[11px] font-black text-rose-500 uppercase tracking-widest ml-1">
           {t('customWords.bulkTitle')}
@@ -167,28 +284,58 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">
           {t('customWords.bulkHint')}
         </p>
+        <div className="grid grid-cols-2 gap-2 rounded-2xl border-4 border-slate-900 bg-white p-3 text-center text-[10px] font-black uppercase tracking-wider">
+          <span className="rounded-lg bg-indigo-100 px-2 py-1">1. {t('customWords.csvWordColumn')}</span>
+          <span className="rounded-lg bg-blue-100 px-2 py-1">2. {t('customWords.csvTranslationColumn')}</span>
+        </div>
+        <input
+          type="file"
+          accept=".csv,text/csv"
+          onChange={handleCsvImport}
+          className="sr-only"
+          id="input-custom-csv-words"
+        />
+        <label
+          htmlFor="input-custom-csv-words"
+          className="w-full bg-indigo-500 hover:bg-indigo-600 border-4 border-slate-900 text-white font-black text-xs px-6 py-3 rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-1"
+          id="btn-choose-csv-file"
+        >
+          <FileUp className="w-4 h-4 stroke-[3]" /> {t('customWords.bulkButton')}
+        </label>
+        {csvFileName && (
+          <p className="truncate text-center text-[10px] font-bold text-slate-500">{csvFileName}</p>
+        )}
+
+        {/* Paste a list instead, for children without a spreadsheet file */}
+        <label className="block pt-2 text-[11px] font-black text-rose-500 uppercase tracking-widest ml-1">
+          {t('customWords.pasteTitle')}
+        </label>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">
+          {t('customWords.pasteHint')}
+        </p>
         <textarea
           rows={4}
-          placeholder={t('customWords.bulkPlaceholder')}
-          value={bulkText}
-          onChange={(e) => { setBulkText(e.target.value); setBulkFeedback(''); }}
+          placeholder={t('customWords.pastePlaceholder')}
+          value={pasteText}
+          onChange={(event) => { setPasteText(event.target.value); setBulkFeedback(''); }}
           className="w-full bg-white border-4 border-slate-900 text-slate-800 text-xs px-4 py-3 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-200 placeholder:text-slate-400 transition-all font-bold resize-y"
           id="input-custom-bulk-words"
         />
+        <button
+          type="button"
+          onClick={handlePasteImport}
+          disabled={!pasteText.trim()}
+          className="w-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed border-4 border-slate-900 text-white font-black text-xs px-6 py-3 rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-1"
+          id="btn-import-custom-words"
+        >
+          <ListPlus className="w-4 h-4 stroke-[3]" /> {t('customWords.pasteButton')}
+        </button>
+
         {bulkFeedback && (
           <p className="text-xs text-slate-700 bg-amber-100 border-4 border-amber-400 p-3 rounded-2xl font-black" id="custom-words-bulk-feedback">
             {bulkFeedback}
           </p>
         )}
-        <button
-          type="button"
-          onClick={handleBulkImport}
-          disabled={!bulkText.trim()}
-          className="w-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed border-4 border-slate-900 text-white font-black text-xs px-6 py-3 rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-1"
-          id="btn-import-custom-words"
-        >
-          <ListPlus className="w-4 h-4 stroke-[3]" /> {t('customWords.bulkButton')}
-        </button>
       </div>
 
       {/* Vocabulary list display */}

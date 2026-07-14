@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
-import { Play, Heart, RotateCcw } from 'lucide-react';
+import { Play, Heart } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
-import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import { BackToHubButton, CustomWordsSection, GameResultCard, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 interface MagicWizardGameProps {
@@ -295,6 +295,7 @@ export function MagicWizardGame({
   const startGame = useCallback(() => {
     setScore(0);
     setLives(3);
+    setWordStudyStats({});
     setPhase('PLAYING');
     setPaused(false);
     spellProjectiles.current = [];
@@ -364,16 +365,16 @@ export function MagicWizardGame({
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 11px Fredoka, sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(theme.toUpperCase() + ' SPELLS', 110, 42);
+      ctx.fillText(t(`wizard.preview.${theme}.title`), 110, 42);
       ctx.fillStyle = theme === 'fire' ? '#f97316' : theme === 'ice' ? '#06b6d4' : '#eab308';
-      ctx.fillText(theme === 'fire' ? 'Cast blazing fireballs!' : theme === 'ice' ? 'Freeze enemies with ice!' : 'Zap with electric lightning!', 110, 62);
+      ctx.fillText(t(`wizard.preview.${theme}.description`), 110, 62);
 
       animId = requestAnimationFrame(previewLoop);
     };
 
     previewLoop();
     return () => cancelAnimationFrame(animId);
-  }, [phase, theme]);
+  }, [language, phase, t, theme]);
 
   // Main Canvas Game Loop
   useEffect(() => {
@@ -786,33 +787,19 @@ export function MagicWizardGame({
 
       {phase === 'GAMEOVER' && (
         <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
-          <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-violet-50 bubble-shadow-purple text-center">
-            <h2 className="text-3xl font-black text-violet-700 uppercase tracking-wide">
-              {strings.gameOverTitle}
-            </h2>
-            <p className="text-xs font-bold text-slate-700">
-              {strings.gameOverSubtitle}
-            </p>
-
-            <div className="bg-white border-4 border-slate-900 rounded-2xl p-4 space-y-2">
-              <div className="flex justify-between items-center font-bold">
-                <span className="text-slate-500 uppercase text-[10px] tracking-wider">{strings.score}</span>
-                <span className="text-slate-900">🧙‍♂️ {score}</span>
-              </div>
-              <div className="flex justify-between items-center font-bold border-t border-slate-100 pt-2">
-                <span className="text-slate-500 uppercase text-[10px] tracking-wider">{strings.best}</span>
-                <span className="text-slate-900">🏆 {Math.max(highScore, score)}</span>
-              </div>
-            </div>
-
-            <button
-              onClick={startGame}
-              className="w-full py-3 bg-violet-400 hover:bg-violet-500 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <RotateCcw className="w-4 h-4 stroke-[3]" />
-              {strings.playAgain}
-            </button>
-          </div>
+          <GameResultCard
+            title={strings.gameOverTitle}
+            description={strings.gameOverSubtitle}
+            scoreLabel={strings.score}
+            score={score}
+            bestLabel={strings.best}
+            best={Math.max(highScore, score)}
+            wordStats={wordStudyStats}
+            words={list}
+            replayLabel={strings.playAgain}
+            onReplay={startGame}
+            icon={<span className="block text-5xl">🧙‍♂️</span>}
+          />
         </div>
       )}
     </div>

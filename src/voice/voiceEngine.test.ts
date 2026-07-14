@@ -1,5 +1,15 @@
-import { describe, expect, it } from 'vitest';
-import { createInitialRacerMovementState, matchesWord, updateRacerMovement } from './engine';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  createGameAudioContext,
+  createInitialRacerMovementState,
+  matchesWord,
+  stopAllAudio,
+  updateRacerMovement,
+} from './engine';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('voice engine helpers', () => {
   it('matches spoken input with tolerant word matching', () => {
@@ -38,5 +48,28 @@ describe('voice engine helpers', () => {
     const duplicate = updateRacerMovement(afterTick, 2, 300, 120);
     expect(duplicate.lane).toBe(2);
     expect(duplicate.pendingLane).toBeNull();
+  });
+
+  it('stops speech synthesis and generated Web Audio effects together', () => {
+    const close = vi.fn().mockResolvedValue(undefined);
+    class FakeAudioContext {
+      close = close;
+    }
+    const cancel = vi.fn();
+
+    Object.defineProperty(window, 'AudioContext', {
+      configurable: true,
+      value: FakeAudioContext,
+    });
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: { cancel },
+    });
+
+    createGameAudioContext();
+    stopAllAudio();
+
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(close).toHaveBeenCalledOnce();
   });
 });

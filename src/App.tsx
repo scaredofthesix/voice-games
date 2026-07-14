@@ -41,7 +41,7 @@ import {
   stopAllAudio,
 } from './voice/engine';
 import { useUiLanguage } from './uiLanguage';
-import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, recordHighScore } from './progress';
+import { loadProgress, pickAdaptiveWordIndex, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, recordHighScore } from './progress';
 
 export default function App() {
   const { language, setLanguage, t } = useUiLanguage();
@@ -324,7 +324,7 @@ export default function App() {
   const [racerMovementState, setRacerMovementState] = useState(() =>
     createInitialRacerMovementState(1),
   );
-  const [vocabIndex, setVocabIndex] = useState(0);
+  const [vocabIndex, setVocabIndex] = useState(-1);
   const [wordMatchFlash, setWordMatchFlash] = useState(false);
   const [struggleCounter, setStruggleCounter] = useState<Record<string, number>>({});
   const [wordStudyStats, setWordStudyStats] = useState<Record<string, { spoken: number; struggled: number }>>({});
@@ -396,12 +396,14 @@ export default function App() {
     const vocab = getSelectedVocabularyList();
     if (vocab.length === 0) return;
 
-    // Pick 2 consecutive words from current vocabulary array using vocabIndexRef
-    const idx = vocabIndexRef.current;
-    const firstWord = vocab[idx % vocab.length].word;
-    const secondWord = vocab[(idx + 1) % vocab.length].word;
-    
-    setVocabIndex(prev => prev + 2);
+    const stats = loadProgress()['voice-racer'].words;
+    const vocabularyWords = vocab.map((item) => item.word);
+    const firstIndex = pickAdaptiveWordIndex(vocabularyWords, stats, vocabIndexRef.current);
+    const secondIndex = pickAdaptiveWordIndex(vocabularyWords, stats, firstIndex);
+    const firstWord = vocab[firstIndex].word;
+    const secondWord = vocab[secondIndex].word;
+
+    setVocabIndex(secondIndex);
 
     // Place words strictly on opposite lanes (so player has options to swerve)
     const newWords: Record<Lane, string> = {
@@ -439,7 +441,7 @@ export default function App() {
         1: '',
         2: '',
       });
-      setVocabIndex(0);
+      setVocabIndex(-1);
       setIsBulletTime(false);
     }
   }, [gameState]);
@@ -584,12 +586,15 @@ export default function App() {
     const freshWord: WordData = {
       word,
       translation,
+      translationRu: translation,
       speakCount: 0,
       struggleCount: 0,
     };
-    const updated = [...customWords, freshWord];
-    setCustomWords(updated);
-    localStorage.setItem('voice_racer_custom_words', JSON.stringify(updated));
+    setCustomWords((previous) => {
+      const updated = [...previous, freshWord];
+      localStorage.setItem('voice_racer_custom_words', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const handleDeleteWord = (index: number) => {
@@ -664,6 +669,27 @@ export default function App() {
   const handleCarCollision = () => {
     if (lives <= 0 || gameState === 'GAME_OVER') return;
     speakSound.playLose();
+
+    const missedWords = Array.from(new Set(
+      Object.values(currentLaneWordsRef.current).filter((word): word is string => Boolean(word)),
+    ));
+    if (missedWords.length > 0) {
+      let progress = loadProgress();
+      missedWords.forEach((word) => {
+        progress = recordWordStruggled(progress, 'voice-racer', word);
+      });
+      saveProgress(progress);
+      setWordStudyStats((previous) => {
+        const next = { ...previous };
+        missedWords.forEach((word) => {
+          next[word] = {
+            spoken: next[word]?.spoken || 0,
+            struggled: (next[word]?.struggled || 0) + 1,
+          };
+        });
+        return next;
+      });
+    }
     
     setIsBulletTime(false);
     setCurrentLaneWords({
