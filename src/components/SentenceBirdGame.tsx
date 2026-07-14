@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Play, RotateCcw, Star, Trophy } from 'lucide-react';
+import { Mic, Play, RotateCcw, Star, Trophy } from 'lucide-react';
 
 import { BUILTIN_CATEGORIES } from '../data';
 import { loadProgress, recordHighScore, recordWordSpoken, recordWordStruggled, saveProgress } from '../progress';
@@ -29,6 +29,13 @@ type WordOption = Omit<WordData, 'speakCount' | 'struggleCount'>;
 
 const GAME_ID = 'sentence-bird' as const;
 
+// Per-word countdown (seconds). Running out costs a life with a fall animation,
+// instead of penalizing every unrelated bit of speech.
+const WORD_TIME_LIMIT = 8;
+// How long the microphone stays on after the child activates it (push-to-talk).
+const MIC_WINDOW_MS = 4000;
+const START_LIVES = 5;
+
 const LOCAL_LANG = {
   en: {
     title: 'Sentence Bird',
@@ -54,6 +61,9 @@ const LOCAL_LANG = {
     wordsMastered: 'Words mastered:',
     accuracy: 'Accuracy',
     speakLabel: 'Say it!',
+    tapToSpeak: 'Tap the word or press Space, then say it',
+    micButton: 'Click & say',
+    timeLabel: 'Time',
   },
   ru: {
     title: 'Фразоптичка',
@@ -79,6 +89,9 @@ const LOCAL_LANG = {
     wordsMastered: 'Слов освоено:',
     accuracy: 'Точность',
     speakLabel: 'Скажи!',
+    tapToSpeak: 'Нажми на слово или пробел, потом скажи его',
+    micButton: 'Нажми и скажи',
+    timeLabel: 'Время',
   },
 };
 
@@ -135,8 +148,14 @@ export default function SentenceBirdGame({
   const [spokenText, setSpokenText] = useState('');
   const [isFlapping, setIsFlapping] = useState(false);
   const [paused, setPaused] = useState(false);
-  const [lives, setLives] = useState(5);
+  const [lives, setLives] = useState(START_LIVES);
   const [totalWordsInSet, setTotalWordsInSet] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(WORD_TIME_LIMIT);
+  const [isFalling, setIsFalling] = useState(false);
+  const [micActive, setMicActive] = useState(false);
+  // Bumped on every timeout so the countdown effect restarts for a retry of the
+  // same word (targetIndex does not change on a miss).
+  const [attemptNonce, setAttemptNonce] = useState(0);
   const [wordStudyStats, setWordStudyStats] = useState<Record<string, { spoken: number; struggled: number }>>(() => {
     try {
       return loadProgress()[GAME_ID].words;
@@ -147,16 +166,19 @@ export default function SentenceBirdGame({
 
   const isProcessingSuccessRef = useRef(false);
   const pausedRef = useRef(false);
-  const livesRef = useRef(5);
+  const livesRef = useRef(START_LIVES);
   const targetWordRef = useRef('');
   const targetIndexRef = useRef(-1);
   const birdCloudIndexRef = useRef(-1);
   const scrollOffsetRef = useRef(-30);
   const wordStatsRef = useRef<Record<string, { spoken: number; struggled: number }>>({});
   const onSuccessHopRef = useRef<() => void>(() => {});
-  const onLoseLifeRef = useRef<() => void>(() => {});
   const lastWrongTextRef = useRef('');
-  const failTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const phaseRef = useRef<'START_SCREEN' | 'PLAYING' | 'GAME_OVER'>('START_SCREEN');
+  const micActiveRef = useRef(false);
+  const micWindowRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleTimeoutRef = useRef<() => void>(() => {});
+  const activateMicRef = useRef<() => void>(() => {});
 
   const words = useMemo(() => normalizeWords(activeCategory), [activeCategory]);
   const activeScene = sceneDefinitions.find((scene) => scene.id === activeSceneId) || sceneDefinitions[0];
@@ -165,6 +187,7 @@ export default function SentenceBirdGame({
   useEffect(() => { birdCloudIndexRef.current = birdCloudIndex; }, [birdCloudIndex]);
   useEffect(() => { scrollOffsetRef.current = scrollOffset; }, [scrollOffset]);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => { targetWordRef.current = currentWord?.word || ''; }, [currentWord?.word]);
   useEffect(() => { wordStatsRef.current = wordStudyStats; }, [wordStudyStats]);
   useEffect(() => {
@@ -192,29 +215,72 @@ export default function SentenceBirdGame({
   }, []);
 
   const handleTranscript = useCallback((text: string) => {
-    if (pausedRef.current || isProcessingSuccessRef.current) return;
+    // Push-to-talk: only react to speech while the mic was explicitly activated
+    // (tap the word / on-screen button / Space). This stops unrelated chatter
+    // from being treated as an attempt at the current word.
+    if (!micActiveRef.current || pausedRef.current || isProcessingSuccessRef.current) return;
     setSpokenText(text);
     const target = targetWordRef.current;
     if (target && (matchesWord(text, target) || cleanText(text).includes(cleanText(target)))) {
       lastWrongTextRef.current = '';
-      if (failTimerRef.current) {
-        clearTimeout(failTimerRef.current);
-        failTimerRef.current = null;
-      }
       onSuccessHopRef.current();
-    } else if (target && text.trim() && text !== lastWrongTextRef.current) {
+    } else if (target && text.trim()) {
+      // Wrong or unrelated speech is echoed back as feedback but never costs a
+      // life - only the per-word countdown running out does.
       lastWrongTextRef.current = text;
-      if (!failTimerRef.current) {
-        failTimerRef.current = window.setTimeout(() => { failTimerRef.current = null; }, 1500);
-        onLoseLifeRef.current();
-      }
     }
   }, []);
 
-  const { status, isSupported, start, stop } = useSpeechRecognition(handleTranscript);
-  const isListening = status.status === 'listening';
+  const { start, stop } = useSpeechRecognition(handleTranscript);
 
-  const handleLoseLife = useCallback(() => {
+  const stopMic = useCallback(() => {
+    micActiveRef.current = false;
+    setMicActive(false);
+    if (micWindowRef.current) {
+      clearTimeout(micWindowRef.current);
+      micWindowRef.current = null;
+    }
+    stop();
+  }, [stop]);
+
+  // Push-to-talk: start listening only when the child asks for it, and auto-stop
+  // after a short window so the mic is not always live.
+  const activateMic = useCallback(() => {
+    if (phaseRef.current !== 'PLAYING' || pausedRef.current || isProcessingSuccessRef.current) return;
+    if (micActiveRef.current) return;
+    micActiveRef.current = true;
+    setMicActive(true);
+    setSpokenText('');
+    start();
+    if (micWindowRef.current) clearTimeout(micWindowRef.current);
+    micWindowRef.current = window.setTimeout(() => {
+      micActiveRef.current = false;
+      setMicActive(false);
+      stop();
+      micWindowRef.current = null;
+    }, MIC_WINDOW_MS);
+  }, [start, stop]);
+
+  activateMicRef.current = activateMic;
+
+  // The per-word countdown ran out: show a fall, cost one life, and either end
+  // the game or retry the same word with a fresh timer.
+  const handleTimeout = useCallback(() => {
+    if (isProcessingSuccessRef.current || pausedRef.current) return;
+    const word = targetWordRef.current;
+    if (word) {
+      saveProgress(recordWordStruggled(loadProgress(), GAME_ID, word));
+      setWordStudyStats((prev) => ({
+        ...prev,
+        [word]: { spoken: prev[word]?.spoken || 0, struggled: (prev[word]?.struggled || 0) + 1 },
+      }));
+    }
+    stopMic();
+    setSpokenText('');
+    synths.playFlap();
+    setIsFalling(true);
+    window.setTimeout(() => setIsFalling(false), 700);
+
     if (livesRef.current <= 1) {
       livesRef.current = 0;
       setLives(0);
@@ -226,9 +292,11 @@ export default function SentenceBirdGame({
     const next = livesRef.current - 1;
     livesRef.current = next;
     setLives(next);
-  }, [stop]);
+    // Retry the same word: bump the nonce so the countdown effect restarts.
+    setAttemptNonce((n) => n + 1);
+  }, [stop, stopMic]);
 
-  onLoseLifeRef.current = handleLoseLife;
+  handleTimeoutRef.current = handleTimeout;
 
   const handleSuccessHop = useCallback(() => {
     if (isProcessingSuccessRef.current) return;
@@ -237,6 +305,7 @@ export default function SentenceBirdGame({
     if (!spokenWord || currentIdx < 0) return;
 
     isProcessingSuccessRef.current = true;
+    stopMic();
     setIsFlapping(true);
     synths.playFlap();
     window.setTimeout(() => { speakSound.playCorrect(); }, 200);
@@ -278,7 +347,7 @@ export default function SentenceBirdGame({
         isProcessingSuccessRef.current = false;
       }, 700);
     }, 700);
-  }, [chooseNextWordIndex, score, stop, totalWordsInSet]);
+  }, [chooseNextWordIndex, score, stopMic, totalWordsInSet]);
 
   onSuccessHopRef.current = handleSuccessHop;
 
@@ -293,28 +362,77 @@ export default function SentenceBirdGame({
     setSpokenText('');
     setPaused(false);
     pausedRef.current = false;
-    setLives(5);
-    livesRef.current = 5;
+    setLives(START_LIVES);
+    livesRef.current = START_LIVES;
     setTotalWordsInSet(words.length);
+    // Full reset so a replay never inherits stale timers or flags.
+    setIsFalling(false);
+    setTimeLeft(WORD_TIME_LIMIT);
+    setAttemptNonce(0);
+    isProcessingSuccessRef.current = false;
+    lastWrongTextRef.current = '';
+    micActiveRef.current = false;
+    setMicActive(false);
+    if (micWindowRef.current) {
+      clearTimeout(micWindowRef.current);
+      micWindowRef.current = null;
+    }
     setPhase('PLAYING');
-    window.setTimeout(() => { start(); }, 150);
+    // Push-to-talk: do NOT auto-start the mic; the child activates it per word.
   };
 
   const togglePause = useCallback(() => {
     setPaused((p) => {
       const next = !p;
       pausedRef.current = next;
-      if (next) stop();
-      else start();
+      if (next) stopMic();
       return next;
     });
-  }, [start, stop]);
+  }, [stopMic]);
 
   const handleBackToHub = () => {
-    stop();
+    stopMic();
     if (score > highScore) onUpdateHighScore?.(score);
     onBackToHub();
   };
+
+  // Per-word countdown: while a word is active and the game is not paused, tick
+  // down once a second. Reaching zero costs a life (see handleTimeout). The
+  // attemptNonce dependency restarts a fresh timer when retrying the same word.
+  useEffect(() => {
+    if (phase !== 'PLAYING' || paused || targetIndex < 0) return;
+    let remaining = WORD_TIME_LIMIT;
+    setTimeLeft(remaining);
+    const id = window.setInterval(() => {
+      if (pausedRef.current || isProcessingSuccessRef.current) return;
+      remaining -= 1;
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        window.clearInterval(id);
+        handleTimeoutRef.current();
+      }
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [phase, paused, targetIndex, attemptNonce]);
+
+  // Space bar activates the mic (push-to-talk), except while typing in a field.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' && e.key !== ' ') return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return;
+      if (phaseRef.current !== 'PLAYING' || pausedRef.current) return;
+      e.preventDefault();
+      activateMicRef.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // Clear a pending mic auto-stop timer if the game unmounts mid-listen.
+  useEffect(() => () => {
+    if (micWindowRef.current) clearTimeout(micWindowRef.current);
+  }, []);
 
   if (phase === 'START_SCREEN') {
     return (
@@ -446,22 +564,25 @@ export default function SentenceBirdGame({
                 <div
                   key={globalIdx}
                   style={{ left, bottom }}
+                  onClick={isActive ? () => activateMicRef.current() : undefined}
+                  role={isActive ? 'button' : undefined}
+                  aria-label={isActive ? `${strings.tapToSpeak}: ${word.word}` : undefined}
                   className={`absolute -translate-x-1/2 translate-y-1/2 p-2 rounded-lg border-2 border-slate-900 transition-all duration-500 font-bold cursor-pointer z-10 flex flex-col items-center ${
                     isActive
-                      ? `scale-110 ring-4 ring-yellow-400 ${activeScene.cloudClass} py-3 shadow-[4px_4px_0_0_rgba(15,23,42,1)] z-20`
+                      ? `scale-110 ring-4 ${micActive ? 'ring-emerald-500 animate-pulse' : 'ring-yellow-400'} bg-white text-slate-900 py-3 shadow-[4px_4px_0_0_rgba(15,23,42,1)] z-20`
                       : isPassed
                       ? 'opacity-65 scale-95 border-slate-900 bg-white text-slate-900 shadow-[2px_2px_0_0_rgba(15,23,42,1)]'
-                      : 'opacity-50 scale-90 border-dashed bg-slate-100 text-slate-600'
+                      : 'opacity-50 scale-90 border-dashed bg-slate-100 text-slate-700'
                   }`}
                 >
                   <div className="text-center space-y-0.5">
                     <div className="flex items-center gap-1 justify-center">
                       <span className="text-[8px] uppercase tracking-wider font-black text-slate-500">#{globalIdx + 1}</span>
                     </div>
-                    <p className={`text-[13px] font-black leading-tight ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
+                    <p className={`text-[13px] font-black leading-tight ${isActive ? 'text-slate-900' : 'text-slate-800'}`}>
                       {word.word}
                     </p>
-                    <p className="text-[9px] font-bold italic text-slate-500 truncate max-w-[90px]">
+                    <p className="text-[9px] font-bold italic text-slate-700 truncate max-w-[90px]">
                       {word.translationRu || word.translation}
                     </p>
                   </div>
@@ -507,12 +628,12 @@ export default function SentenceBirdGame({
 
             <div
               style={{ left: `${(birdCloudIndex + 1) * spacing}%`, bottom: birdScreenBottom }}
-              className="absolute z-20 flex flex-col items-center transition-all duration-700 ease-out"
+              className={`absolute z-20 flex flex-col items-center transition-all duration-700 ease-out ${isFalling ? 'translate-y-24 opacity-70' : ''}`}
             >
               <FlappyBirdIcon
                 size={64}
                 isFlapping={isFlapping}
-                className={`transform transition-all duration-300 ${isFlapping ? '-rotate-6 scale-105' : 'rotate-0'}`}
+                className={`transform transition-all duration-300 ${isFalling ? 'rotate-[70deg]' : isFlapping ? '-rotate-6 scale-105' : 'rotate-0'}`}
               />
               {spokenText && (
                 <div className="absolute bottom-16 bg-[#fef08a] text-slate-900 text-[12px] font-black px-2.5 py-1 rounded border-2 border-slate-900 shadow-[2px_2px_0_0_rgba(15,23,42,1)] max-w-[120px] text-center truncate">
@@ -548,12 +669,34 @@ export default function SentenceBirdGame({
             onListenRu={currentWord.translationRu ? () => speakWord(currentWord.translationRu || '', 'ru') : undefined}
           />
 
-          <div role="status" aria-live="polite" className="flex items-center justify-center gap-2 bg-slate-100 border-2 border-slate-900 rounded-xl py-1.5 px-3 inline-flex mx-auto">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-700">
-              {isListening ? t('shared.micListening') : strings.ready}
-            </p>
+          {/* Per-word countdown bar */}
+          <div className="mx-auto max-w-xs">
+            <div className="mb-1 flex items-center justify-between px-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-600">{strings.timeLabel}</span>
+              <span className={`text-[10px] font-black ${timeLeft <= 3 ? 'text-rose-600' : 'text-slate-700'}`}>{Math.max(0, timeLeft)}s</span>
+            </div>
+            <div className="h-3 w-full overflow-hidden rounded-full border-2 border-slate-900 bg-white">
+              <div
+                className={`h-full transition-all duration-1000 ease-linear ${timeLeft <= 3 ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                style={{ width: `${Math.max(0, Math.min(100, (timeLeft / WORD_TIME_LIMIT) * 100))}%` }}
+              />
+            </div>
           </div>
+
+          {/* Push-to-talk: the child activates the mic to say the word. Distinct
+              from the "Listen (EN)" pronunciation button inside the card above. */}
+          <button
+            type="button"
+            onClick={() => activateMic()}
+            disabled={micActive}
+            aria-label={strings.tapToSpeak}
+            className={`mx-auto inline-flex w-full max-w-xs cursor-pointer items-center justify-center gap-2 rounded-2xl border-4 border-slate-900 py-3 font-black uppercase tracking-wider disabled:cursor-default ${
+              micActive ? 'animate-pulse bg-emerald-400 text-slate-900' : 'bg-sky-400 text-white hover:bg-sky-500'
+            }`}
+          >
+            <Mic className="h-4 w-4 stroke-[3]" /> {micActive ? t('shared.micListening') : strings.micButton}
+          </button>
+          <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">{strings.tapToSpeak}</p>
         </div>
       )}
     </div>
