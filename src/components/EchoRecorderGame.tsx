@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 const MAX_LIVES = 3;
-import { BackToHubButton, CustomWordsSection, GameHeader, GameSetupCard, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import { BackToHubButton, CustomWordsSection, GameHeader, GameSetupCard, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { BUILTIN_CATEGORIES } from '../data';
@@ -500,7 +500,11 @@ export default function EchoRecorderGame({
   if (gameState === 'start') {
     return (
       <section className="max-w-md mx-auto py-4 px-2">
-        <BackToHubButton label={t('shared.backToHub')} onClick={handleBackToHub} />
+        <BackToHubButton
+        label={t('shared.backToHub')}
+        onClick={handleBackToHub}
+        className="bg-yellow-300 border-4 border-slate-900 rounded-xl px-3 py-2 shadow-[3px_3px_0_0_rgba(15,23,42,1)] hover:bg-yellow-400"
+      />
         <GameSetupCard
           icon={<Headphones className="h-10 w-10 text-slate-900" />}
           title={strings.lobbyTitle}
@@ -576,7 +580,11 @@ export default function EchoRecorderGame({
   if (gameState === 'victory') {
     return (
       <div className="max-w-md mx-auto py-4 px-2">
-        <BackToHubButton label={t('shared.backToHub')} onClick={handleBackToHub} />
+        <BackToHubButton
+        label={t('shared.backToHub')}
+        onClick={handleBackToHub}
+        className="bg-yellow-300 border-4 border-slate-900 rounded-xl px-3 py-2 shadow-[3px_3px_0_0_rgba(15,23,42,1)] hover:bg-yellow-400"
+      />
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-[2rem] border-8 border-slate-900 bg-white p-8 text-center space-y-6 shadow-[10px_10px_0_0_rgba(15,23,42,1)] relative overflow-hidden">
           <div className="absolute -top-10 -left-10 w-32 h-32 bg-yellow-100 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-yellow-100 rounded-full blur-2xl pointer-events-none" />
@@ -604,7 +612,11 @@ export default function EchoRecorderGame({
 
   return (
     <div className={`space-y-6 rounded-[2.5rem] p-3 sm:p-5 transition-colors duration-500 ${activeTheme.gameClass}`}>
-      <BackToHubButton label={t('shared.backToHub')} onClick={handleBackToHub} />
+      <BackToHubButton
+        label={t('shared.backToHub')}
+        onClick={handleBackToHub}
+        className="bg-yellow-300 border-4 border-slate-900 rounded-xl px-3 py-2 shadow-[3px_3px_0_0_rgba(15,23,42,1)] hover:bg-yellow-400"
+      />
 
       <GameHeader
         icon={<Brain className="h-5 w-5 text-slate-900" />}
@@ -628,20 +640,39 @@ export default function EchoRecorderGame({
       <PauseButton paused={paused} onToggle={togglePause} />
 
       {gameState === 'recording' && currentTarget && (
-        <TargetWordCard
-          ribbon={t('shared.targetRibbon')}
-          word={currentTarget.text}
-          translation={currentTarget.translation}
-          translationRu={currentTarget.translation}
-          heard={recentTranscript}
-          heardLabel={t('shared.youSaidHeard')}
-          onListenEn={() => { void speakSequence([currentTarget]); }}
-          onListenRu={() => {
-            const utterance = new SpeechSynthesisUtterance(currentTarget.translation);
-            utterance.lang = 'ru-RU';
-            window.speechSynthesis?.speak(utterance);
-          }}
-        />
+        <div className="relative bg-amber-50 border-4 border-slate-900 rounded-2xl p-5 text-center shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
+          <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-rose-500 border-2 border-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full shadow-sm whitespace-nowrap">
+            {t('shared.targetRibbon')}
+          </span>
+
+          <div className="text-4xl mt-1" aria-hidden="true">❓</div>
+          <p className="mt-1 text-sm font-black uppercase tracking-wider text-slate-900">
+            {strings.memoryCard} #{userSpeechProgressIdx + 1}
+          </p>
+
+          <div className="mt-2.5 space-y-2">
+            {recentTranscript && (
+              <div className="inline-flex flex-col items-center justify-center bg-indigo-50 border-2 border-indigo-200 rounded-xl px-4 py-1.5 max-w-full">
+                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">
+                  {t('shared.youSaidHeard')}
+                </span>
+                <span className="text-sm font-black text-indigo-700 italic font-mono truncate max-w-xs">
+                  "{recentTranscript}"
+                </span>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2.5 border-t-2 border-dashed border-slate-200">
+              <button
+                type="button"
+                onClick={() => { void speakSequence([currentTarget]); }}
+                className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-white border-2 border-slate-900 px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5 cursor-pointer"
+              >
+                <Volume2 className="w-3.5 h-3.5 stroke-[3] text-indigo-500" /> {t('shared.listenEnglish')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className={`grid grid-cols-1 sm:grid-cols-3 gap-3 ${activeTheme.accentClass}`}>
