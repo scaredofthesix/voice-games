@@ -1,8 +1,49 @@
 import React, { useState } from 'react';
 import { WordData } from '../types';
 import { speakWord } from '../voice/engine';
-import { Plus, Trash2, Volume2, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Volume2, AlertCircle, ListPlus } from 'lucide-react';
 import { useUiLanguage } from '../uiLanguage';
+
+const WORD_PATTERN = /^[a-zA-Z0-9\s\-\?\!\,\.\'\"’]+$/;
+const BULK_DELIMITER = /[|;]/;
+
+interface BulkParseResult {
+  pairs: { word: string; translation: string }[];
+  skipped: number;
+}
+
+/**
+ * Parse a multiline "word | translation" (or "word ; translation") block.
+ * Splits each line on the FIRST delimiter only, so spaces inside words and
+ * phrases are preserved. Blank lines are ignored; malformed lines are counted
+ * as skipped without dropping the valid ones.
+ */
+export function parseBulkWords(raw: string): BulkParseResult {
+  const pairs: { word: string; translation: string }[] = [];
+  let skipped = 0;
+
+  for (const line of raw.split('\n')) {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) continue;
+
+    const match = trimmedLine.match(BULK_DELIMITER);
+    if (!match || match.index === undefined) {
+      skipped++;
+      continue;
+    }
+
+    const word = trimmedLine.slice(0, match.index).trim();
+    const translation = trimmedLine.slice(match.index + 1).trim();
+    if (!word || !translation || !WORD_PATTERN.test(word)) {
+      skipped++;
+      continue;
+    }
+
+    pairs.push({ word, translation });
+  }
+
+  return { pairs, skipped };
+}
 
 interface CustomWordsManagerProps {
   customWords: WordData[];
@@ -21,6 +62,25 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
   const [newWord, setNewWord] = useState('');
   const [newTranslation, setNewTranslation] = useState('');
   const [error, setError] = useState('');
+  const [bulkText, setBulkText] = useState('');
+  const [bulkFeedback, setBulkFeedback] = useState('');
+
+  const handleBulkImport = () => {
+    const { pairs, skipped } = parseBulkWords(bulkText);
+    if (pairs.length === 0) {
+      setBulkFeedback(t('customWords.bulkEmpty'));
+      return;
+    }
+    for (const pair of pairs) {
+      onAddWord(pair.word, pair.translation);
+    }
+    setBulkFeedback(
+      t('customWords.bulkResult')
+        .replace('{added}', String(pairs.length))
+        .replace('{skipped}', String(skipped)),
+    );
+    setBulkText('');
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +99,7 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
       return;
     }
 
-    if (!/^[a-zA-Z0-9\s\-\?\!\,\.\'\"’]+$/.test(trimmedWord)) {
+    if (!WORD_PATTERN.test(trimmedWord)) {
       setError(t('customWords.invalidCharacters'));
       return;
     }
@@ -98,6 +158,38 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
           <Plus className="w-4 h-4 stroke-[3]" /> {t('customWords.addButton')}
         </button>
       </form>
+
+      {/* Bulk multiline import */}
+      <div className="space-y-2 border-t-4 border-dashed border-slate-200 pt-4" id="custom-words-bulk">
+        <label className="block text-[11px] font-black text-rose-500 uppercase tracking-widest ml-1">
+          {t('customWords.bulkTitle')}
+        </label>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">
+          {t('customWords.bulkHint')}
+        </p>
+        <textarea
+          rows={4}
+          placeholder={t('customWords.bulkPlaceholder')}
+          value={bulkText}
+          onChange={(e) => { setBulkText(e.target.value); setBulkFeedback(''); }}
+          className="w-full bg-white border-4 border-slate-900 text-slate-800 text-xs px-4 py-3 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-200 placeholder:text-slate-400 transition-all font-bold resize-y"
+          id="input-custom-bulk-words"
+        />
+        {bulkFeedback && (
+          <p className="text-xs text-slate-700 bg-amber-100 border-4 border-amber-400 p-3 rounded-2xl font-black" id="custom-words-bulk-feedback">
+            {bulkFeedback}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={handleBulkImport}
+          disabled={!bulkText.trim()}
+          className="w-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed border-4 border-slate-900 text-white font-black text-xs px-6 py-3 rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-all active:translate-y-1"
+          id="btn-import-custom-words"
+        >
+          <ListPlus className="w-4 h-4 stroke-[3]" /> {t('customWords.bulkButton')}
+        </button>
+      </div>
 
       {/* Vocabulary list display */}
       <div className="space-y-3 pt-2">
