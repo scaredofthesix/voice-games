@@ -344,6 +344,9 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       wordsMastered: 'Words mastered:',
       accuracy: 'Accuracy',
       speakLabel: 'Say it!',
+      tapToSpeak: 'Tap the word or press Space, then say it',
+      micButton: 'Click & say',
+      timeLabel: 'Time',
     },
     echo: {
       title: 'Echo Microphone',
@@ -823,6 +826,9 @@ const UI_TEXT: Record<UiLanguage, TranslationDictionary> = {
       wordsMastered: 'Слов освоено:',
       accuracy: 'Точность',
       speakLabel: 'Скажи!',
+      tapToSpeak: 'Нажми на слово или пробел, потом скажи его',
+      micButton: 'Нажми и скажи',
+      timeLabel: 'Время',
     },
     echo: {
       title: 'Эхо-микрофон',
