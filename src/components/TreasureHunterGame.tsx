@@ -813,25 +813,34 @@ export function TreasureHunterGame({
       ctx.textAlign = 'left';
       ctx.fillText(`${t('treasure.depth')}: ${Math.round(depth.current)}m`, 20, 30);
 
-      // WORD TIME TIMER BAR
+      // WORD TIME TIMER BAR - large and pinned to the top-center so the
+      // countdown is obvious (was a small, easy-to-miss bar at the bottom).
       if (feedback === 'listening') {
-        const barW = 120;
+        const barW = Math.min(320, w * 0.6);
         const barX = w / 2 - barW / 2;
-        const barY = h - 25;
-        
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+        const barY = 50;
+        const barH = 18;
+        const danger = timerProgress.current <= 40;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`⏱ ${language === 'ru' ? 'ВРЕМЯ' : 'TIME'}`, w / 2, barY - 7);
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2.5;
-        drawRoundedRect(ctx, barX, barY, barW, 10, 4);
+        ctx.lineWidth = 3;
+        drawRoundedRect(ctx, barX, barY, barW, barH, 8);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = timerProgress.current > 40 ? '#10b981' : '#f43f5e';
-        const currentW = (barW - 4) * (timerProgress.current / 100);
+        ctx.fillStyle = danger ? '#f43f5e' : '#10b981';
+        const currentW = (barW - 6) * (timerProgress.current / 100);
         if (currentW > 0) {
-          drawRoundedRect(ctx, barX + 2, barY + 2, currentW, 6, 2);
+          drawRoundedRect(ctx, barX + 3, barY + 3, currentW, barH - 6, 5);
           ctx.fill();
         }
+        ctx.textAlign = 'left';
       }
 
       animId = requestAnimationFrame(updateAndDraw);
