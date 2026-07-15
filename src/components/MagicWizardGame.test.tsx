@@ -77,4 +77,22 @@ describe('MagicWizardGame (integration)', () => {
     fireEvent.click(screen.getByRole('button', { name: /hub/i }));
     expect(handleBack).toHaveBeenCalled();
   });
+
+  test('renders the animated preview canvas text in Russian', () => {
+    window.localStorage.setItem('ui_language', 'ru');
+    cleanup = installMockSpeechRecognition();
+
+    render(
+      <UiLanguageProvider>
+        <MagicWizardGame onBackToHub={() => {}} customWords={[]} />
+      </UiLanguageProvider>,
+    );
+
+    const getContextMock = vi.mocked(HTMLCanvasElement.prototype.getContext);
+    const context = getContextMock.mock.results[0]?.value as unknown as {
+      fillText: ReturnType<typeof vi.fn>;
+    };
+    expect(context.fillText).toHaveBeenCalledWith('ОГНЕННЫЕ ЗАКЛИНАНИЯ', 110, 42);
+    expect(context.fillText).toHaveBeenCalledWith('Мечи пылающие огненные шары!', 110, 62);
+  });
 });

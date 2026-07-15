@@ -980,7 +980,7 @@ export function AsteWordGame({
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
                 {t('aste.galaxyRecord')}
                 </span>
-                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} {t('aste.lasers')}</span>
+                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{Math.max(highScore, score)} {t('aste.lasers')}</span>
               </div>
             </div>
 
@@ -1056,7 +1056,7 @@ export function AsteWordGame({
             <div className="flex flex-col gap-2.5 w-full">
               <button
                 onClick={startGame}
-                className="w-full bg-indigo-500 hover:bg-indigo-600 border-4 border-slate-900 text-white font-black text-xs py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 shadow-md uppercase"
+                className="w-full bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 shadow-md uppercase"
               >
                 <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {strings.start}
               </button>

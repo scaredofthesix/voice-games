@@ -971,7 +971,7 @@ export function SkateWordGame({
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
                 {t('skate.parkRecord')}
                 </span>
-                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} stars</span>
+                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{Math.max(highScore, score)} {t('skate.starsUnit')}</span>
               </div>
             </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
+import { loadProgress, pickAdaptiveWordIndex, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
@@ -131,7 +131,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
     canvasWidth: 400,
     canvasHeight: 520,
     theme: 'sky' as BubbleTheme,
-    vocabIndex: 0,
+    vocabIndex: -1,
     paused: false,
     vocabList: [] as { word: string; translation: string; translationRu?: string }[]
   });
@@ -361,7 +361,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
     s.score = 0;
     s.level = 1;
     s.lives = 3;
-    s.vocabIndex = 0;
+    s.vocabIndex = -1;
     s.bubbles = [];
     s.particles = [];
     s.lastSpawnTime = Date.now();
@@ -942,7 +942,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       ctx.font = '900 10.5px sans-serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText('🔴 VOICE BUBBLE DANGER ZONE! POP THE BUBBLES NOW!', 12, alertY - 11);
+      ctx.fillText(`🔴 ${t('bubble.dangerZone')}`, 12, alertY - 11);
 
       // 3. Spawning interval calculations
       const elapsed = now - s.lastSpawnTime;
@@ -950,9 +950,14 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       if (elapsed >= spawnFrequencyDelay) {
         const vocab = s.vocabList;
         if (vocab && vocab.length > 0) {
-          // Progress words list progressively using s.vocabIndex reference
-          const wordObj = vocab[s.vocabIndex % vocab.length];
-          s.vocabIndex += 1;
+          const stats = loadProgress()['bubble-popper'].words;
+          const nextIndex = pickAdaptiveWordIndex(
+            vocab.map((item) => item.word),
+            stats,
+            s.vocabIndex,
+          );
+          const wordObj = vocab[nextIndex];
+          s.vocabIndex = nextIndex;
 
           // Safe percentage positioning
           const minX = 14;
@@ -1095,6 +1100,14 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
             setTargetBubble(nextTarget);
           }
           speakSound.playLose();
+          saveProgress(recordWordStruggled(loadProgress(), 'bubble-popper', b.word));
+          setWordStudyStats((previous) => ({
+            ...previous,
+            [b.word]: {
+              spoken: previous[b.word]?.spoken || 0,
+              struggled: (previous[b.word]?.struggled || 0) + 1,
+            },
+          }));
 
           // Authoritative count reduce to prevent dual frame lags collision
           s.lives -= 1;
@@ -1144,7 +1157,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
         cancelAnimationFrame(frameId);
       }
     };
-  }, [gameState, level]);
+  }, [gameState, level, t]);
 
   return (
     <div className="w-full flex flex-col gap-6" id="soap-bubble-popper-root">

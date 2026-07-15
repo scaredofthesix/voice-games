@@ -6,6 +6,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added two ways to bulk-add custom words, both sharing one parser: importing a two-column
+  CSV file, and pasting a list where each line holds one pair. Column one is the English
+  word and column two its translation; headers, quoted cells, `|`, `;`, comma and tab
+  delimiters are all accepted, and valid rows still import when others are invalid (#144).
+- Added tested in-round adaptive selection weights so recently struggled words can return
+  sooner while mastered words remain possible but less frequent (#143).
+- Added one detailed, bilingual result-card pattern for games that previously ended with
+  only summary totals, including per-word correct/struggled counts and replay controls.
+
+### Changed
+
+- Sentence Bird now uses its active word and Space as push-to-talk controls, has three
+  hearts, a visible per-word timer, and a defeat fall animation before results instead of
+  treating unrelated speech as a failed attempt (#140).
+- Echo Microphone now shows sequence words on their cards during teaching playback, flips
+  them back to question marks for recall, and consumes each recognized phrase only once;
+  the redundant top memory card was removed and the word reference offers EN/RU playback
+  (#141).
+- Magic Wizard spells track the moving monster, and Treasure Hunter shows its countdown in
+  a prominent top-of-screen timer (#142).
+- Adaptive word scheduling now also covers Voice Racer, Bubble Popper, Sentence Bird, and
+  Echo Microphone, so all ten games react to recorded struggles (#143).
+
+### Fixed
+
+- Stopped speech synthesis and generated sound effects when leaving or switching games,
+  kept Progress CSV export in English, and localized Magic Wizard's canvas preview (#145).
+- Preserved Russian playback for newly added custom words, standardized high-contrast hub
+  buttons and pink replay buttons, and tightened Treasure Hunter's narrow-screen header.
+
 ## [0.4.1] - 2026-07-12
 
 Assignment 6, Sprint 4 corrective Week 6 trial release. This patch aligns the SemVer tag,

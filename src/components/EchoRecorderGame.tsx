@@ -6,12 +6,14 @@ import {
 } from 'lucide-react';
 
 const MAX_LIVES = 3;
-import { BackToHubButton, CustomWordsSection, GameHeader, GameSetupCard, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
+import { BackToHubButton, CustomWordsSection, GameHeader, GameResultCard, GameSetupCard, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { BUILTIN_CATEGORIES } from '../data';
 import type { WordCategory, WordData } from '../types';
 import type { EchoGamePhase, EchoGameStats, EchoWord } from '../echoRecorder/types';
+import { createGameAudioContext, speakWord } from '../voice/engine';
+import { loadProgress, pickAdaptiveWordIndex, recordHighScore, recordSessionPlayed, recordWordSpoken, recordWordStruggled, saveProgress } from '../progress';
 
 function getLevenshteinDistance(a: string, b: string): number {
   const tmp: number[][] = [];
@@ -63,20 +65,29 @@ const RECOGNITION_OVERLAPS: Record<string, string[]> = {
   "time flies like an arrow": ["time flies like an arrow", "time flies like arrow", "time fly like an arrow", "time flies", "arrow"],
 };
 
+function containsWholePhrase(text: string, phrase: string): boolean {
+  return Boolean(phrase) && ` ${text} `.includes(` ${phrase} `);
+}
+
 function checkPronunciationMatch(spoken: string, expected: string): boolean {
   const cleanSpoken = spoken.toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ").trim();
   const cleanExpected = expected.toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ").trim();
 
   if (!cleanSpoken || !cleanExpected) return false;
 
-  if (cleanSpoken.includes(cleanExpected) || cleanExpected.includes(cleanSpoken)) {
+  if (containsWholePhrase(cleanSpoken, cleanExpected)) {
     return true;
   }
 
   const overlaps = RECOGNITION_OVERLAPS[cleanExpected];
   if (overlaps) {
+    const expectedWordCount = cleanExpected.split(' ').length;
     for (const alt of overlaps) {
-      if (cleanSpoken.includes(alt) || alt.includes(cleanSpoken)) {
+      const normalizedAlt = normalizeEchoText(alt);
+      if (
+        normalizedAlt.split(' ').length === expectedWordCount &&
+        containsWholePhrase(cleanSpoken, normalizedAlt)
+      ) {
         return true;
       }
     }
@@ -91,6 +102,45 @@ function checkPronunciationMatch(spoken: string, expected: string): boolean {
     return distance <= 2;
   }
   return distance <= 4 || (distance / Math.max(cleanSpoken.length, cleanExpected.length)) < 0.35;
+}
+
+function normalizeEchoText(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Count sequence items actually present in one transcript, consuming each
+ * matched phrase before checking the next. This prevents one short phrase from
+ * being reused against every remaining card while still allowing a child to
+ * repeat a complete multi-card chain in one utterance.
+ */
+export function countSequentialEchoMatches(
+  spoken: string,
+  sequence: readonly Pick<EchoWord, 'text'>[],
+  startIndex: number,
+): number {
+  let remaining = normalizeEchoText(spoken);
+  let matched = 0;
+
+  for (let index = startIndex; index < sequence.length && remaining; index++) {
+    const expected = normalizeEchoText(sequence[index].text);
+    const exactIndex = expected ? ` ${remaining} `.indexOf(` ${expected} `) : -1;
+
+    if (exactIndex >= 0) {
+      remaining = remaining.slice(exactIndex + expected.length).trim();
+      matched++;
+      continue;
+    }
+
+    // Recognition variants may not contain an exact phrase. Apply the existing
+    // tolerant match only to the current card and never reuse it for later ones.
+    if (matched === 0 && checkPronunciationMatch(remaining, expected)) {
+      matched = 1;
+    }
+    break;
+  }
+
+  return matched;
 }
 
 const ECHO_STRING_KEYS = ["title", "subtitle", "back", "start", "chooseTheme", "best", "howToPlay", "learnRules", "lobbyTitle", "lobbyIntro", "lobbyStepOne", "lobbyStepTwo", "lobbyStepThree", "listening", "speaking", "replay", "currentChain", "bestChain", "perfectMatch", "perfectDesc", "growChain", "proceed", "restart", "victory", "victoryDesc", "replayAll", "tryAgain", "missedAt", "startOver", "phonetic", "score", "completed", "chainWords", "pts", "word", "translation", "target", "memoryCard", "sayNext", "idle", "voiceActive", "muted", "guide", "words", "speakLabel", "voiceFeed", "pronRef", "supremeMaster", "finalScore", "longestChainLabel", "totalAttemptsLabel", "correctRoundsLabel"] as const;
@@ -176,6 +226,7 @@ export default function EchoRecorderGame({
   const [stats, setStats] = useState<EchoGameStats>({
     score: 0, longestChain: 1, totalAttempts: 0, correctRounds: 0, failedWords: {},
   });
+  const [wordStudyStats, setWordStudyStats] = useState<Record<string, { spoken: number; struggled: number }>>({});
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [paused, setPaused] = useState(false);
   const [lives, setLives] = useState(MAX_LIVES);
@@ -191,6 +242,8 @@ export default function EchoRecorderGame({
   const pausedRef = useRef(false);
   const livesRef = useRef(MAX_LIVES);
   const showListeningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playbackGenerationRef = useRef(0);
 
   useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
   useEffect(() => { currentSequenceRef.current = currentSequence; }, [currentSequence]);
@@ -214,7 +267,7 @@ export default function EchoRecorderGame({
   const playSound = (type: 'success' | 'fail' | 'flip' | 'click' | 'victory') => {
     if (!soundEnabled) return;
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const ctx = createGameAudioContext(1000);
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
@@ -267,21 +320,35 @@ export default function EchoRecorderGame({
     }
   };
 
+  const cancelSequencePlayback = useCallback(() => {
+    playbackGenerationRef.current++;
+    if (playbackTimerRef.current) {
+      clearTimeout(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
+    window.speechSynthesis?.cancel();
+  }, []);
+
   const speakSequence = async (sequence: EchoWord[], pitch = 1.0, rate = 0.85) => {
+    cancelSequencePlayback();
+    const generation = playbackGenerationRef.current;
+
     if (typeof window === 'undefined' || !window.speechSynthesis) {
       for (let i = 0; i < sequence.length; i++) {
+        if (generation !== playbackGenerationRef.current) return;
         setActiveWordIdx(i);
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
+      if (generation !== playbackGenerationRef.current) return;
       setActiveWordIdx(-1);
       setGameState('recording');
       return;
     }
-    window.speechSynthesis.cancel();
     setGameState('playback');
     setActiveWordIdx(0);
 
     const speakItem = (index: number) => {
+      if (generation !== playbackGenerationRef.current) return;
       if (index >= sequence.length) {
         setActiveWordIdx(-1);
         setGameState('recording');
@@ -294,7 +361,11 @@ export default function EchoRecorderGame({
       utterance.pitch = pitch;
       utterance.rate = rate;
       utterance.onend = () => {
-        setTimeout(() => { speakItem(index + 1); }, 400);
+        if (generation !== playbackGenerationRef.current) return;
+        playbackTimerRef.current = setTimeout(() => {
+          playbackTimerRef.current = null;
+          speakItem(index + 1);
+        }, 400);
       };
       utterance.onerror = () => { speakItem(index + 1); };
       window.speechSynthesis.speak(utterance);
@@ -304,11 +375,17 @@ export default function EchoRecorderGame({
   };
 
   const extendChain = (current: EchoWord[], pool: EchoWord[]): EchoWord[] => {
+    if (pool.length === 0) return current;
     const lastWord = current[current.length - 1];
-    const availablePool = pool.filter(w => !lastWord || w.text !== lastWord.text);
-    const selectedPool = availablePool.length > 0 ? availablePool : pool;
-    const randomWord = selectedPool[Math.floor(Math.random() * selectedPool.length)];
-    return [...current, randomWord];
+    const previous = lastWord
+      ? pool.findIndex((item) => item.text.toLocaleLowerCase() === lastWord.text.toLocaleLowerCase())
+      : -1;
+    const index = pickAdaptiveWordIndex(
+      pool.map((item) => item.text),
+      loadProgress()['echo-recorder'].words,
+      previous,
+    );
+    return [...current, pool[index]];
   };
 
   const startGame = () => {
@@ -316,6 +393,9 @@ export default function EchoRecorderGame({
     setLives(MAX_LIVES);
     livesRef.current = MAX_LIVES;
     const initialChain = extendChain([], wordPool);
+    setStats({ score: 0, longestChain: 1, totalAttempts: 0, correctRounds: 0, failedWords: {} });
+    setWordStudyStats({});
+    saveProgress(recordSessionPlayed(loadProgress(), 'echo-recorder'));
     setCurrentSequence(initialChain);
     setUserSpeechProgressIdx(0);
     setTryAgainTip(null);
@@ -331,7 +411,7 @@ export default function EchoRecorderGame({
     }
   };
 
-  const advanceToNextWord = useCallback((spokenText: string, localProgressIdx: number) => {
+  const advanceToNextWord = useCallback((localProgressIdx: number) => {
     playSound('flip');
     setUserSpeechProgressIdx(localProgressIdx);
     setRecentTranscript('');
@@ -351,7 +431,9 @@ export default function EchoRecorderGame({
         // Endless play: the chain just keeps growing until the player runs out of hearts.
         const cat = activeCategoryRef.current;
         const pool: EchoWord[] = cat.id === 'custom'
-          ? customWordsRef.current.map(toEchoWord)
+          ? (customWordsRef.current.length > 0
+            ? customWordsRef.current.map(toEchoWord)
+            : BUILTIN_CATEGORIES[0].words.map(toEchoWord))
           : cat.words.map(toEchoWord);
         const updatedSequence = extendChain(currentSequenceRef.current, pool);
         setCurrentSequence(updatedSequence);
@@ -371,21 +453,32 @@ export default function EchoRecorderGame({
     lastTranscriptRef.current = rawText;
     setRecentTranscript(text);
 
-    let localProgressIdx = userSpeechProgressIdxRef.current;
-    let matchedAny = false;
+    const initialProgressIdx = userSpeechProgressIdxRef.current;
+    const matchedCount = countSequentialEchoMatches(
+      text,
+      currentSequenceRef.current,
+      initialProgressIdx,
+    );
+    const localProgressIdx = initialProgressIdx + matchedCount;
 
-    while (localProgressIdx < currentSequenceRef.current.length) {
-      const expectedWord = currentSequenceRef.current[localProgressIdx];
-      if (checkPronunciationMatch(text, expectedWord.text)) {
-        localProgressIdx++;
-        matchedAny = true;
-      } else {
-        break;
-      }
-    }
-
-    if (matchedAny) {
-      advanceToNextWord(text, localProgressIdx);
+    if (matchedCount > 0) {
+      const matchedWords = currentSequenceRef.current.slice(initialProgressIdx, localProgressIdx);
+      let progress = loadProgress();
+      matchedWords.forEach((item) => {
+        progress = recordWordSpoken(progress, 'echo-recorder', item.text);
+      });
+      saveProgress(progress);
+      setWordStudyStats((previous) => {
+        const next = { ...previous };
+        matchedWords.forEach((item) => {
+          next[item.text] = {
+            spoken: (next[item.text]?.spoken || 0) + 1,
+            struggled: next[item.text]?.struggled || 0,
+          };
+        });
+        return next;
+      });
+      advanceToNextWord(localProgressIdx);
     } else {
       cancelFailTimer();
       failTimerRef.current = setTimeout(() => {
@@ -395,6 +488,14 @@ export default function EchoRecorderGame({
         const expectedWord = currentSequenceRef.current[idx];
         if (expectedWord) {
           playSound('fail');
+          saveProgress(recordWordStruggled(loadProgress(), 'echo-recorder', expectedWord.text));
+          setWordStudyStats((previous) => ({
+            ...previous,
+            [expectedWord.text]: {
+              spoken: previous[expectedWord.text]?.spoken || 0,
+              struggled: (previous[expectedWord.text]?.struggled || 0) + 1,
+            },
+          }));
           setStats(prev => {
             const nextFailed = { ...prev.failedWords };
             nextFailed[expectedWord.text] = (nextFailed[expectedWord.text] || 0) + 1;
@@ -471,6 +572,7 @@ export default function EchoRecorderGame({
   };
 
   const handleBackToHub = () => {
+    cancelSequencePlayback();
     if (stats.score > highScore) {
       onUpdateHighScore?.(stats.score);
     }
@@ -495,7 +597,10 @@ export default function EchoRecorderGame({
     if (stats.score > highScore) {
       onUpdateHighScore?.(stats.score);
     }
+    saveProgress(recordHighScore(loadProgress(), 'echo-recorder', stats.score));
   }, [stats.score, highScore, onUpdateHighScore]);
+
+  useEffect(() => () => cancelSequencePlayback(), [cancelSequencePlayback]);
 
   if (gameState === 'start') {
     return (
@@ -503,7 +608,6 @@ export default function EchoRecorderGame({
         <BackToHubButton
         label={t('shared.backToHub')}
         onClick={handleBackToHub}
-        className="bg-yellow-300 border-4 border-slate-900 rounded-xl px-3 py-2 shadow-[3px_3px_0_0_rgba(15,23,42,1)] hover:bg-yellow-400"
       />
         <GameSetupCard
           icon={<Headphones className="h-10 w-10 text-slate-900" />}
@@ -583,39 +687,38 @@ export default function EchoRecorderGame({
         <BackToHubButton
         label={t('shared.backToHub')}
         onClick={handleBackToHub}
-        className="bg-yellow-300 border-4 border-slate-900 rounded-xl px-3 py-2 shadow-[3px_3px_0_0_rgba(15,23,42,1)] hover:bg-yellow-400"
       />
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-[2rem] border-8 border-slate-900 bg-white p-8 text-center space-y-6 shadow-[10px_10px_0_0_rgba(15,23,42,1)] relative overflow-hidden">
-          <div className="absolute -top-10 -left-10 w-32 h-32 bg-yellow-100 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-yellow-100 rounded-full blur-2xl pointer-events-none" />
-          <span className="text-5xl animate-bounce block">💔🎧</span>
-          <div className="space-y-2">
-            <span className="text-[10px] font-black text-slate-900 bg-yellow-400 border-2 border-slate-900 px-2 py-0.5 shadow-[2px_2px_0_0_rgba(0,0,0,1)] uppercase inline-block">{t('echo.gameOverBadge')}</span>
-            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{t('echo.gameOverTitle')}</h3>
-            <p className="text-sm font-bold text-slate-600 max-w-md mx-auto">{t('echo.gameOverDesc')}</p>
-          </div>
-          <div className="rounded-2xl border-4 border-slate-900 bg-slate-50 p-5 text-left divide-y divide-slate-200 shadow-[4px_4px_0_0_rgba(15,23,42,1)]">
-            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.finalScore}:</span><span className="font-black text-yellow-600">{stats.score} {strings.pts}</span></div>
-            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.longestChainLabel}:</span><span className="font-black text-slate-900">{stats.longestChain} {strings.words}</span></div>
-            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.totalAttemptsLabel}:</span><span className="font-black text-slate-900">{stats.totalAttempts}</span></div>
-            <div className="flex justify-between py-2 text-xs font-bold text-slate-700"><span>{strings.correctRoundsLabel}:</span><span className="font-black text-emerald-600">{stats.correctRounds}</span></div>
-          </div>
-          <div className="flex justify-center gap-3">
-            <button onClick={() => { playSound('click'); setStats({ score: 0, longestChain: 1, totalAttempts: 0, correctRounds: 0, failedWords: {} }); startGame(); }} className="rounded-2xl border-4 border-slate-900 bg-emerald-400 px-6 py-3 text-sm font-black uppercase tracking-wider shadow-[4px_4px_0_0_rgba(15,23,42,1)]">{t('echo.playAgain')}</button>
-          </div>
-        </motion.div>
+        <GameResultCard
+          title={t('echo.gameOverTitle')}
+          description={t('echo.gameOverDesc')}
+          scoreLabel={strings.finalScore}
+          score={stats.score}
+          bestLabel={strings.best}
+          best={Math.max(highScore, stats.score)}
+          wordStats={wordStudyStats}
+          words={wordPool.map((item) => ({ word: item.text, translation: item.translation, translationRu: item.translation }))}
+          replayLabel={t('echo.playAgain')}
+          onReplay={() => { playSound('click'); startGame(); }}
+          icon={<span className="block text-5xl">💔🎧</span>}
+          summary={(
+            <div className="grid grid-cols-1 gap-2 rounded-2xl border-4 border-slate-900 bg-white p-3 text-[10px] font-black uppercase text-slate-700 sm:grid-cols-3">
+              <p>{strings.longestChainLabel}<span className="block text-lg text-slate-900">{stats.longestChain}</span></p>
+              <p>{strings.totalAttemptsLabel}<span className="block text-lg text-slate-900">{stats.totalAttempts}</span></p>
+              <p>{strings.correctRoundsLabel}<span className="block text-lg text-emerald-700">{stats.correctRounds}</span></p>
+            </div>
+          )}
+          toneClass="bg-yellow-50"
+          shadowClass="bubble-shadow-amber"
+        />
       </div>
     );
   }
-
-  const currentTarget = currentSequence[userSpeechProgressIdx];
 
   return (
     <div className={`space-y-6 rounded-[2.5rem] p-3 sm:p-5 transition-colors duration-500 ${activeTheme.gameClass}`}>
       <BackToHubButton
         label={t('shared.backToHub')}
         onClick={handleBackToHub}
-        className="bg-yellow-300 border-4 border-slate-900 rounded-xl px-3 py-2 shadow-[3px_3px_0_0_rgba(15,23,42,1)] hover:bg-yellow-400"
       />
 
       <GameHeader
@@ -638,42 +741,6 @@ export default function EchoRecorderGame({
       />
 
       <PauseButton paused={paused} onToggle={togglePause} />
-
-      {gameState === 'recording' && currentTarget && (
-        <div className="relative bg-amber-50 border-4 border-slate-900 rounded-2xl p-5 text-center shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
-          <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-rose-500 border-2 border-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full shadow-sm whitespace-nowrap">
-            {t('shared.targetRibbon')}
-          </span>
-
-          <div className="text-4xl mt-1" aria-hidden="true">❓</div>
-          <p className="mt-1 text-sm font-black uppercase tracking-wider text-slate-900">
-            {strings.memoryCard} #{userSpeechProgressIdx + 1}
-          </p>
-
-          <div className="mt-2.5 space-y-2">
-            {recentTranscript && (
-              <div className="inline-flex flex-col items-center justify-center bg-indigo-50 border-2 border-indigo-200 rounded-xl px-4 py-1.5 max-w-full">
-                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">
-                  {t('shared.youSaidHeard')}
-                </span>
-                <span className="text-sm font-black text-indigo-700 italic font-mono truncate max-w-xs">
-                  "{recentTranscript}"
-                </span>
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2.5 border-t-2 border-dashed border-slate-200">
-              <button
-                type="button"
-                onClick={() => { void speakSequence([currentTarget]); }}
-                className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-white border-2 border-slate-900 px-2.5 py-1 rounded-xl shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-transform active:translate-y-0.5 cursor-pointer"
-              >
-                <Volume2 className="w-3.5 h-3.5 stroke-[3] text-indigo-500" /> {t('shared.listenEnglish')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className={`grid grid-cols-1 sm:grid-cols-3 gap-3 ${activeTheme.accentClass}`}>
         <div className="rounded-xl border-4 border-slate-900 bg-amber-100 px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-slate-900">
@@ -724,7 +791,8 @@ export default function EchoRecorderGame({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           {currentSequence.map((word, idx) => {
             const isTTSActive = idx === activeWordIdx;
-            const isRevealed = userSpeechProgressIdx > idx;
+            const wasRepeated = userSpeechProgressIdx > idx;
+            const showsWord = gameState === 'playback' || wasRepeated;
             const isCurrentTarget = userSpeechProgressIdx === idx && gameState === 'recording';
 
             let cardBg = 'bg-white';
@@ -732,7 +800,7 @@ export default function EchoRecorderGame({
             if (isTTSActive) {
               cardBg = 'bg-indigo-600';
               cardBorder = 'border-slate-900 shadow-[4px_4px_0_0_rgba(15,23,42,1)] scale-105';
-            } else if (isRevealed) {
+            } else if (wasRepeated) {
               cardBg = 'bg-yellow-400';
               cardBorder = 'border-slate-900 shadow-[2px_2px_0_0_rgba(0,0,0,1)]';
             } else if (isCurrentTarget) {
@@ -746,6 +814,7 @@ export default function EchoRecorderGame({
             return (
               <motion.div
                 key={idx}
+                aria-label={`${strings.memoryCard} #${idx + 1}`}
                 layout
                 initial={{ rotateY: 180, opacity: 0 }}
                 animate={{ rotateY: 0, opacity: 1 }}
@@ -756,11 +825,11 @@ export default function EchoRecorderGame({
                   <span className={`text-[10px] font-black border px-1.5 rounded-lg ${isTTSActive ? 'bg-slate-950 text-white border-slate-800' : 'bg-slate-100 text-slate-900 border-slate-300'}`}>
                     #{idx + 1}
                   </span>
-                  {isRevealed && <Check className="w-4 h-4 text-emerald-700" />}
+                  {wasRepeated && <Check className="w-4 h-4 text-emerald-700" />}
                   {isCurrentTarget && <span className="text-[8px] font-black uppercase tracking-wider text-indigo-700 animate-pulse">{strings.speakLabel}</span>}
                 </div>
                 <div className="text-center space-y-1">
-                  {isRevealed || isTTSActive || gameState === 'playback' ? (
+                  {showsWord ? (
                     <>
                       {word.emoji && <div className="text-xl">{word.emoji}</div>}
                       <div className={`font-black uppercase tracking-tight text-sm ${isTTSActive ? 'text-white' : 'text-slate-900'}`}>{word.text}</div>
@@ -773,7 +842,7 @@ export default function EchoRecorderGame({
                   )}
                 </div>
                 <div className="text-center">
-                  {isRevealed || isTTSActive || gameState === 'playback' ? (
+                  {showsWord ? (
                     <div className={`text-[8px] font-bold leading-none ${isTTSActive ? 'text-slate-200' : 'text-slate-500'}`}>{word.translation}</div>
                   ) : (
                     <div className="text-[8px] font-semibold text-slate-300 italic">?</div>
@@ -848,17 +917,24 @@ export default function EchoRecorderGame({
               <div key={idx} className="rounded-xl border-2 border-slate-200 bg-slate-50/50 p-2 flex flex-col justify-between select-none">
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-xs font-black text-slate-800 tracking-tight truncate">{word.emoji ? `${word.emoji} ` : ''}"{word.text}"</span>
+                  <div className="flex shrink-0 gap-1">
                   <button
                     type="button"
-                    onClick={() => {
-                      const u = new SpeechSynthesisUtterance(word.text);
-                      u.lang = 'en-US';
-                      window.speechSynthesis?.speak(u);
-                    }}
+                    onClick={() => speakWord(word.text, 'en')}
+                    aria-label={`${t('shared.listenEnglish')}: ${word.text}`}
                     className="shrink-0 rounded-lg border-2 border-slate-300 bg-white p-1 hover:bg-yellow-100 cursor-pointer"
                   >
-                    <Volume2 className="h-3 w-3 text-indigo-600" />
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-indigo-700"><Volume2 className="h-3 w-3" /> EN</span>
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => speakWord(word.translation, 'ru')}
+                    aria-label={`${t('shared.listenRussian')}: ${word.translation}`}
+                    className="shrink-0 rounded-lg border-2 border-slate-300 bg-white p-1 hover:bg-blue-100 cursor-pointer"
+                  >
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-blue-700"><Volume2 className="h-3 w-3" /> RU</span>
+                  </button>
+                  </div>
                 </div>
                 <div className="flex justify-between items-center mt-1 w-full">
                   <span className="text-[8px] font-extrabold text-slate-400">{word.translation}</span>
