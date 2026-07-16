@@ -17,10 +17,23 @@ function isHeaderRow(row: string[]): boolean {
     && ['translation', 'translations', 'russian', 'перевод', 'переводы'].includes(second);
 }
 
+function splitWordPairRow(line: string): string[] {
+  const tabColumns = line.split('\t');
+  if (tabColumns.length > 1) return tabColumns;
+
+  const fourSpaceSeparator = / {4,}/.exec(line);
+  if (!fourSpaceSeparator) return [line];
+
+  return [
+    line.slice(0, fourSpaceSeparator.index),
+    line.slice(fourSpaceSeparator.index + fourSpaceSeparator[0].length),
+  ];
+}
+
 /**
- * Parse text copied from two spreadsheet columns. A tab is the only separator:
- * spaces inside multi-word phrases remain part of the word, and ambiguous
- * comma/semicolon/space formats are rejected instead of being guessed.
+ * Parse text copied from two spreadsheet columns or typed with four spaces
+ * between the columns. Single spaces inside multi-word phrases remain part of
+ * the word; ambiguous comma/semicolon/one-to-three-space formats are rejected.
  */
 export function parseWordPairs(raw: string): WordPairParseResult {
   const pairs: { word: string; translation: string }[] = [];
@@ -29,7 +42,7 @@ export function parseWordPairs(raw: string): WordPairParseResult {
     .replace(/^\uFEFF/, '')
     .split(/\r\n|\n|\r/)
     .filter((line) => line.trim().length > 0)
-    .map((line) => line.split('\t'));
+    .map(splitWordPairRow);
   const dataRows = rows.slice(isHeaderRow(rows[0] || []) ? 1 : 0);
 
   for (const row of dataRows) {

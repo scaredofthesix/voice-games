@@ -32,13 +32,25 @@ describe('parseWordPairs', () => {
     ]);
   });
 
-  test('rejects CSV, semicolon, pipe and ordinary-space separators', () => {
+  test('parses four-space separators without splitting English phrases', () => {
     const { pairs, skipped } = parseWordPairs(
-      'cat,кот\ndog;собака\nfox | лиса\ngood morning доброе утро',
+      'word    translation\nNice to meet you    Приятно познакомиться\nHow are you?     Как дела?',
+    );
+
+    expect(skipped).toBe(0);
+    expect(pairs).toEqual([
+      { word: 'Nice to meet you', translation: 'Приятно познакомиться' },
+      { word: 'How are you?', translation: 'Как дела?' },
+    ]);
+  });
+
+  test('rejects CSV, semicolon, pipe and one-to-three-space separators', () => {
+    const { pairs, skipped } = parseWordPairs(
+      'cat,кот\ndog;собака\nfox | лиса\ngood morning доброе утро\nthank you   спасибо',
     );
 
     expect(pairs).toEqual([]);
-    expect(skipped).toBe(4);
+    expect(skipped).toBe(5);
   });
 
   test('keeps valid rows and reports missing or extra columns', () => {

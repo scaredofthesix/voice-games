@@ -40,6 +40,24 @@ describe('CustomWordsManager paste import', () => {
     expect(textarea.value).toBe('');
   });
 
+  test('imports phrases separated from translations by four spaces', () => {
+    const onAddWord = vi.fn();
+    const { container } = renderManager(onAddWord);
+    const textarea = container.querySelector('#input-custom-bulk-words') as HTMLTextAreaElement;
+    fireEvent.change(textarea, {
+      target: {
+        value: 'Nice to meet you    Приятно познакомиться\nHow are you?    Как дела?',
+      },
+    });
+    fireEvent.click(container.querySelector('#btn-import-custom-words') as HTMLButtonElement);
+
+    expect(onAddWord).toHaveBeenCalledTimes(2);
+    expect(onAddWord).toHaveBeenNthCalledWith(1, 'Nice to meet you', 'Приятно познакомиться');
+    expect(onAddWord).toHaveBeenNthCalledWith(2, 'How are you?', 'Как дела?');
+    expect(screen.getByText('Added 2. Skipped 0 invalid or duplicate row(s).')).toBeInTheDocument();
+    expect(textarea.value).toBe('');
+  });
+
   test('skips duplicates from the existing list and within one paste', () => {
     const onAddWord = vi.fn();
     const existing = [{ word: 'cat', translation: 'кот', speakCount: 0, struggleCount: 0 }];
@@ -55,7 +73,7 @@ describe('CustomWordsManager paste import', () => {
     expect(screen.getByText('Added 1. Skipped 2 invalid or duplicate row(s).')).toBeInTheDocument();
   });
 
-  test('keeps invalid text and explains that tabs are required', () => {
+  test('keeps invalid text and explains that one to three spaces are not enough', () => {
     const onAddWord = vi.fn();
     const { container } = renderManager(onAddWord);
     const textarea = container.querySelector('#input-custom-bulk-words') as HTMLTextAreaElement;
@@ -64,6 +82,6 @@ describe('CustomWordsManager paste import', () => {
 
     expect(onAddWord).not.toHaveBeenCalled();
     expect(textarea.value).toBe('no ordinary space separator');
-    expect(screen.getByText(/ordinary spaces are not a column separator/i)).toBeInTheDocument();
+    expect(screen.getByText(/one to three spaces are not a column separator/i)).toBeInTheDocument();
   });
 });
