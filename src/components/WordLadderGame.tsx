@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
-import { BookOpen, Mic, Pause, Play, Rocket, RotateCcw, Volume2 } from 'lucide-react';
+import { Play, Rocket } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
@@ -15,8 +15,18 @@ import {
 import { matchesWord, speakSound, speakWord } from '../voice/engine';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { RocketClimb, RocketTheme } from './RocketClimb';
-import { CustomWordsManager } from './CustomWordsManager';
-import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import {
+  BackToHubButton,
+  CustomWordsSection,
+  GameHeader,
+  GameResultCard,
+  GameSetupCard,
+  ListenAndLearnSection,
+  OptionPicker,
+  PauseButton,
+  TargetWordCard,
+  WordSetPicker,
+} from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 // Word Ladder (rocket climb): each correctly pronounced word lifts the rocket
@@ -24,13 +34,6 @@ import { useUiLanguage } from '../uiLanguage';
 // Reaching the top step wins. Rules live in gameLogic.ts; the animated scene
 // lives in RocketClimb.tsx; this component is the start screen, word picker and
 // voice wiring around them. Reworked in Sprint 2 (Assignment 4).
-
-const ZONE_LABEL: Record<string, string> = {
-  ground: 'Ground',
-  clouds: 'Clouds',
-  sky: 'Sky',
-  space: 'Space',
-};
 
 interface WordLadderGameProps {
   onBackToHub: () => void;
@@ -53,7 +56,7 @@ export function WordLadderGame({
   onDeleteCustomWord,
   onClearCustomWords,
 }: WordLadderGameProps) {
-  const { t, language, setLanguage } = useUiLanguage();
+  const { t } = useUiLanguage();
   const [activeCategory, setActiveCategory] = useState<WordCategory>(
     BUILTIN_CATEGORIES[0],
   );
@@ -195,28 +198,70 @@ export function WordLadderGame({
   const zone = ladderZone(ladder);
   const progressPct = Math.round(ladderProgress(ladder) * 100);
   const list = wordList();
+  const resultCard = (
+    <GameResultCard
+      title={t('games.wordLadder.winTitle')}
+      description={t('games.wordLadder.winDescription').replace('{total}', ladder.totalSteps.toString())}
+      scoreLabel={t('ladder.altitude')}
+      score={ladder.currentStep}
+      bestLabel={t('ladder.personalHigh')}
+      best={Math.max(highScore, ladder.currentStep)}
+      wordStats={wordStudyStats}
+      words={list}
+      replayLabel={t('games.wordLadder.again')}
+      onReplay={restart}
+      icon={<span className="block text-5xl" aria-hidden="true">🚀👽</span>}
+      summary={(
+        <div className="rounded-2xl border-4 border-slate-900 bg-sky-100 p-4 text-left shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl" aria-hidden="true">👽</span>
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-slate-700">
+                {t('ladder.alienEncounter')}
+              </p>
+              <p className="text-sm font-bold text-slate-800">
+                {t('ladder.alienDescription')}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsAlienGreetingOpen((value) => !value)}
+            className="mt-4 w-full rounded-2xl border-4 border-slate-900 bg-white py-3 font-black uppercase tracking-wider text-slate-900 hover:bg-slate-50"
+            aria-label={t('ladder.sayHello')}
+          >
+            {t('ladder.sayHello')}
+          </button>
+          {isAlienGreetingOpen && (
+            <p className="mt-3 rounded-xl border-2 border-slate-900 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
+              {t('ladder.alienGreeting')}
+            </p>
+          )}
+        </div>
+      )}
+      toneClass="bg-indigo-50"
+      shadowClass="bubble-shadow-purple"
+    />
+  );
 
   return (
     <section className="max-w-md mx-auto py-4 px-2" aria-label={t('games.wordLadder.title')}>
       <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} />
 
       {phase === 'START' ? (
-        <div className={`space-y-4 p-6 border-8 border-slate-900 rounded-4xl transition-all duration-300 ${
-          rocketTheme === 'earth' ? 'bg-sky-50 bubble-shadow-purple' :
-          rocketTheme === 'mars' ? 'bg-orange-50 bubble-shadow-pink' :
-          'bg-indigo-50 bubble-shadow-purple'
-        }`} id="word-ladder-start">
-          <div className="flex flex-col items-center gap-2 text-center">
-            <div className="w-16 h-16 rounded-3xl bg-indigo-500 border-4 border-slate-900 flex items-center justify-center">
-              <Rocket className="w-9 h-9 text-white stroke-[3]" />
-            </div>
-            <h1 className="text-3xl font-black uppercase tracking-wider text-slate-900">
-              {t('games.wordLadder.title')}
-            </h1>
-            <p className="text-xs font-bold text-slate-600 max-w-xs leading-relaxed">
-              {t('games.wordLadder.description')}
-            </p>
-          </div>
+        <div id="word-ladder-start">
+          <GameSetupCard
+            icon={<Rocket className="h-10 w-10 text-white stroke-[3]" />}
+            title={t('games.wordLadder.title')}
+            description={t('games.wordLadder.description')}
+            toneClass={
+              rocketTheme === 'earth' ? 'bg-sky-50' :
+              rocketTheme === 'mars' ? 'bg-orange-50' :
+              'bg-indigo-50'
+            }
+            iconClass="bg-indigo-500"
+            shadowClass={rocketTheme === 'mars' ? 'bubble-shadow-pink' : 'bubble-shadow-purple'}
+          >
 
           {/* Choose Mission Theme */}
           <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
@@ -305,9 +350,29 @@ export function WordLadderGame({
           >
             <Play className="w-4 h-4 fill-current stroke-[3]" /> {t('shared.startClimb')}
           </button>
+          </GameSetupCard>
+        </div>
+      ) : isWon ? (
+        <div className="max-w-md mx-auto w-full pb-4 animate-scale-up">
+          {resultCard}
         </div>
       ) : (
         <div className="space-y-3" id="word-ladder-play">
+          <GameHeader
+            icon={<Rocket className="h-5 w-5 text-slate-900 stroke-[3]" />}
+            title={t('games.wordLadder.title')}
+            subtitle={`${
+              activeCategory.id === 'custom'
+                ? t('shared.myWords')
+                : t(`wordSets.${activeCategory.id}`)
+            } - ${t(`rocket.zones.${zone}`)}`}
+            stats={[
+              { label: t('rocket.step'), value: `${ladder.currentStep}/${ladder.totalSteps}`, tone: 'sky' },
+              { label: t('shared.progress'), value: `${progressPct}%`, tone: 'emerald' },
+              { label: t('shared.best'), value: Math.max(highScore, ladder.currentStep), tone: 'amber' },
+            ]}
+          />
+
           {/* Animated rocket scene */}
           <div className="relative border-4 border-slate-900 rounded-2xl overflow-hidden bg-slate-900">
             <RocketClimb
@@ -335,29 +400,17 @@ export function WordLadderGame({
             <PauseButton
               paused={paused}
               onToggle={togglePause}
-            pauseLabel={t('shared.pause')}
-            resumeLabel={t('shared.resume')}
-              ariaPause="Pause the climb"
-              ariaResume="Resume the climb"
+              pauseLabel={t('shared.pause')}
+              resumeLabel={t('shared.resume')}
             />
           )}
 
           {/* Climb progress (accessible) */}
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-black uppercase tracking-wider text-indigo-700 inline-flex items-center gap-1">
-                <Rocket className="w-4 h-4 stroke-[3]" /> {ZONE_LABEL[zone]}
-              </span>
-              <span
-                className="text-xs font-mono font-bold text-indigo-700"
-                aria-label={`Step ${ladder.currentStep} of ${ladder.totalSteps}`}
-              >
-                {ladder.currentStep}/{ladder.totalSteps}
-              </span>
-            </div>
             <div
               className="h-4 rounded-full bg-indigo-100 border-2 border-slate-900 overflow-hidden"
               role="progressbar"
+              aria-label={`${t('rocket.step')} ${ladder.currentStep} ${t('rocket.of')} ${ladder.totalSteps}`}
               aria-valuenow={progressPct}
               aria-valuemin={0}
               aria-valuemax={100}
@@ -369,151 +422,7 @@ export function WordLadderGame({
             </div>
           </div>
 
-          {isWon ? (
-            <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
-              <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
-                
-                <span className="inline-flex items-center gap-1 bg-yellow-300 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest">
-                  {t('games.wordLadder.winTitle')}
-                </span>
-
-                <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
-                  {t('games.wordLadder.winTitle')}
-                </h2>
-                <p className="text-xs text-slate-500 leading-normal font-bold">
-                  {t('games.wordLadder.winDescription').replace('{total}', ladder.totalSteps.toString())}
-                </p>
-
-                <div className="rounded-2xl border-4 border-slate-900 bg-sky-100 p-4 text-left shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl" aria-hidden="true">👽</span>
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-wider text-slate-700">
-                        {t('ladder.alienEncounter')}
-                      </p>
-                      <p className="text-sm font-bold text-slate-800">
-                        {t('ladder.alienDescription')}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsAlienGreetingOpen((value) => !value)}
-                    className="mt-4 w-full py-3 bg-white hover:bg-slate-50 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl"
-                    aria-label={t('ladder.sayHello')}
-                  >
-                    {t('ladder.sayHello')}
-                  </button>
-                  {isAlienGreetingOpen && (
-                    <p className="mt-3 rounded-xl border-2 border-slate-900 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
-                      {t('ladder.alienGreeting')}
-                    </p>
-                  )}
-                </div>
-                {/* Score logs */}
-                <div className="grid grid-cols-2 gap-3.5 my-6">
-                  <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                    <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest text-center">
-                      {t('ladder.altitude')}
-                    </span>
-                    <span className="text-lg font-black text-sky-900 mt-1 font-mono">{ladder.currentStep} {t('ladder.steps')}</span>
-                  </div>
-                  <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                    <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
-                      {t('ladder.personalHigh')}
-                    </span>
-                    <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} {t('ladder.steps')}</span>
-                  </div>
-                </div>
-
-                {/* Historic word review logs */}
-                <div className="bg-purple-100 border-4 border-slate-900 p-4 rounded-3xl text-left mb-6">
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <BookOpen className="w-5 h-5 text-purple-700 stroke-[2.5]" />
-                    <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">
-                    {t('ladder.scorecard')}
-                    </h4>
-                  </div>
-
-                  <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
-                    {Object.keys(wordStudyStats).length === 0 ? (
-                      <div className="text-center py-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl">
-                        <p className="text-xs text-slate-500 font-extrabold leading-normal">
-                      {t('ladder.emptyReport')}
-                        </p>
-                      </div>
-                    ) : (
-                      Object.keys(wordStudyStats).map((word, idx) => {
-                        const spoken = wordStudyStats[word].spoken;
-                        const struggled = wordStudyStats[word].struggled;
-                        
-                        return (
-                          <div
-                            key={idx}
-                            className="bg-white border-2 border-slate-900 p-2 rounded-xl flex items-center justify-between"
-                          >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="text-slate-950 font-black text-xs bg-slate-100 px-2 py-0.5 rounded-md border border-slate-900 truncate">{word}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              <span className="text-[8px] md:text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-1 rounded-full font-black border border-emerald-300">
-                                {t('ladder.boost')}: {spoken}
-                              </span>
-                              {struggled > 0 && (
-                                <span className="text-[8px] md:text-[9px] text-amber-800 bg-amber-100 px-1.5 py-1 rounded-full font-black border border-amber-350">
-                                {t('shared.clues')}: {struggled}
-                                </span>
-                              )}
-                              <button
-                                onClick={() => speakWord(word)}
-                                className="p-1 bg-yellow-50 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg cursor-pointer"
-                                aria-label={`Hear the word ${word}`}
-                              >
-                                <Volume2 className="w-3.5 h-3.5 text-slate-900" />
-                              </button>
-                              {(() => {
-                                const matchedObj = list.find(
-                                  (item) => item.word.toLowerCase() === word.toLowerCase()
-                                );
-                                return matchedObj?.translationRu ? (
-                                  <button
-                                    onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
-                                    className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
-                    aria-label={t('shared.listenInRussian')}
-                                  >
-                                    RU
-                                  </button>
-                                ) : null;
-                              })()}
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-
-                {/* Loop Controls */}
-                <div className="flex flex-col gap-2.5 w-full">
-                  <button
-                    onClick={restart}
-                    className="w-full bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 shadow-md uppercase"
-                  >
-                    <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {t('games.wordLadder.again')}
-                  </button>
-                  
-                  <BackToHubButton
-                    label={t('shared.backToHub')}
-                    onClick={() => { stop(); onBackToHub(); }}
-                    className="w-full justify-center"
-                  />
-                </div>
-
-              </div>
-            </div>
-          ) : (
-            <div className="text-center space-y-4 py-1">
+          <div className="text-center space-y-4 py-1">
               {(() => {
                 const currentWordItem = list.find(
                   (item) => item.word.toLowerCase() === target.toLowerCase(),
@@ -551,8 +460,7 @@ export function WordLadderGame({
                 </p>
               </div>
 
-            </div>
-          )}
+          </div>
         </div>
       )}
     </section>

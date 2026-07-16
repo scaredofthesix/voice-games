@@ -1,6 +1,6 @@
 # User Stories - Current Index (Voice Games, Team 40)
 
-Authoritative current registry of stable user-story IDs and current membership. The **issue tracker is the source of truth for live issue details and execution state**; this file mirrors enough metadata for quick traceability. Historical Assignment 2 narrative lives in [reports/week2/user-stories.md](../reports/week2/user-stories.md) and is preserved unchanged.
+Authoritative current registry of stable user-story IDs and current membership. The **issue tracker is the source of truth for live issue details and execution state**; this file mirrors enough metadata for quick traceability. Historical Assignment 2 narrative lives in [reports/week2/user-stories.md](https://github.com/scaredofthesix/voice-games/blob/main/reports/week2/user-stories.md) and is preserved unchanged.
 
 - Supporting technical/infra/docs PBIs are tracked as separate linked issues in the tracker (not indexed here).
 - **Work Status** uses the canonical values: To Do, Ready, In Progress, Review, Done.

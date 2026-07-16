@@ -44,9 +44,10 @@ export function BackToHubButton({ label, onClick, className = '', id }: BackToHu
       id={id}
       onClick={onClick}
       aria-label={t('shared.backToHubAria')}
-      className={`mb-3 inline-flex items-center gap-1.5 rounded-xl border-4 border-slate-900 bg-yellow-300 px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-900 shadow-[3px_3px_0_0_rgba(15,23,42,1)] hover:bg-yellow-400 cursor-pointer ${className}`}
+      className={`mb-3 inline-flex w-auto min-w-28 self-start items-center justify-center gap-2 whitespace-nowrap rounded-xl border-4 border-slate-900 bg-yellow-300 px-4 py-2.5 text-sm font-black uppercase tracking-wider text-slate-900 shadow-[3px_3px_0_0_rgba(15,23,42,1)] transition-all hover:-translate-y-0.5 hover:bg-yellow-400 active:translate-y-0.5 active:shadow-[1px_1px_0_0_rgba(15,23,42,1)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-500 focus-visible:ring-offset-2 cursor-pointer ${className}`}
     >
-      <ArrowLeft className="w-4 h-4 stroke-[3]" /> {label}
+      <ArrowLeft className="h-4 w-4 shrink-0 stroke-[3]" aria-hidden="true" />
+      <span>{label}</span>
     </button>
   );
 }
@@ -593,6 +594,8 @@ export function GameResultCard({
 }: GameResultCardProps) {
   const { t } = useUiLanguage();
   const entries = Object.entries(wordStats);
+  const correctTotal = entries.reduce((total, [, stats]) => total + stats.spoken, 0);
+  const struggledTotal = entries.reduce((total, [, stats]) => total + stats.struggled, 0);
   const findWord = (word: string) => words.find(
     (item) => item.word.toLocaleLowerCase() === word.toLocaleLowerCase(),
   );
@@ -611,6 +614,30 @@ export function GameResultCard({
         <div className="rounded-2xl border-4 border-slate-900 bg-white p-3">
           <p className="text-[10px] font-black uppercase tracking-widest text-sky-600">{bestLabel}</p>
           <p className="text-3xl font-black text-slate-900">{best}</p>
+        </div>
+      </div>
+
+      <div
+        className="grid grid-cols-3 gap-2 rounded-2xl border-4 border-slate-900 bg-white p-3"
+        data-testid="result-practice-summary"
+      >
+        <div className="rounded-xl bg-violet-100 px-2 py-2">
+          <p className="text-[9px] font-black uppercase tracking-wider text-violet-700">
+            {t('shared.wordsPracticed')}
+          </p>
+          <p className="text-2xl font-black text-slate-900">{entries.length}</p>
+        </div>
+        <div className="rounded-xl bg-emerald-100 px-2 py-2">
+          <p className="text-[9px] font-black uppercase tracking-wider text-emerald-700">
+            {t('shared.correctAttempts')}
+          </p>
+          <p className="text-2xl font-black text-slate-900">{correctTotal}</p>
+        </div>
+        <div className="rounded-xl bg-amber-100 px-2 py-2">
+          <p className="text-[9px] font-black uppercase tracking-wider text-amber-700">
+            {t('shared.struggledAttempts')}
+          </p>
+          <p className="text-2xl font-black text-slate-900">{struggledTotal}</p>
         </div>
       </div>
 

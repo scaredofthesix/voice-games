@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 
 const MAX_LIVES = 3;
+const RETRY_GRACE_MS = 3500;
+const NEXT_CHAIN_DELAY_MS = 1200;
 import { BackToHubButton, CustomWordsSection, GameHeader, GameResultCard, GameSetupCard, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 import { useSpeechRecognition } from '../useSpeechRecognition';
@@ -143,7 +145,7 @@ export function countSequentialEchoMatches(
   return matched;
 }
 
-const ECHO_STRING_KEYS = ["title", "subtitle", "back", "start", "chooseTheme", "best", "howToPlay", "learnRules", "lobbyTitle", "lobbyIntro", "lobbyStepOne", "lobbyStepTwo", "lobbyStepThree", "listening", "speaking", "replay", "currentChain", "bestChain", "perfectMatch", "perfectDesc", "growChain", "proceed", "restart", "victory", "victoryDesc", "replayAll", "tryAgain", "missedAt", "startOver", "phonetic", "score", "completed", "chainWords", "pts", "word", "translation", "target", "memoryCard", "sayNext", "idle", "voiceActive", "muted", "guide", "words", "speakLabel", "voiceFeed", "pronRef", "supremeMaster", "finalScore", "longestChainLabel", "totalAttemptsLabel", "correctRoundsLabel"] as const;
+const ECHO_STRING_KEYS = ["title", "subtitle", "back", "start", "chooseTheme", "best", "howToPlay", "learnRules", "lobbyTitle", "lobbyIntro", "lobbyStepOne", "lobbyStepTwo", "lobbyStepThree", "listening", "speaking", "replay", "currentChain", "bestChain", "perfectMatch", "perfectDesc", "growChain", "proceed", "restart", "victory", "victoryDesc", "replayAll", "tryAgain", "retryListening", "memoryHidden", "missedAt", "startOver", "phonetic", "score", "completed", "chainWords", "pts", "word", "translation", "target", "memoryCard", "sayNext", "idle", "voiceActive", "muted", "guide", "words", "speakLabel", "voiceFeed", "pronRef", "supremeMaster", "finalScore", "longestChainLabel", "totalAttemptsLabel", "correctRoundsLabel"] as const;
 
 interface EchoRecorderGameProps {
   onBackToHub: () => void;
@@ -230,6 +232,8 @@ export default function EchoRecorderGame({
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [paused, setPaused] = useState(false);
   const [lives, setLives] = useState(MAX_LIVES);
+  const [retryListening, setRetryListening] = useState(false);
+  const [roundComplete, setRoundComplete] = useState(false);
 
   const gameStateRef = useRef(gameState);
   const currentSequenceRef = useRef(currentSequence);
@@ -244,6 +248,7 @@ export default function EchoRecorderGame({
   const showListeningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playbackGenerationRef = useRef(0);
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
   useEffect(() => { currentSequenceRef.current = currentSequence; }, [currentSequence]);
@@ -341,9 +346,14 @@ export default function EchoRecorderGame({
       }
       if (generation !== playbackGenerationRef.current) return;
       setActiveWordIdx(-1);
+      lastTranscriptRef.current = '';
+      setRetryListening(false);
+      setTryAgainTip(null);
+      gameStateRef.current = 'recording';
       setGameState('recording');
       return;
     }
+    gameStateRef.current = 'playback';
     setGameState('playback');
     setActiveWordIdx(0);
 
@@ -351,6 +361,10 @@ export default function EchoRecorderGame({
       if (generation !== playbackGenerationRef.current) return;
       if (index >= sequence.length) {
         setActiveWordIdx(-1);
+        lastTranscriptRef.current = '';
+        setRetryListening(false);
+        setTryAgainTip(null);
+        gameStateRef.current = 'recording';
         setGameState('recording');
         return;
       }
@@ -399,7 +413,15 @@ export default function EchoRecorderGame({
     setCurrentSequence(initialChain);
     setUserSpeechProgressIdx(0);
     setTryAgainTip(null);
+    setRetryListening(false);
+    setRoundComplete(false);
     setRecentTranscript('');
+    lastTranscriptRef.current = '';
+    if (transitionTimerRef.current) {
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
+    gameStateRef.current = 'playback';
     setGameState('playback');
     speakSequence(initialChain);
   };
@@ -414,12 +436,18 @@ export default function EchoRecorderGame({
   const advanceToNextWord = useCallback((localProgressIdx: number) => {
     playSound('flip');
     setUserSpeechProgressIdx(localProgressIdx);
+    userSpeechProgressIdxRef.current = localProgressIdx;
     setRecentTranscript('');
     setTryAgainTip(null);
     cancelFailTimer();
 
     if (localProgressIdx >= currentSequenceRef.current.length) {
-      setTimeout(() => {
+      setRoundComplete(true);
+      gameStateRef.current = 'playback';
+      setGameState('playback');
+      if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = setTimeout(() => {
+        transitionTimerRef.current = null;
         playSound('success');
         setStats(prev => ({
           ...prev,
@@ -436,12 +464,15 @@ export default function EchoRecorderGame({
             : BUILTIN_CATEGORIES[0].words.map(toEchoWord))
           : cat.words.map(toEchoWord);
         const updatedSequence = extendChain(currentSequenceRef.current, pool);
+        currentSequenceRef.current = updatedSequence;
         setCurrentSequence(updatedSequence);
+        userSpeechProgressIdxRef.current = 0;
         setUserSpeechProgressIdx(0);
         setRecentTranscript('');
         setTryAgainTip(null);
+        setRoundComplete(false);
         speakSequence(updatedSequence);
-      }, 500);
+      }, NEXT_CHAIN_DELAY_MS);
     }
   }, []);
 
@@ -449,11 +480,12 @@ export default function EchoRecorderGame({
     if (pausedRef.current) return;
     if (gameStateRef.current !== 'recording') return;
     const rawText = text.toLowerCase().trim();
-    if (!rawText || rawText === lastTranscriptRef.current) return;
-    lastTranscriptRef.current = rawText;
+    const initialProgressIdx = userSpeechProgressIdxRef.current;
+    const transcriptKey = `${initialProgressIdx}:${rawText}`;
+    if (!rawText || transcriptKey === lastTranscriptRef.current) return;
+    lastTranscriptRef.current = transcriptKey;
     setRecentTranscript(text);
 
-    const initialProgressIdx = userSpeechProgressIdxRef.current;
     const matchedCount = countSequentialEchoMatches(
       text,
       currentSequenceRef.current,
@@ -462,6 +494,7 @@ export default function EchoRecorderGame({
     const localProgressIdx = initialProgressIdx + matchedCount;
 
     if (matchedCount > 0) {
+      setRetryListening(false);
       const matchedWords = currentSequenceRef.current.slice(initialProgressIdx, localProgressIdx);
       let progress = loadProgress();
       matchedWords.forEach((item) => {
@@ -480,10 +513,16 @@ export default function EchoRecorderGame({
       });
       advanceToNextWord(localProgressIdx);
     } else {
-      cancelFailTimer();
+      // A first imperfect/interim result is not a lost life. Keep listening for
+      // a full retry window and cancel this timer as soon as the phrase matches.
+      setRetryListening(true);
+      if (failTimerRef.current) return;
+      const attemptedProgressIdx = initialProgressIdx;
       failTimerRef.current = setTimeout(() => {
+        failTimerRef.current = null;
         if (gameStateRef.current !== 'recording') return;
         const idx = userSpeechProgressIdxRef.current;
+        if (idx !== attemptedProgressIdx) return;
         if (idx >= currentSequenceRef.current.length) return;
         const expectedWord = currentSequenceRef.current[idx];
         if (expectedWord) {
@@ -510,17 +549,22 @@ export default function EchoRecorderGame({
             phonetic: expectedWord.phonetic,
           });
           setRecentTranscript('');
+          setRetryListening(false);
+          lastTranscriptRef.current = '';
           if (remainingLives <= 0) {
             // Out of hearts - end the endless run.
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            gameStateRef.current = 'victory';
             setGameState('victory');
           } else {
-            // Still have hearts: repeat the same chain from the start.
+            // Still have hearts: replay the chain before the next attempt so
+            // the transition and retry are both clear to the child.
             setUserSpeechProgressIdx(0);
+            userSpeechProgressIdxRef.current = 0;
+            speakSequence(currentSequenceRef.current);
           }
         }
-        cancelFailTimer();
-      }, 1500);
+      }, RETRY_GRACE_MS);
     }
   }, [advanceToNextWord]);
 
@@ -533,6 +577,7 @@ export default function EchoRecorderGame({
     } else {
       stop();
       cancelFailTimer();
+      setRetryListening(false);
     }
     return cancelFailTimer;
   }, [gameState, paused, start, stop]);
@@ -559,6 +604,8 @@ export default function EchoRecorderGame({
     setUserSpeechProgressIdx(0);
     setRecentTranscript('');
     setTryAgainTip(null);
+    setRetryListening(false);
+    setRoundComplete(false);
     const updatedSequence = extendChain(currentSequence, wordPool);
     setCurrentSequence(updatedSequence);
     speakSequence(updatedSequence);
@@ -568,11 +615,18 @@ export default function EchoRecorderGame({
     setUserSpeechProgressIdx(0);
     setRecentTranscript('');
     setTryAgainTip(null);
+    setRetryListening(false);
+    setRoundComplete(false);
+    lastTranscriptRef.current = '';
     speakSequence(currentSequence);
   };
 
   const handleBackToHub = () => {
     cancelSequencePlayback();
+    if (transitionTimerRef.current) {
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
     if (stats.score > highScore) {
       onUpdateHighScore?.(stats.score);
     }
@@ -600,7 +654,10 @@ export default function EchoRecorderGame({
     saveProgress(recordHighScore(loadProgress(), 'echo-recorder', stats.score));
   }, [stats.score, highScore, onUpdateHighScore]);
 
-  useEffect(() => () => cancelSequencePlayback(), [cancelSequencePlayback]);
+  useEffect(() => () => {
+    cancelSequencePlayback();
+    if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+  }, [cancelSequencePlayback]);
 
   if (gameState === 'start') {
     return (
@@ -764,6 +821,32 @@ export default function EchoRecorderGame({
         </div>
       </div>
 
+      {roundComplete && (
+        <motion.div
+          role="status"
+          aria-live="polite"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border-4 border-slate-900 bg-emerald-300 px-4 py-3 text-center shadow-[4px_4px_0_0_rgba(15,23,42,1)]"
+        >
+          <p className="text-sm font-black uppercase text-slate-900">{strings.perfectMatch}</p>
+          <p className="mt-1 text-xs font-bold text-slate-700">{strings.perfectDesc}</p>
+        </motion.div>
+      )}
+
+      {retryListening && (
+        <motion.div
+          role="status"
+          aria-live="polite"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border-4 border-amber-600 bg-amber-100 px-4 py-3 text-center shadow-[4px_4px_0_0_rgba(217,119,6,1)]"
+        >
+          <p className="text-sm font-black uppercase text-amber-900">{strings.tryAgain}</p>
+          <p className="mt-1 text-xs font-bold text-amber-800">{strings.retryListening}</p>
+        </motion.div>
+      )}
+
       <div className={`relative rounded-[2rem] border-8 border-slate-900 ${activeTheme.panelClass} p-6 shadow-[10px_10px_0_0_rgba(15,23,42,1)] space-y-4`}>
         {paused && (
           <div className="absolute inset-0 z-30 flex items-center justify-center rounded-[1.5rem] bg-slate-900/75">
@@ -894,7 +977,9 @@ export default function EchoRecorderGame({
                   <span className="text-[8px] uppercase font-black text-slate-500 animate-pulse mt-1">{strings.sayNext}: #{userSpeechProgressIdx + 1}</span>
                 </div>
               ) : (
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{strings.idle}</p>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest" role="status" aria-live="polite">
+                  {gameState === 'recording' && status.status === 'error' ? status.message : strings.idle}
+                </p>
               )}
             </div>
           </div>
@@ -906,39 +991,44 @@ export default function EchoRecorderGame({
           </div>
         </div>
 
-        <div className="md:col-span-2 rounded-[2rem] border-8 border-slate-900 bg-white p-4 shadow-[6px_6px_0_0_rgba(15,23,42,1)]">
+        <div
+          className="md:col-span-2 rounded-[2rem] border-8 border-slate-900 bg-white p-4 shadow-[6px_6px_0_0_rgba(15,23,42,1)]"
+          data-testid="echo-pronunciation-reference"
+        >
           <div className="flex justify-between items-center mb-2.5">
             <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center gap-1">
               <Brain className="w-3.5 h-3.5 text-indigo-600" /> {strings.pronRef}
             </h4>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <p className="mb-2 text-[10px] font-bold leading-snug text-slate-500">
+            {strings.memoryHidden}
+          </p>
+          <div className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
             {wordPool.map((word, idx) => (
-              <div key={idx} className="rounded-xl border-2 border-slate-200 bg-slate-50/50 p-2 flex flex-col justify-between select-none">
+              <div
+                key={`${word.text}-${idx}`}
+                className="flex min-h-16 select-none flex-col justify-between rounded-xl border-2 border-slate-200 bg-slate-50/50 p-2"
+              >
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-xs font-black text-slate-800 tracking-tight truncate">{word.emoji ? `${word.emoji} ` : ''}"{word.text}"</span>
-                  <div className="flex shrink-0 gap-1">
+                  <span className="truncate text-xs font-black tracking-tight text-slate-800">
+                    {word.emoji ? `${word.emoji} ` : ''}&quot;{word.text}&quot;
+                  </span>
                   <button
                     type="button"
                     onClick={() => speakWord(word.text, 'en')}
-                    aria-label={`${t('shared.listenEnglish')}: ${word.text}`}
-                    className="shrink-0 rounded-lg border-2 border-slate-300 bg-white p-1 hover:bg-yellow-100 cursor-pointer"
+                    aria-label={`${t('shared.hearWord')} ${word.text}`}
+                    className="shrink-0 cursor-pointer rounded-lg border-2 border-slate-300 bg-white p-1 hover:bg-yellow-100"
                   >
-                    <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-indigo-700"><Volume2 className="h-3 w-3" /> EN</span>
+                    <Volume2 className="h-3 w-3 text-indigo-600" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => speakWord(word.translation, 'ru')}
-                    aria-label={`${t('shared.listenRussian')}: ${word.translation}`}
-                    className="shrink-0 rounded-lg border-2 border-slate-300 bg-white p-1 hover:bg-blue-100 cursor-pointer"
-                  >
-                    <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-blue-700"><Volume2 className="h-3 w-3" /> RU</span>
-                  </button>
-                  </div>
                 </div>
-                <div className="flex justify-between items-center mt-1 w-full">
-                  <span className="text-[8px] font-extrabold text-slate-400">{word.translation}</span>
-                  {word.phonetic && <span className="text-[8px] font-mono text-indigo-600 font-bold bg-indigo-50 px-1 rounded">{word.phonetic}</span>}
+                <div className="mt-1 flex w-full items-center justify-between gap-1">
+                  <span className="truncate text-[9px] font-extrabold text-slate-500">{word.translation}</span>
+                  {word.phonetic && (
+                    <span className="shrink-0 rounded bg-indigo-50 px-1 font-mono text-[8px] font-bold text-indigo-600">
+                      {word.phonetic}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

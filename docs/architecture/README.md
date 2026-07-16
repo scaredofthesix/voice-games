@@ -128,8 +128,9 @@ infrastructure, the customer opens a URL and tests from home. The constraints
 to keep in mind when operating it: Chrome is the only supported browser,
 recognition needs network connectivity (Chrome streams audio to its speech
 service), GitHub availability restrictions may require a VPN in some regions
-(documented in the README and reports), and publishing is a manual
-`gh-pages` push described step by step in the view.
+(documented in the README and reports), and every verified push to `main` is
+published automatically to `gh-pages` by the Pages deployment workflow described
+in the deployment view.
 
 ## Key architectural properties
 

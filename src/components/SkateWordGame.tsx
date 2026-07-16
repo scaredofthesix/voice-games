@@ -1,12 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
-import { Play, Volume2, Heart, RotateCcw, BookOpen } from 'lucide-react';
+import { Play, Heart } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
-import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import {
+  BackToHubButton,
+  CustomWordsSection,
+  GameHeader,
+  GameResultCard,
+  GameSetupCard,
+  ListenAndLearnSection,
+  OptionPicker,
+  PauseButton,
+  TargetWordCard,
+  WordSetPicker,
+} from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 interface SkateWordGameProps {
@@ -80,7 +91,7 @@ export function SkateWordGame({
   onDeleteCustomWord = () => undefined,
   onClearCustomWords = () => undefined,
 }: SkateWordGameProps) {
-  const { language, t } = useUiLanguage();
+  const { t } = useUiLanguage();
   const strings = Object.fromEntries(
     Object.keys(LOCAL_LANG.en).map((key) => [key, t(`skate.${key}`)]),
   ) as Record<keyof typeof LOCAL_LANG.en, string>;
@@ -234,6 +245,17 @@ export function SkateWordGame({
   // Безопасный вызов конца игры
   const handleCollision = useCallback((canvasWidth: number) => {
     if (livesRef.current <= 0) return;
+    const missedTarget = targetRef.current;
+    if (missedTarget) {
+      setWordStudyStats((prevStats) => ({
+        ...prevStats,
+        [missedTarget]: {
+          spoken: prevStats[missedTarget]?.spoken || 0,
+          struggled: (prevStats[missedTarget]?.struggled || 0) + 1,
+        },
+      }));
+      saveProgress(recordWordStruggled(loadProgress(), 'skate-word', missedTarget));
+    }
     speakSound.playLose();
     const nextL = livesRef.current - 1;
     setLives(nextL);
@@ -779,22 +801,21 @@ export function SkateWordGame({
   const list = wordList();
 
   return (
-    <section className="max-w-md mx-auto py-4 px-2" aria-label={strings.title}>
-      <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} />
+    <section className="w-full max-w-3xl mx-auto py-4 px-2" aria-label={strings.title}>
+      <div className={`w-full mx-auto ${phase === 'PLAYING' ? 'max-w-3xl' : 'max-w-md px-2'}`}>
+        <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} />
+      </div>
 
       {phase === 'START' && (
-        <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-rose-50 bubble-shadow-pink">
-          <div className="flex flex-col items-center gap-2 text-center">
-            <div className="w-18 h-18 rounded-3xl bg-rose-400 border-4 border-slate-900 flex items-center justify-center animate-bounce">
-              <span className="text-3.5xl">🛹</span>
-            </div>
-            <h1 className="text-4xl font-black uppercase tracking-wider text-slate-900">
-              {strings.title}
-            </h1>
-            <p className="text-xs font-bold text-slate-600 max-w-xs leading-relaxed">
-              {strings.description}
-            </p>
-          </div>
+        <div className="w-full max-w-md mx-auto px-2">
+          <GameSetupCard
+          icon={<span className="text-3.5xl" aria-hidden="true">🛹</span>}
+          title={strings.title}
+          description={strings.description}
+          toneClass="bg-rose-50"
+          iconClass="bg-rose-400"
+          shadowClass="bubble-shadow-pink"
+        >
 
           {/* CHOOSE SKATE PARK ENVIRONMENT */}
           <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
@@ -849,40 +870,50 @@ export function SkateWordGame({
           )}
 
           <button
+            type="button"
             onClick={startGame}
             disabled={!isSupported}
             className="w-full py-3 bg-rose-400 hover:bg-rose-500 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <Play className="w-4 h-4 fill-current stroke-[3]" /> {strings.start}
           </button>
+          </GameSetupCard>
         </div>
       )}
 
       {phase === 'PLAYING' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-2 bg-white border-4 border-slate-900 rounded-2xl p-3">
-            <div className="text-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">{strings.score}</span>
-              <span className="text-xl font-black text-slate-900">⭐️ {score}</span>
-            </div>
-            <div className="text-center border-x-4 border-slate-900 flex flex-col justify-center items-center">
-          <span className="text-[10px] font-black uppercase tracking-widest text-rose-600 block">{t('shared.lives')}</span>
-              <div className="flex gap-0.5 justify-center mt-1">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Heart
-                    key={i}
-                    className={`w-4 h-4 ${
-                      i < lives ? 'text-rose-500 fill-rose-500 animate-pulse' : 'text-slate-300'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="text-center">
-          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">{strings.best}</span>
-              <span className="text-xl font-black text-emerald-600 block">{highScore}</span>
-            </div>
-          </div>
+          <GameHeader
+            icon={<span className="text-xl" aria-hidden="true">🛹</span>}
+            title={strings.title}
+            subtitle={`${
+              activeCategory.id === 'custom'
+                ? strings.myWords
+                : t(`wordSets.${activeCategory.id}`)
+            } - ${t(`themes.skate.${theme}`)}`}
+            stats={[
+              { label: strings.score, value: score, tone: 'amber' },
+              {
+                label: t('shared.lives'),
+                value: (
+                  <span className="inline-flex items-center gap-0.5">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Heart
+                        key={i}
+                        className={`h-3.5 w-3.5 ${
+                          i < lives
+                            ? 'fill-rose-500 text-rose-600'
+                            : 'fill-slate-200 text-slate-300'
+                        }`}
+                      />
+                    ))}
+                  </span>
+                ),
+                tone: 'violet',
+              },
+              { label: strings.best, value: Math.max(highScore, score), tone: 'emerald' },
+            ]}
+          />
 
           <PauseButton
             paused={paused}
@@ -945,121 +976,22 @@ export function SkateWordGame({
       )}
 
       {phase === 'GAMEOVER' && (
-        <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
-          <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
-            
-            <span className="inline-flex items-center gap-1 bg-rose-400 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest">
-              {t('skate.sessionOver')}
-            </span>
-
-            <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
-              {t('skate.gameOver')}
-            </h2>
-            <p className="text-xs text-slate-500 leading-normal font-bold">
-              {t('skate.report')}
-            </p>
-
-            {/* Score logs */}
-            <div className="grid grid-cols-2 gap-3.5 my-6">
-              <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest text-center">
-                {t('skate.starsCollected')}
-                </span>
-                <span className="text-lg font-black text-sky-900 mt-1 font-mono">⭐️ {score}</span>
-              </div>
-              <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
-                {t('skate.parkRecord')}
-                </span>
-                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{Math.max(highScore, score)} {t('skate.starsUnit')}</span>
-              </div>
-            </div>
-
-            {/* Historic word review logs */}
-            <div className="bg-purple-100 border-4 border-slate-900 p-4 rounded-3xl text-left mb-6">
-              <div className="flex items-center gap-2 mb-2.5">
-                <BookOpen className="w-5 h-5 text-purple-700 stroke-[2.5]" />
-                <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">
-              {t('skate.scorecard')}
-                </h4>
-              </div>
-
-              <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
-                {Object.keys(wordStudyStats).length === 0 ? (
-                  <div className="text-center py-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl">
-                    <p className="text-xs text-slate-500 font-extrabold leading-normal">
-                  {t('skate.emptyReport')}
-                    </p>
-                  </div>
-                ) : (
-                  Object.keys(wordStudyStats).map((word, idx) => {
-                    const spoken = wordStudyStats[word].spoken;
-                    const struggled = wordStudyStats[word].struggled;
-                    
-                    return (
-                      <div
-                        key={idx}
-                        className="bg-white border-2 border-slate-900 p-2 rounded-xl flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-slate-950 font-black text-xs bg-slate-100 px-2 py-0.5 rounded-md border border-slate-900 truncate">{word}</span>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="text-[8px] md:text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-1 rounded-full font-black border border-emerald-300">
-                            {t('skate.flips')}: {spoken}
-                          </span>
-                          {struggled > 0 && (
-                            <span className="text-[8px] md:text-[9px] text-amber-800 bg-amber-100 px-1.5 py-1 rounded-full font-black border border-amber-350">
-                            {t('shared.clues')}: {struggled}
-                            </span>
-                          )}
-                          <button
-                            onClick={() => speakWord(word)}
-                            className="p-1 bg-yellow-50 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg cursor-pointer"
-                            aria-label={`Hear the word ${word}`}
-                          >
-                            <Volume2 className="w-3.5 h-3.5 text-slate-900" />
-                          </button>
-                          {(() => {
-                            const matchedObj = list.find(
-                              (item) => item.word.toLowerCase() === word.toLowerCase()
-                            );
-                            return matchedObj?.translationRu ? (
-                              <button
-                                onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
-                                className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
-                        aria-label={t('shared.listenInRussian')}
-                              >
-                                RU
-                              </button>
-                            ) : null;
-                          })()}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* Loop Controls */}
-            <div className="flex flex-col gap-2.5 w-full">
-              <button
-                onClick={startGame}
-                className="w-full bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 shadow-md uppercase"
-              >
-                <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {strings.start}
-              </button>
-              
-              <BackToHubButton
-                label={t('shared.backToHub')}
-                onClick={() => { stop(); onBackToHub(); }}
-                className="w-full justify-center"
-              />
-            </div>
-
-          </div>
+        <div className="max-w-md mx-auto w-full px-2 pb-4 animate-scale-up">
+          <GameResultCard
+            title={t('skate.gameOver')}
+            description={t('skate.report')}
+            scoreLabel={t('skate.starsCollected')}
+            score={score}
+            bestLabel={t('skate.parkRecord')}
+            best={Math.max(highScore, score)}
+            wordStats={wordStudyStats}
+            words={list}
+            replayLabel={strings.start}
+            onReplay={startGame}
+            icon={<span className="block text-5xl" aria-hidden="true">🛹⭐</span>}
+            toneClass="bg-rose-50"
+            shadowClass="bubble-shadow-rose"
+          />
         </div>
       )}
     </section>

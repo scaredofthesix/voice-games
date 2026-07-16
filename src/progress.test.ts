@@ -127,6 +127,18 @@ describe('progress module', () => {
     p = recordWordStruggled(p, 'skate-word', 'tree');
     expect(p['skate-word'].words['tree'].struggled).toBe(2);
     expect(p['skate-word'].words['tree'].spoken).toBe(0);
+    expect(p['skate-word'].words['tree'].recentSuccesses).toBe(0);
+  });
+
+  test('later correct attempts stop an old mistake from dominating selection forever', () => {
+    let p = emptyProgress();
+    p = recordWordStruggled(p, 'skate-word', 'tree');
+    p = recordWordSpoken(p, 'skate-word', 'tree');
+    expect(wordSelectionWeight(p['skate-word'].words.tree)).toBeGreaterThan(2);
+
+    p = recordWordSpoken(p, 'skate-word', 'tree');
+    expect(wordSelectionWeight(p['skate-word'].words.tree)).toBe(1);
+    expect(p['skate-word'].words.tree.struggled).toBe(1);
   });
 
   test('clearProgress resets everything to empty', () => {

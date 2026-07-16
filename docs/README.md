@@ -1,17 +1,22 @@
 # Voice Games documentation
 
-This directory holds the maintained documentation for Voice Games. It is also browsable in
-the [public GitHub repository](https://github.com/scaredofthesix/voice-games/tree/main/docs).
-The separate MkDocs Pages publish is currently pending a documentation redeploy.
+This directory holds the maintained documentation for Voice Games. Read it on the
+[hosted MkDocs site](https://scaredofthesix.github.io/voice-games/docs/) or browse the same
+source in the [public GitHub repository](https://github.com/scaredofthesix/voice-games/tree/main/docs).
 
 New here? Start with the [customer handover](./customer-handover.md) for the current
 transition status, or the [root README](../README.md) to play the product.
+
+Planning is tracked in the [GitHub Project board](https://github.com/users/scaredofthesix/projects/1).
+The selected current Sprint Backlog is the
+[Sprint 5 milestone](https://github.com/scaredofthesix/voice-games/milestone/5).
 
 ## What each document contains
 
 | Document | What it covers |
 |---|---|
 | [customer-handover.md](./customer-handover.md) | Current handover status, what is transferred vs. retained, configuration and secrets, and setup/recovery/verification steps. Start here for transition. |
+| [admin.md](./admin.md) | Routine administration, automatic deployment, vocabulary and local-data maintenance, microphone support, and recovery. |
 | [roadmap.md](./roadmap.md) | What shipped each sprint and what remains for the current course version. |
 | [user-stories.md](./user-stories.md) | The product backlog user stories with story points, MVP mapping, and status. |
 | [definition-of-done.md](./definition-of-done.md) | The team's Definition of Done gates a change must pass before it is merged. |

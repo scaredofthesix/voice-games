@@ -43,15 +43,29 @@ describe('SentenceBirdGame push-to-talk and timeout flow', () => {
     return screen.getByText('Lives:').parentElement?.textContent || null;
   }
 
-  test('uses the active word itself as the mic control without an extra button', () => {
+  test('does not listen until the child presses the visible mic button', () => {
     renderAndStart();
 
     expect(MockSpeechRecognition.instances).toHaveLength(0);
-    expect(screen.queryByRole('button', { name: /click & say/i })).not.toBeInTheDocument();
-    fireEvent.click(screen.getAllByRole('button', { name: /tap the word or press space/i }).at(-1)!);
+    const micButton = screen.getByRole('button', { name: /click & say/i });
+    expect(micButton).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(micButton);
 
     expect(MockSpeechRecognition.instances).toHaveLength(1);
     expect(MockSpeechRecognition.latest().start).toHaveBeenCalledOnce();
+    expect(micButton).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getAllByText(/mic is listening/i).length).toBeGreaterThan(0);
+  });
+
+  test('turns the mic off after the push-to-talk window', () => {
+    renderAndStart();
+    const micButton = screen.getByRole('button', { name: /click & say/i });
+    fireEvent.click(micButton);
+
+    act(() => vi.advanceTimersByTime(4_000));
+
+    expect(MockSpeechRecognition.latest().abort).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /click & say/i })).toHaveAttribute('aria-pressed', 'false');
   });
 
   test('supports Space activation and does not lose a life for unrelated speech', () => {
@@ -99,5 +113,10 @@ describe('SentenceBirdGame push-to-talk and timeout flow', () => {
 
     act(() => vi.advanceTimersByTime(1_000));
     expect(screen.getByText('Oh no, crashed!')).toBeInTheDocument();
+    expect(screen.getByTestId('result-practice-summary')).toHaveTextContent(/Words practised\s*1/i);
+    expect(screen.getByTestId('result-practice-summary')).toHaveTextContent(/Needs practice\s*3/i);
+    expect(screen.getByRole('heading', { name: /word report/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /back to hub/i })).toHaveLength(1);
+    expect(screen.getByText('Oh no, crashed!').closest('section')).toHaveClass('max-w-md');
   });
 });

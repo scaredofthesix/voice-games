@@ -123,9 +123,13 @@ https://scaredofthesix.github.io/voice-games/.
 - **Steps:**
   1. From the hub, press Play on Sentence Bird.
   2. Select a phrase set and press Start.
-  3. Pronounce each shown phrase correctly.
-  4. Intentionally miss a phrase to lose a heart.
-- **Expected result:** Correct pronunciation guides the bird through gates, and losing all hearts triggers the Game Over screen.
+  3. Speak before pressing any microphone control.
+  4. Press the on-screen **Click & say / Нажми и скажи** button or Space and verify that the
+     microphone indicator becomes active, then pronounce the shown phrase correctly.
+  5. Let a phrase time out to lose a heart.
+- **Expected result:** Speech outside the push-to-talk window is ignored. The visible mic
+  control opens a short listening window, correct pronunciation guides the bird through a
+  gate, and losing all hearts triggers the Game Over screen.
 
 ## UAT-11 Practice pronunciation memory in Echo Microphone
 
@@ -134,28 +138,42 @@ https://scaredofthesix.github.io/voice-games/.
 - **Steps:**
   1. From the hub, press Play on Echo Microphone.
   2. Select a word set, or add a custom word, and press Start.
-  3. Listen to the spoken words, and repeat them when the mic is active.
-- **Expected result:** The microphone records pronunciation, validates it, and highlights correct words.
+  3. Listen to the spoken chain and confirm that the microphone is paused during playback.
+  4. When **Speak now** appears, confirm that unanswered word cards are hidden and repeat the
+     chain from memory.
+  5. Give one non-matching answer, then repeat correctly while the retry message is visible.
+- **Expected result:** Recognition starts only after playback, a correct chain grows into a
+  longer one, and the run can continue until the player loses all hearts. A first non-match
+  keeps listening for a clear retry instead of immediately removing a heart. If the retry
+  expires, the same chain is read again before the next attempt. Unanswered text is not left
+  visible during the memory phase.
 
-## UAT-12 Cast spells in Magic Wizard
+## UAT-12 Explore the endless Voice Maze Quest
 
-- **Goal:** A child can build spells from word runes in Magic Wizard without another timed
-  survival loop.
+- **Goal:** A child can read the map, choose routes by voice, clear a maze floor, and continue
+  into a new floor without a team explanation.
 - **Preconditions:** App open in Chrome, microphone allowed.
 - **Steps:**
-  1. From the hub, press Play on Magic Wizard.
-  2. Select a word set and press Start.
-  3. Say an unrelated word and confirm that all three magic wards remain active.
-  4. Pronounce the marked cursed word and confirm that one ward breaks and the curse seals
-     for the rest of that recipe.
-  5. Pronounce the glowing rune words in any order.
-  6. Complete four recipes and observe that each new recipe contains more runes, or trigger
-     the curse on three different recipes to reach the defeat result.
-- **Expected result:** Each recognition event charges exactly one matching rune. Charging
-  every rune plays a visible spell-cast effect and opens a larger recipe. Only the explicitly
-  displayed cursed word can break a ward, each curse breaks at most one ward per recipe, and
-  three broken wards produce a clear defeat result. There is no monster timer, and unrelated
-  speech is safe, so the mechanic is visibly different from Voice Treasure Hunter.
+  1. From the hub, press Play on Voice Maze Quest.
+  2. Select a theme, difficulty, and word set, inspect the maze preview, and press Start.
+  3. Compare the adjacent door cards with the visible map and pronounce the word on the route
+     you want to take.
+  4. Find the red hazard cell and choose an alternate route around it.
+  5. Reach the portal before collecting everything and verify that the locked-exit alert
+     reports how many crystals are still missing.
+  6. Take branches to collect every crystal, then return to the portal.
+  7. Intentionally say a different word once and remain silent once.
+  8. On the floor-clear screen, continue into the next generated maze, then finish the
+     expedition from a later floor.
+- **Expected result:** Speaking one visible door word moves the wizard through that route and
+  updates the map, visited rooms, score, and collected items. Route words remain readable on
+  the map. The hazard route has no spoken entrance and the rest of the maze remains
+  solvable. No unrelated gift or bonus-chest items appear. The large portal stays locked until all crystals are collected and shows the missing
+  count when reached early. Incorrect or silent input gives clear retry feedback without a
+  failure sound or unexplained penalty. Clearing a floor offers another generated floor, so
+  the run is not limited to six doors, while Finish opens the standard result screen with
+  aggregate and per-word pronunciation statistics. No spell recipe, cursed rune, or outdated
+  instruction is shown.
 
 ## UAT-13 Reinforce learning with Adaptive Word Selection
 
@@ -163,9 +181,11 @@ https://scaredofthesix.github.io/voice-games/.
 - **Preconditions:** App open in Chrome, microphone allowed.
 - **Steps:**
   1. Start any game.
-  2. Intentionally mispronounce or remain silent on a specific word multiple times.
-  3. Observe the sequence of words presented as the game progresses.
-- **Expected result:** The struggled word is selected and presented again soon in the session rather than being completely randomized.
+  2. Intentionally mispronounce or remain silent on one specific word once.
+  3. Record the next three eligible target words.
+- **Expected result:** The failed word returns within the next one to three eligible prompts.
+  It does not repeat forever, every word remains reachable, and a correct answer reduces the
+  extra priority gradually. The behavior is deterministic in the automated scheduler test.
 
 ## UAT-14 Unified Hub Navigation
 
@@ -196,12 +216,23 @@ https://scaredofthesix.github.io/voice-games/.
 | 2026-07-11 | UAT-13 | Customer | Inconclusive | Could not confirm live whether adaptive word selection re-weights within the current round rather than only between rounds; team acknowledged the behavior was unverified (#143). |
 | 2026-07-11 | UAT-14 | Customer | Pass | Both tested games returned to the hub via the same button; audio from the previous game was still audible after switching games (#145). |
 
+### Final-review disposition
+
+The final customer review accepted Sentence Bird (UAT-10), accepted Echo Microphone with a
+minor stability limitation (UAT-11), rejected the old Magic Wizard mechanic and made UAT-12
+obsolete, required a one-failure adaptive-selection retest for UAT-13, and kept UAT-14 open
+only for the visual comparison of the first-generation games. The scenarios above now
+describe the replacement behavior. Automated tests cover the new Voice Maze Quest path,
+tab-separated vocabulary paste, deterministic reinforcement queue, and Echo memory/TTS
+phase separation. Customer execution of the revised UAT-12 and UAT-13 is still required;
+this repository does not claim those customer retests have happened.
+
 Results were recorded during the recorded Sprint Review / UAT sessions of
 2026-06-27, 2026-07-03, and 2026-07-11, and are summarized (without private customer
 details) in
-[`reports/week4/customer-review-summary.md`](../reports/week4/customer-review-summary.md),
-[`reports/week5/sprint-review-summary.md`](../reports/week5/sprint-review-summary.md), and
-[`reports/week6/sprint-review-summary.md`](../reports/week6/sprint-review-summary.md). All
+[`reports/week4/customer-review-summary.md`](https://github.com/scaredofthesix/voice-games/blob/main/reports/week4/customer-review-summary.md),
+[`reports/week5/sprint-review-summary.md`](https://github.com/scaredofthesix/voice-games/blob/main/reports/week5/sprint-review-summary.md), and
+[`reports/week6/sprint-review-summary.md`](https://github.com/scaredofthesix/voice-games/blob/main/reports/week6/sprint-review-summary.md). All
 scenarios executed on 2026-06-27 and 2026-07-03 passed and did not change the demonstrated
 builds (v0.2.1, v0.3.0). The 2026-07-11 session found real issues in three of the four new
 games and an unverified adaptive-selection behavior; these are tracked as Sprint 5 issues

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Play, Star, Trophy } from 'lucide-react';
+import { Mic, MicOff, Play, Star, Trophy } from 'lucide-react';
 
 import { BUILTIN_CATEGORIES } from '../data';
 import { loadProgress, pickAdaptiveWordIndex, recordHighScore, recordSessionPlayed, recordWordSpoken, recordWordStruggled, saveProgress } from '../progress';
@@ -62,6 +62,7 @@ const LOCAL_LANG = {
     accuracy: 'Accuracy',
     speakLabel: 'Say it!',
     tapToSpeak: 'Tap the word or press Space, then say it',
+    micButton: 'Click & say',
     timeLabel: 'Time',
   },
   ru: {
@@ -89,6 +90,7 @@ const LOCAL_LANG = {
     accuracy: 'Точность',
     speakLabel: 'Скажи!',
     tapToSpeak: 'Нажми на слово или пробел, потом скажи его',
+    micButton: 'Нажми и скажи',
     timeLabel: 'Время',
   },
 };
@@ -526,9 +528,10 @@ export default function SentenceBirdGame({
 
   if (phase === 'PLAYING') {
     return (
-    <div className="space-y-6">
+    <div>
       <BackToHubButton label={t('shared.backToHub')} onClick={handleBackToHub} />
 
+      <div className="space-y-6">
       <GameHeader
         icon={<Trophy className="h-5 w-5 text-slate-900" />}
         title={strings.title}
@@ -709,7 +712,9 @@ export default function SentenceBirdGame({
           <div className="mx-auto max-w-xs">
             <div className="mb-1 flex items-center justify-between px-1">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-600">{strings.timeLabel}</span>
-              <span className={`text-[10px] font-black ${timeLeft <= 3 ? 'text-rose-600' : 'text-slate-700'}`}>{Math.max(0, timeLeft)}s</span>
+              <span className={`text-[10px] font-black ${timeLeft <= 3 ? 'text-rose-600' : 'text-slate-700'}`}>
+                {Math.max(0, timeLeft)}{t('sentenceBird.secondsSuffix')}
+              </span>
             </div>
             <div className="h-3 w-full overflow-hidden rounded-full border-2 border-slate-900 bg-white">
               <div
@@ -720,8 +725,30 @@ export default function SentenceBirdGame({
           </div>
 
           <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">{strings.tapToSpeak}</p>
+          <button
+            type="button"
+            onClick={activateMic}
+            disabled={micActive || paused || isProcessingSuccessRef.current}
+            aria-pressed={micActive}
+            className={`mx-auto inline-flex min-w-56 items-center justify-center gap-2 rounded-2xl border-4 border-slate-900 px-5 py-3 text-xs font-black uppercase tracking-wider shadow-[4px_4px_0_0_rgba(15,23,42,1)] transition-all disabled:cursor-default ${
+              micActive
+                ? 'bg-emerald-400 text-slate-900 animate-pulse'
+                : 'bg-yellow-300 text-slate-900 hover:bg-yellow-400 active:translate-y-1 active:shadow-none'
+            }`}
+          >
+            {micActive ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+            {micActive ? t('shared.micListening') : strings.micButton}
+          </button>
+          <p
+            role="status"
+            aria-live="polite"
+            className={`text-[10px] font-black uppercase tracking-wider ${micActive ? 'text-emerald-700' : 'text-slate-500'}`}
+          >
+            {micActive ? t('shared.micListening') : strings.tapToSpeak}
+          </p>
         </div>
       )}
+      </div>
     </div>
   );
   }

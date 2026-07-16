@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Lane, Obstacle, Sparkle, GameState, TrackStyle } from '../types';
+import { useUiLanguage } from '../uiLanguage';
 
 interface GameCanvasProps {
   playerLane: Lane;
@@ -30,6 +31,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   level,
   trackStyle,
 }) => {
+  const { t } = useUiLanguage();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameId = useRef<number | null>(null);
   
@@ -872,19 +874,19 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         <div className="flex gap-2">
           <div className="bg-slate-900/85 backdrop-blur-md text-emerald-400 font-mono text-xs px-3 py-1.5 rounded-full border border-slate-700 flex items-center gap-1.5 shadow-md">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            SPEED: <span className="font-bold">{(gameSpeed * 10).toFixed(0)} MPH</span>
+            {t('racer.speed')}: <span className="font-bold">{(gameSpeed * 10).toFixed(0)} {t('racer.speedUnit')}</span>
           </div>
           <div className="bg-slate-900/85 backdrop-blur-md text-red-400 font-mono text-xs px-3 py-1.5 rounded-full border border-slate-700 flex items-center gap-1.5 shadow-md">
-            LIVES: <span className="font-bold">{'■'.repeat(lives) || 'NONE'}</span>
+            {t('shared.lives')}: <span className="font-bold">{'■'.repeat(lives) || t('racer.noLives')}</span>
           </div>
         </div>
         
         <div className="flex gap-2">
           <div className="bg-slate-900/85 backdrop-blur-md text-sky-400 font-mono text-xs px-3 py-1.5 rounded-full border border-slate-700 flex items-center gap-1.5 shadow-md">
-            SCORE: <span className="font-bold">{score}</span>
+            {t('racer.scoreHud')}: <span className="font-bold">{score}</span>
           </div>
           <div className="bg-slate-900/85 backdrop-blur-md text-purple-400 font-mono text-xs px-3 py-1.5 rounded-full border border-slate-700 flex items-center gap-1.5 shadow-md">
-            LEVEL: <span className="font-bold">{level}</span>
+            {t('racer.levelHud')}: <span className="font-bold">{level}</span>
           </div>
         </div>
       </div>

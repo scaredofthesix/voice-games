@@ -8,36 +8,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added two ways to bulk-add custom words, both sharing one parser: importing a two-column
-  CSV file, and pasting a list where each line holds one pair. Column one is the English
-  word and column two its translation; headers, quoted cells, `|`, `;`, comma and tab
-  delimiters are all accepted, and valid rows still import when others are invalid (#144).
-- Added tested in-round adaptive selection weights so recently struggled words can return
-  sooner while mastered words remain possible but less frequent (#143).
+- Added one clear bulk custom-word flow for two tab-separated columns pasted from Excel or
+  LibreOffice Calc. It preserves multi-word phrases and Unicode translations, accepts BOM
+  and Windows/Unix line endings, and reports malformed or duplicate rows (#144).
+- Added a deterministic in-round reinforcement queue so a word failed once returns within
+  the next one to three eligible prompts, then loses extra priority gradually after correct
+  answers (#143).
 - Added one detailed, bilingual result-card pattern for games that previously ended with
-  only summary totals, including per-word correct/struggled counts and replay controls.
+  only summary totals, including aggregate practised/correct/struggled totals, per-word
+  counts, and replay controls.
+- Added a production GitHub Pages workflow that verifies, builds and publishes every push
+  to `main` without API keys or deployment secrets.
 
 ### Changed
 
-- Sentence Bird now uses its active word and Space as push-to-talk controls, has three
-  hearts, a visible per-word timer, and a defeat fall animation before results instead of
-  treating unrelated speech as a failed attempt (#140).
-- Echo Microphone now shows sequence words on their cards during teaching playback, flips
-  them back to question marks for recall, and consumes each recognized phrase only once;
-  the redundant top memory card was removed and the word reference offers EN/RU playback
-  (#141).
-- Magic Wizard now has its own untimed spell-crafting loop: each round presents a growing
-  recipe of word runes that can be pronounced in any order, an animated elemental spell
-  circle, and one clearly marked cursed word. Only saying that word breaks one of three
-  magic wards; unrelated speech is safe. Treasure Hunter retains its submarine-and-chest
-  loop with a prominent top-of-screen countdown (#142).
+- Sentence Bird now uses a dedicated microphone button, its active word card, or Space as
+  explicit push-to-talk controls. A clear active state and short listening window ensure
+  that the game never listens before the child asks it to (#140).
+- Echo Microphone now hides the current words during recall to preserve the memory task,
+  gives the recognizer a 3.5-second correction window, replays a failed chain, and shows a
+  clear transition before the next round (#141).
+- Magic Wizard has been replaced in the product by Voice Maze Quest: a procedurally
+  generated visual maze where every open route has a valid spoken word. Children collect
+  crystals, bypass one visible red hazard cell, unlock a large, easy-to-see
+  portal, and continue through endlessly generated, progressively harder floors without
+  the rejected cursed-rune mechanic (#142). Route words are now centred high-contrast map labels
+  with separate English and Russian playback controls,
+  the locked portal reports the exact number of missing crystals, and the maze plays at
+  most one positive sound per accepted route with no failure sound for unrecognized speech.
 - Adaptive word scheduling now also covers Voice Racer, Bubble Popper, Sentence Bird, and
   Echo Microphone, so all ten games react to recorded struggles (#143).
+- Shared setup, play-header, pause, Hub, and result patterns now cover the complete game
+  roster, with identical setup/result widths, one compact Hub button directly above each
+  game card, and the oldest games migrated to the same bilingual component set.
 
 ### Fixed
 
 - Stopped speech synthesis and generated sound effects when leaving or switching games,
-  kept Progress CSV export in English, and localized Magic Wizard's canvas preview (#145).
+  kept Progress CSV export in English, and localized every visible game HUD and result
+  label (#145).
+- Removed the fragile custom-vocabulary CSV file upload and ambiguous comma, semicolon,
+  pipe and ordinary-space delimiter guessing (#144).
 - Preserved Russian playback for newly added custom words, standardized high-contrast hub
   buttons and pink replay buttons, and tightened Treasure Hunter's narrow-screen header.
 

@@ -8,9 +8,9 @@ voice is the only controller**. No login, no install, and no accounts.
 
 **Live product (public, HTTPS):** https://scaredofthesix.github.io/voice-games/
 
-Open it in **Google Chrome** (desktop or Android) and allow microphone access when
-prompted. That is the only step needed to start playing. The hub below lists all ten games;
-tap **Play** on any card to start.
+Open it in **Google Chrome** (desktop or Android). The browser asks for microphone access
+the first time a game starts listening - choose **Allow**. The hub below lists all ten
+games; tap **Play** on any card to start.
 
 > The GitHub Pages link may not open from some networks or regions without a VPN. This is
 > an external GitHub availability restriction outside the team's control; you can always
@@ -20,29 +20,56 @@ tap **Play** on any card to start.
 
 ## How to play (example: Boss Fight)
 
-Every game works the same way in four steps.
+Most games follow the same five steps.
 
-**1. Set up the game.** Press **Play** on a game, then pick a theme, a word set (or your own
-words), and difficulty, and press **Start**.
+**1. Choose a game.** Start from the Hub and press **Play** on a game card.
 
-![Boss Fight setup screen: theme, word set, and difficulty](./docs/images/game-boss-fight-menu.png)
-
-**2. Play with your voice.** The target word appears on the card at the bottom (here,
-*Peach*). Say it out loud - the microphone listens and your hero acts. Not sure how it
-sounds? Press **Listen (EN)** or **Listen (RU)** first.
-
-![Boss Fight in play: say the word on the card to strike the boss](./docs/images/game-boss-fight.png)
-
-**3. Add your own words.** On any game's setup screen, open **Add my own words**, type an
-English word or phrase and its translation, and press **Add to my list**. Then choose
-**My words** as the word set.
+**2. Choose the vocabulary.** Select a built-in word set, or open **Add my own words**
+before starting. Add one English word or phrase with its translation, or paste several rows
+copied from Excel or LibreOffice Calc. Column 1 is English, column 2 is the translation, and
+the separator between them must be a tab. Spaces inside phrases such as *Nice to meet you*
+are kept. CSV file import is not used. Select **My words** after saving the new vocabulary.
 
 ![Add a custom word and its translation](./docs/images/custom-words.png)
 
-**4. Track progress.** The **Progress** screen (top-right of the hub) shows sessions, high
-scores, and practised words per game, and exports everything to CSV for parents and teachers.
+**3. Choose the difficulty.** Pick the difficulty, level length, or mode offered by that
+game, then press its **Start** button.
+
+![Boss Fight setup screen: theme, word set, and difficulty](./docs/images/game-boss-fight-menu.png)
+
+**4. Play with your voice.** The target word appears on the card (here, *Peach*). Say it
+out loud and the game reacts. If you are not sure how it sounds, press **Listen (EN)** or
+**Listen (RU)** first.
+
+![Boss Fight in play: say the word on the card to strike the boss](./docs/images/game-boss-fight.png)
+
+**5. Review the result and progress.** The result screen at the end of a run shows only
+that run: score, record, and word practice results. To see progress across all games, return
+to the **Hub** and press **Progress** in the top-right corner. The Progress view shows
+sessions, high scores, and practised words per game, and can export the data as CSV for a
+parent or teacher. CSV export is separate from custom-word input.
+
+![The Progress button highlighted in the top-right corner of the Hub](./docs/images/progress-location.svg)
 
 ![My Progress view with per-game stats and CSV export](./docs/images/progress.png)
+
+## Microphone help
+
+- Use **Google Chrome**. Voice recognition is less reliable or unavailable in other
+  browsers.
+- When Chrome asks whether the site may use the microphone, choose **Allow**. If access was
+  denied, open the site controls icon to the left of the address bar, allow **Microphone**
+  for this site, then reload the page.
+- Most games listen after their **Start** button is pressed and show a microphone/listening
+  indicator. Wait for that indicator before speaking.
+- **Sentence Bird is push-to-talk.** It does not listen in the background. Press
+  **Click & say / Нажми и скажи**, click the active word card, or press **Space** once. Then
+  speak while the green microphone indicator is active.
+- **Echo Microphone** first reads the chain aloud with the microphone paused. When the
+  screen changes to **Speak now**, it starts listening automatically. The memory cards hide
+  the unanswered words. If the first recognition does not match, the retry message leaves
+  the microphone active so the child can say it again; a lost attempt replays the same chain
+  before the next round. Use **Replay Voice Guidance** to hear the whole chain again.
 
 ## The ten games
 
@@ -56,9 +83,11 @@ Each game trains pronunciation through a different mechanic:
 6. **AsteWord Destroyer** - shoot down asteroids by pronouncing the words written on them.
 7. **Voice Treasure Hunter** - steer a submarine deeper to collect treasure chests.
 8. **Sentence Bird** - guide a bird through the pipes by speaking the words.
-9. **Echo Microphone** - listen to a growing word chain and repeat it back from memory.
-10. **Magic Wizard** - charge growing rune recipes, cast animated elemental spells, and
-    avoid the cursed word before all three magic wards break.
+9. **Echo Microphone** - repeat an increasingly long hidden word chain until the hearts run
+   out.
+10. **Voice Maze Quest** - choose clearly labelled voice routes, collect every crystal,
+    go around the red hazard cell, unlock the large portal, and continue through new maze floors for
+    an endless high score.
 
 | Voice Lane Racer | Voice Bubble Popper |
 |---|---|
@@ -69,16 +98,18 @@ Each game trains pronunciation through a different mechanic:
 | ![SkateWord](./docs/images/game-skateword.png) | ![AsteWord Destroyer](./docs/images/game-asteword.png) |
 | **Voice Treasure Hunter** | **Sentence Bird** |
 | ![Voice Treasure Hunter](./docs/images/game-treasure-hunter.png) | ![Sentence Bird](./docs/images/game-sentence-bird.png) |
-| **Echo Microphone** | **Magic Wizard** |
-| ![Echo Microphone](./docs/images/game-echo-microphone.png) | ![Magic Wizard](./docs/images/game-magic-wizard.png) |
+| **Echo Microphone** | **Voice Maze Quest** |
+| ![Echo Microphone](./docs/images/game-echo-microphone.png) | ![Voice Maze Quest](./docs/images/game-magic-wizard.png) |
 
 ## Documentation
 
-- **Repository documentation:** [docs/README.md](./docs/README.md)
+- **Hosted documentation:** <https://scaredofthesix.github.io/voice-games/docs/>
+- **Repository documentation index:** [docs/README.md](./docs/README.md)
 - **Customer handover** - current transition status, what is transferred vs. retained, and
   setup, recovery, and verification steps: [docs/customer-handover.md](./docs/customer-handover.md)
-- **Documentation index** (what each document contains): [docs/README.md](./docs/README.md)
+- **Administration and maintenance:** [docs/admin.md](./docs/admin.md)
 - **Roadmap:** [docs/roadmap.md](./docs/roadmap.md)
+- **Current Sprint Backlog:** [Sprint 5 milestone](https://github.com/scaredofthesix/voice-games/milestone/5)
 
 ## For developers
 
@@ -109,7 +140,7 @@ Each game trains pronunciation through a different mechanic:
 
 ### Tech stack
 
-React 19 · Vite 6 · TypeScript 5.8 · Tailwind CSS v4 · Web Speech API · Web Audio API ·
+React 19 · Vite 6 · TypeScript 5.8.3 · Tailwind CSS v4 · Web Speech API · Web Audio API ·
 Docker · Python (`http.server`)
 
 ### Setup and deployment
@@ -142,8 +173,10 @@ Continuous integration (type check, tests with coverage, build, and a Lighthouse
 accessibility audit) runs on every pull request and on `main` via
 [`.github/workflows/ci.yml`](./.github/workflows/ci.yml). See [docs/testing.md](./docs/testing.md).
 
-**Public deployment (GitHub Pages).** The public build is served from the `gh-pages`
-branch over HTTPS so the microphone works:
+**Public deployment (GitHub Pages).** After a change reaches `main`,
+[`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml) installs from
+the lockfile, runs the type check and tests, builds with the project-page base path, and
+publishes the verified result to the `gh-pages` branch. The manual recovery equivalent is:
 
 ```bash
 MSYS_NO_PATHCONV=1 npx vite build --base=/voice-games/

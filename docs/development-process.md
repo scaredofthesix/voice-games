@@ -12,9 +12,10 @@ maintained project asset.
   Sprint 5 = Assignment 6 Week 7 - the final course sprint, delivering `MVP v3`).
 - **Roles:** Product Owner, Scrum Master, three developers; every member also
   implements and reviews.
-- **Artifacts:** Product Backlog and Sprint Backlog on GitHub Project board
-  #1 (Work Status + Sprint fields), user stories in
-  [docs/user-stories.md](./user-stories.md), roadmap in
+- **Artifacts:** Product Backlog on [GitHub Project board #1](https://github.com/users/scaredofthesix/projects/1),
+  the selected current Sprint Backlog in the
+  [Sprint 5 milestone](https://github.com/scaredofthesix/voice-games/milestone/5), user stories
+  in [docs/user-stories.md](./user-stories.md), and the roadmap in
   [docs/roadmap.md](./roadmap.md).
 - **Events:** sprint planning at week start (milestone + issue assignment),
   asynchronous daily coordination in the team chat, recorded customer Sprint
@@ -69,7 +70,11 @@ gitGraph
    accessibility check. `links.yml` checks documentation links.
 3. **Human review:** one approving review from the assigned reviewer, checking
    the [Definition of Done](./definition-of-done.md).
-4. **Post-merge:** user-facing changes recorded in `CHANGELOG.md`; docs
+4. **Post-merge deployment:** `.github/workflows/deploy-pages.yml` installs with `npm ci`,
+   repeats the type check and tests, builds with
+   `--base=/voice-games/`, adds the SPA fallback, and publishes the verified artifact to
+   `gh-pages`. A failed check leaves the previous working deployment in place.
+5. **Post-merge documentation:** user-facing changes recorded in `CHANGELOG.md`; docs
    (user stories, roadmap, quality docs, architecture) updated when affected.
 
 ## Configuration management
@@ -80,7 +85,8 @@ gitGraph
   `CHANGELOG.md` ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
   format).
 - **Dependency configuration:** locked by `package-lock.json`; CI installs
-  with `npm ci` so builds are reproducible.
+  with `npm ci` so builds are reproducible. TypeScript is pinned to the exact version
+  **5.8.3** in both the manifest and lockfile.
 - **Build configuration:** `vite.config.ts` (app), `vitest.config.ts` (tests +
   coverage thresholds), `tsconfig.json` (strict TypeScript). Production Pages
   builds add `--base=/voice-games/`.
@@ -94,10 +100,11 @@ gitGraph
 
 ## Documentation site
 
-Project documentation is maintained under `docs/` and configured as a static MkDocs
-(Material) site in `mkdocs.yml`. The repository copy remains the current public source while
-the separate Pages documentation path is pending a redeploy.
-Publishing:
+Project documentation is maintained under `docs/`, configured as a static MkDocs (Material)
+site in `mkdocs.yml`, and published at
+<https://scaredofthesix.github.io/voice-games/docs/>. The application deployment keeps the
+existing `/docs/` directory on `gh-pages`, but it does not rebuild the MkDocs site. Publish
+documentation changes separately with:
 
 ```bash
 pip install mkdocs-material

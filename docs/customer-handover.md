@@ -65,16 +65,37 @@ for the dated record of how this status changed each week.
 - No user accounts, payment processing, or personal data collection exist anywhere in the
   product. Game progress (scores, practised/struggled words, sessions) is stored only in the
   browser's own `localStorage` on the child's device and never leaves it.
+- The development toolchain uses the exact TypeScript version **5.8.3** in both
+  `package.json` and `package-lock.json`. `npm ci` therefore installs the same compiler in
+  local verification and GitHub Actions.
 
 ## Setup, deployment, recovery, and verification
 
-Everything below is also covered in more detail in [README.md](../README.md) and
+Everything below is also covered in more detail in the
+[root README](https://github.com/scaredofthesix/voice-games#readme) and
 [docs/development-process.md](./development-process.md); this section is the handover-level
 summary of what the customer needs to be able to do.
 
 - **Everyday use (no setup):** open <https://scaredofthesix.github.io/voice-games/> in
-  Google Chrome (desktop or Android), allow microphone access when prompted, and play. This
-  is the only step most users, including the customer, ever need.
+  Google Chrome (desktop or Android), allow microphone access when prompted, and play. If
+  access was denied, open the site controls icon to the left of Chrome's address bar, allow
+  the microphone for this site, and reload. This is the only setup most users need.
+- **Microphone controls:** most games listen after Start and show a listening indicator.
+  Sentence Bird is push-to-talk: press **Click & say / Нажми и скажи**, click the active word
+  card, or press Space once, then speak while its green microphone indicator is active. Echo
+  Microphone pauses recognition while the chain is read aloud, starts listening automatically
+  on the **Speak now** phase, gives a retry window after a non-match, and replays the chain
+  after a failed retry.
+- **Custom vocabulary:** from the Hub, open any game and expand **Add my own words** before
+  starting. Add one pair manually or copy two columns from Excel/LibreOffice Calc and paste
+  them into the single bulk field. Column 1 is the English word or phrase, column 2 is its
+  translation, and the spreadsheet tab is the separator. CSV file upload is intentionally
+  not part of the final product.
+- **Results and overall progress:** an end-of-game result describes only that run. To see
+  combined progress, return to the Hub and press **Progress** in the top-right corner. The
+  [README quick start](https://github.com/scaredofthesix/voice-games#how-to-play-example-boss-fight)
+  includes an annotated
+  screenshot of the button.
 - **Local run (for inspection or if the public link is unreachable, e.g. from certain
   networks without a VPN):**
   ```bash
@@ -82,8 +103,12 @@ summary of what the customer needs to be able to do.
   npm run dev      # http://localhost:3000
   ```
   Node.js 18+ and Google Chrome are the only prerequisites; no accounts or keys.
-- **Re-publishing the public site** (only needed if the team disbands and the customer or a
-  future maintainer wants to redeploy from the same public source):
+- **Automatic production deployment:** every push to `main` triggers
+  `.github/workflows/deploy-pages.yml`. It installs
+  locked dependencies, runs the type check and tests, builds the production project-page
+  bundle, and publishes only after those steps pass.
+- **Manual re-publishing** (recovery only, or if the team disbands and a future maintainer
+  wants to redeploy from the same public source):
   ```bash
   MSYS_NO_PATHCONV=1 npx vite build --base=/voice-games/
   cp dist/index.html dist/404.html
@@ -101,8 +126,11 @@ summary of what the customer needs to be able to do.
   ```
   The same checks (plus a Lighthouse accessibility audit and a documentation link check) run
   automatically in CI on every pull request and on `main`; see
-  [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) and
-  [`.github/workflows/links.yml`](../.github/workflows/links.yml).
+  [`.github/workflows/ci.yml`](https://github.com/scaredofthesix/voice-games/blob/main/.github/workflows/ci.yml)
+  and
+  [`.github/workflows/links.yml`](https://github.com/scaredofthesix/voice-games/blob/main/.github/workflows/links.yml).
+  The production workflow
+  repeats the release-critical type check, tests and build before publishing.
 - **Recovery if the public site goes down:** GitHub Pages availability is outside the
   team's control (see the VPN note in README.md); the fallback is always the local `npm run
   dev` path above, or a fresh `gh-pages` re-publish per the commands above from any clone of
@@ -112,16 +140,19 @@ summary of what the customer needs to be able to do.
 
 | Document | What it's for |
 |---|---|
-| [README.md](../README.md) | Product overview, access links, setup/run instructions - start here. |
+| [README.md](https://github.com/scaredofthesix/voice-games#readme) | Product overview, access links, setup/run instructions - start here. |
 | **This document** | What was handed over, what the customer needs to know, current handover status. |
+| [docs/admin.md](./admin.md) | Routine administration, automatic release operation, player-data boundaries, browser support, and recovery. |
 | [docs/user-acceptance-tests.md](./user-acceptance-tests.md) | The scenarios the product is expected to pass, and their latest results. |
 | [docs/testing.md](./testing.md) | How the automated test suite and quality gates work. |
 | [docs/quality-requirements.md](./quality-requirements.md) | The measurable quality goals (accuracy, performance, accessibility) and how they are checked. |
 | [docs/architecture/README.md](./architecture/README.md) | How the product is built and deployed, for anyone maintaining or extending it. |
 | [docs/roadmap.md](./roadmap.md) | What shipped each sprint and what remains for the current course version. |
-| [CONTRIBUTING.md](../CONTRIBUTING.md) | How to propose a change if the customer or a future maintainer wants to contribute code. |
-| [AGENTS.md](../AGENTS.md) | Guidance for AI coding agents working in this repository. |
-| [Repository documentation](README.md) | The maintained architecture/process docs, browsable without cloning the repo. |
+| [CONTRIBUTING.md](https://github.com/scaredofthesix/voice-games/blob/main/CONTRIBUTING.md) | How to propose a change if the customer or a future maintainer wants to contribute code. |
+| [AGENTS.md](https://github.com/scaredofthesix/voice-games/blob/main/AGENTS.md) | Guidance for AI coding agents working in this repository. |
+| [Hosted documentation](https://scaredofthesix.github.io/voice-games/docs/) | The MkDocs version of the maintained architecture and process documentation. |
+| [Repository documentation](https://github.com/scaredofthesix/voice-games/tree/main/docs) | The documentation source, browsable without cloning the repo. |
+| [Current Sprint Backlog](https://github.com/scaredofthesix/voice-games/milestone/5) | Issues selected for Sprint 5 and the final MVP v3 transition. |
 
 ## Is the current documentation set sufficient, and what support remains
 

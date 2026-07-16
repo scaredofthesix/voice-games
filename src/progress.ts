@@ -15,6 +15,12 @@
 export interface WordStats {
   spoken: number;
   struggled: number;
+  /** Short-lived scheduling priority. A failure queues the word to return soon. */
+  reinforcement?: number;
+  /** Consecutive failures are kept separately from the lifetime report count. */
+  consecutiveFailures?: number;
+  /** Recent correct attempts let an old difficult word return to normal weighting. */
+  recentSuccesses?: number;
 }
 
 export interface GameProgress {
@@ -58,7 +64,7 @@ export const GAME_LABELS: Record<GameId, { en: string; ru: string; icon: string 
   'treasure-hunter': { en: 'Voice Treasure Hunter', ru: 'Поиск сокровищ', icon: '🐳' },
   'sentence-bird': { en: 'Sentence Bird', ru: 'Фразоптичка', icon: '🐦' },
   'echo-recorder': { en: 'Echo Microphone', ru: 'Эхо-микрофон', icon: '🎤' },
-  'magic-wizard': { en: 'Magic Wizard', ru: 'Магический Волшебник', icon: '🧙' },
+  'magic-wizard': { en: 'Voice Maze Quest', ru: 'Голосовой Лабиринт', icon: '🧭' },
 };
 
 export type AllGamesProgress = Record<GameId, GameProgress>;
@@ -199,7 +205,13 @@ export function recordWordSpoken(
 ): AllGamesProgress {
   const game = { ...progress[gameId], words: { ...progress[gameId].words } };
   const prev = game.words[word] || { spoken: 0, struggled: 0 };
-  game.words[word] = { ...prev, spoken: prev.spoken + 1 };
+  game.words[word] = {
+    ...prev,
+    spoken: prev.spoken + 1,
+    reinforcement: Math.max(0, (prev.reinforcement || 0) - 1),
+    consecutiveFailures: 0,
+    recentSuccesses: (prev.recentSuccesses || 0) + 1,
+  };
   return { ...progress, [gameId]: game };
 }
 
@@ -210,7 +222,13 @@ export function recordWordStruggled(
 ): AllGamesProgress {
   const game = { ...progress[gameId], words: { ...progress[gameId].words } };
   const prev = game.words[word] || { spoken: 0, struggled: 0 };
-  game.words[word] = { ...prev, struggled: prev.struggled + 1 };
+  game.words[word] = {
+    ...prev,
+    struggled: prev.struggled + 1,
+    reinforcement: Math.min(3, (prev.reinforcement || 0) + 2),
+    consecutiveFailures: (prev.consecutiveFailures || 0) + 1,
+    recentSuccesses: 0,
+  };
   return { ...progress, [gameId]: game };
 }
 
@@ -249,8 +267,16 @@ export function wordSelectionWeight(stats: WordStats | undefined): number {
   // yet (spoken === 0). This is what makes an incorrect/silent attempt in the
   // current round immediately raise the word's chance of coming back, instead
   // of it being mistaken for a fresh unseen word.
-  if (stats.struggled > 0) {
-    return WEIGHT_STRUGGLED_BASE + Math.min(stats.struggled, WEIGHT_STRUGGLED_CAP);
+  // Two later correct attempts clear the short reinforcement cycle. Lifetime
+  // struggle totals stay intact for Progress, but no longer force the word to
+  // dominate every future session.
+  const hasActiveDifficulty = (stats.reinforcement || 0) > 0
+    || (stats.consecutiveFailures || 0) > 0
+    || (stats.struggled > 0 && (stats.recentSuccesses || 0) < 2);
+  if (hasActiveDifficulty) {
+    return WEIGHT_STRUGGLED_BASE
+      + Math.min(stats.struggled, WEIGHT_STRUGGLED_CAP)
+      + (stats.reinforcement || 0) * 4;
   }
   if (stats.spoken === 0) return WEIGHT_UNSEEN;
   if (stats.spoken >= MASTERY_THRESHOLD) return WEIGHT_MASTERED;
@@ -273,6 +299,16 @@ export function pickAdaptiveWordIndex(
 ): number {
   if (words.length === 0) return -1;
   if (words.length === 1) return 0;
+
+  // A failure creates an explicit short reinforcement queue. If the failed
+  // word was just shown, allow one different prompt first; on the following
+  // pick it wins deterministically. This guarantees a return within one to
+  // three eligible prompts instead of merely making it statistically likely.
+  const reinforced = words
+    .map((word, index) => ({ index, priority: wordStats[word]?.reinforcement || 0 }))
+    .filter(({ index, priority }) => index !== previous && priority > 0)
+    .sort((a, b) => b.priority - a.priority || a.index - b.index);
+  if (reinforced.length > 0) return reinforced[0].index;
 
   const weights = words.map((word, i) =>
     i === previous ? 0 : wordSelectionWeight(wordStats[word]),

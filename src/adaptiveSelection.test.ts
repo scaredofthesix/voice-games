@@ -4,8 +4,10 @@ import {
   pickAdaptiveWordIndex,
   MASTERY_THRESHOLD,
   emptyProgress,
+  loadProgress,
   recordWordSpoken,
   recordWordStruggled,
+  saveProgress,
 } from './progress';
 import type { WordStats } from './progress';
 
@@ -132,6 +134,49 @@ describe('dynamic within the current round', () => {
 
     expect(b).toBeGreaterThan(a);
     expect(b).toBeGreaterThan(c);
+  });
+
+  test('a failed word returns within the next two eligible prompts', () => {
+    let progress = emptyProgress();
+    progress = recordWordStruggled(progress, gameId, 'b');
+    const stats = progress[gameId].words;
+
+    // The failed word was the previous prompt, so one different word is shown.
+    const first = pickAdaptiveWordIndex(words, stats, 1, () => 0.99);
+    expect(first).not.toBe(1);
+
+    // It then returns deterministically, independent of the random roll.
+    const second = pickAdaptiveWordIndex(words, stats, first, () => 0);
+    expect(words[second]).toBe('b');
+  });
+
+  test('correct answers reduce reinforcement gradually instead of resetting it at once', () => {
+    let progress = emptyProgress();
+    progress = recordWordStruggled(progress, gameId, 'b');
+    expect(progress[gameId].words.b.reinforcement).toBe(2);
+
+    progress = recordWordSpoken(progress, gameId, 'b');
+    expect(progress[gameId].words.b.reinforcement).toBe(1);
+    expect(progress[gameId].words.b.consecutiveFailures).toBe(0);
+
+    progress = recordWordSpoken(progress, gameId, 'b');
+    expect(progress[gameId].words.b.reinforcement).toBe(0);
+    expect(progress[gameId].words.b.recentSuccesses).toBe(2);
+    expect(wordSelectionWeight(progress[gameId].words.b)).toBeLessThan(
+      wordSelectionWeight(progress[gameId].words.a),
+    );
+  });
+
+  test('reinforcement survives saving and loading between sessions', () => {
+    localStorage.clear();
+    let progress = emptyProgress();
+    progress = recordWordStruggled(progress, gameId, 'b');
+    saveProgress(progress);
+
+    const restored = loadProgress();
+    expect(restored[gameId].words.b.reinforcement).toBe(2);
+    expect(pickAdaptiveWordIndex(words, restored[gameId].words, -1, () => 0)).toBe(1);
+    localStorage.clear();
   });
 
   test('mastering a word this round pushes it below still-unseen peers', () => {

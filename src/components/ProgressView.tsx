@@ -62,7 +62,7 @@ export function ProgressView({ onBackToHub }: ProgressViewProps) {
   }
 
   return (
-    <section className="max-w-md mx-auto py-4 px-2" aria-label="Progress view">
+    <section className="max-w-md mx-auto py-4 px-2" aria-label={t('shared.progressView')}>
       <BackToHubButton label={t('shared.backToHub')} onClick={onBackToHub} />
 
       <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-gradient-to-b from-purple-50 to-indigo-50 bubble-shadow-purple">

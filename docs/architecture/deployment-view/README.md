@@ -42,8 +42,7 @@ flowchart TB
 
     GSpeech["Google speech service<br/>(used internally by Chrome<br/>for SpeechRecognition)"]
 
-    Src --> CI
-    Src --> Build --> Pages
+    Src --> CI --> Build --> Pages
     Src -.->|mkdocs build| DocsSite
     SPA -->|"HTTPS GET (fetch app bundle)"| Pages
     SPA --> WS
@@ -58,8 +57,8 @@ flowchart TB
 
 | Environment | URL | Purpose | Updated by |
 |---|---|---|---|
-| Production | https://scaredofthesix.github.io/voice-games/ | Public deployment used by the customer and for UAT | Manual publish of `dist/` to the `gh-pages` branch |
-| Docs source | [Documentation index](../../README.md) | Maintained project documentation; the separate hosted MkDocs path is pending redeploy | `mkdocs build` published into the `docs/` folder of `gh-pages` |
+| Production | https://scaredofthesix.github.io/voice-games/ | Public deployment used by the customer and for UAT | Verified pushes to `main` via `.github/workflows/deploy-pages.yml`; manual publish is recovery only |
+| Hosted docs | https://scaredofthesix.github.io/voice-games/docs/ | MkDocs view of the maintained [documentation source](../../index.md) | Manual `mkdocs build`, then publish into the `docs/` folder of `gh-pages` |
 | Local dev | http://localhost:3000 | Development (`npm run dev`) | - |
 | Innopolis VM (internal mirror) | https://10.93.26.180:8085/ | Internal mirror of released builds (originally the MVP v0 host, now running v0.3.0); reachable only inside the Innopolis network | Manual deploy of tagged builds |
 
@@ -71,7 +70,14 @@ voice control; the old VM deployment used a self-signed certificate and an
 internal address, which blocked the customer from testing at home
 ([ADR-003](../adr/ADR-003-static-spa-github-pages.md)).
 
-## Publish procedure (production app)
+## Automatic publish and manual recovery
+
+Pushes to `main` trigger `.github/workflows/deploy-pages.yml`. The workflow uses the locked
+Node dependencies, runs the type check and tests, builds the
+project-page bundle, creates the SPA fallback, and publishes to `gh-pages`. It uses
+concurrency protection so an older run cannot overwrite a newer deployment.
+
+If Actions is unavailable, use the equivalent manual recovery procedure:
 
 ```bash
 MSYS_NO_PATHCONV=1 npx vite build --base=/voice-games/
@@ -83,6 +89,10 @@ npx gh-pages -d dist -b gh-pages
 The `--base` flag is mandatory for a project page. On Git Bash (Windows) the
 `MSYS_NO_PATHCONV=1` prefix prevents MSYS from silently rewriting the base
 path, which otherwise produces a blank page with 404ing assets.
+
+The production workflow keeps the existing `docs/` folder when it updates the application.
+MkDocs is rebuilt separately with the procedure in
+[development-process.md](../../development-process.md#documentation-site).
 
 ## Runtime constraints
 

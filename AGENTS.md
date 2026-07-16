@@ -10,7 +10,7 @@ Voice Games is a browser-based, voice-controlled English-learning app for childr
 (React 19 + Vite 6 + TypeScript, client-side only, no backend). Voice is the only game
 controller: the child says the target word and that drives gameplay. Ten games currently
 exist (Voice Racer, Bubble Popper, Boss Fight, Voice Rocket Climb, Skate Word, Aste Word
-Destroyer, Treasure Hunter, Sentence Bird, Echo Microphone, Magic Wizard). See
+Destroyer, Treasure Hunter, Sentence Bird, Echo Microphone, Voice Maze Quest). See
 [docs/architecture/README.md](./docs/architecture/README.md) for the full picture.
 
 ## Ground rules

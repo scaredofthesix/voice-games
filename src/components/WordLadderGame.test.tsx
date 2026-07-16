@@ -37,9 +37,12 @@ describe('WordLadderGame (integration)', () => {
     expect(
       screen.getByRole('button', { name: /start launch/i }),
     ).toBeInTheDocument();
+    const setupHeading = screen.getByRole('heading', { name: /voice rocket climb/i });
+    expect(setupHeading).toBeInTheDocument();
+    expect(setupHeading.closest('.max-w-md')).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { name: /voice rocket climb/i }),
-    ).toBeInTheDocument();
+      screen.getAllByRole('button', { name: /back to hub/i }),
+    ).toHaveLength(1);
   });
 
   test('speaking each shown word climbs the rocket to the top', () => {
@@ -68,6 +71,16 @@ describe('WordLadderGame (integration)', () => {
 
     // The win banner renders the title as layered (outlined) copies, so match all.
     expect(screen.getAllByText(/orbit reached/i).length).toBeGreaterThan(0);
+    const resultHeading = screen.getByRole('heading', { name: /orbit reached/i });
+    expect(resultHeading.closest('.max-w-md')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /word report/i })).toBeInTheDocument();
+    expect(screen.getByTestId('result-practice-summary')).toHaveTextContent(
+      /Correct\s*[1-9]/i,
+    );
+    expect(
+      screen.getAllByText(/Correct:\s*[1-9].*Needs practice:\s*\d+/i).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /back to hub/i })).toHaveLength(1);
   });
 
   test('the win screen shows a friendly alien encounter', () => {

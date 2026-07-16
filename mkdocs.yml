@@ -47,6 +47,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Customer handover: customer-handover.md
+  - Administration: admin.md
   - Architecture:
       - Overview: architecture/README.md
       - Static view: architecture/static-view/README.md

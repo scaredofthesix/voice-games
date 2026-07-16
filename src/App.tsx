@@ -3,18 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Sparkles,
   Play,
-  RotateCcw,
-  Volume2,
-  CheckCircle,
-  AlertCircle,
   Car,
   Mic,
   Trophy,
-  BookOpen,
-  ArrowRight,
-  Sparkle,
   Gamepad2,
-  Star
 } from 'lucide-react';
 
 import { GameState, WordData, WordCategory, Lane, VoiceStatus, TrackStyle } from './types';
@@ -27,7 +19,17 @@ import { SkateWordGame } from './components/SkateWordGame';
 import { AsteWordGame } from './components/AsteWordGame';
 import { TreasureHunterGame } from './components/TreasureHunterGame';
 import { MagicWizardGame } from './components/MagicWizardGame';
-import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, WordSetPicker } from './components/GameUi';
+import {
+  BackToHubButton,
+  CustomWordsSection,
+  GameHeader,
+  GameResultCard,
+  GameSetupCard,
+  ListenAndLearnSection,
+  OptionPicker,
+  PauseButton,
+  WordSetPicker,
+} from './components/GameUi';
 import { ProgressView } from './components/ProgressView';
 import SentenceBirdGame from './components/SentenceBirdGame';
 import EchoRecorderGame from './components/EchoRecorderGame';
@@ -303,11 +305,9 @@ export default function App() {
     },
     {
       id: "magic-wizard",
-      title: language === 'en' ? 'Magic Wizard' : 'Магический Волшебник',
-      description: language === 'en' 
-        ? 'Charge glowing runes, cast elemental spells, and avoid the cursed word before all three wards break!'
-        : 'Заряжай руны, создавай стихийные заклинания и не дай проклятому слову разрушить три щита!',
-      icon: "🧙‍♂️",
+      title: t('games.magicWizard.title'),
+      description: t('games.magicWizard.description'),
+      icon: "🧭",
       accent: "bg-violet-400",
       record: magicWizardHighScore,
       unlocked: true,
@@ -758,118 +758,46 @@ export default function App() {
 
       {/* The large portal header belongs to the hub only. */}
       {currentView === 'HUB' && (
-      <header className="bg-yellow-400 border-b-8 border-slate-900 py-3.5 px-6 md:px-12 sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
-        {currentView === 'HUB' ? (
-          <>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-purple-500 border-4 border-slate-900 flex items-center justify-center shadow-md animate-bounce">
-                <Gamepad2 className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-center sm:text-left">
-                <h1 className="text-xl md:text-2xl font-black tracking-wider text-slate-900 uppercase drop-shadow-[0_2px_0_rgba(255,255,255,1)]">
-                  {t('header.title')}
-                </h1>
-                <p className="text-[10px] text-purple-900 tracking-widest font-black uppercase bg-white/70 border-2 border-slate-900 px-2 py-0.5 rounded-full inline-block mt-0.5">
-                  {t('header.subtitle')}
-                </p>
-              </div>
+        <header className="bg-yellow-400 border-b-8 border-slate-900 py-3.5 px-6 md:px-12 sticky top-0 z-50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-purple-500 border-4 border-slate-900 flex items-center justify-center shadow-md animate-bounce">
+              <Gamepad2 className="w-6 h-6 text-white" />
             </div>
+            <div className="text-center sm:text-left">
+              <h1 className="text-xl md:text-2xl font-black tracking-wider text-slate-900 uppercase drop-shadow-[0_2px_0_rgba(255,255,255,1)]">
+                {t('header.title')}
+              </h1>
+              <p className="text-[10px] text-purple-900 tracking-widest font-black uppercase bg-white/70 border-2 border-slate-900 px-2 py-0.5 rounded-full inline-block mt-0.5">
+                {t('header.subtitle')}
+              </p>
+            </div>
+          </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setLanguage(language === 'en' ? 'ru' : 'en')}
-                  aria-label={language === 'en' ? t('header.switchLabel') : t('header.switchLabel')}
-                  className="bg-white border-4 border-slate-900 px-3 py-1.5 rounded-2xl text-slate-900 font-black text-xs uppercase tracking-wider shadow-md"
-                >
-                  {language === 'en' ? 'RU' : 'EN'}
-                </button>
-                <div className="bg-pink-100 border-4 border-slate-900 text-slate-900 px-4 py-1.5 rounded-2xl flex items-center gap-2 shadow-md hover:scale-105 transition-transform">
-                  <Trophy className="w-5 h-5 text-yellow-600 fill-yellow-400 stroke-[2.5]" />
-                  <span className="text-xs font-black">{t('header.totalRecord')}</span>
-                  <span className="font-black text-sm text-yellow-700 font-mono tracking-tight">{totalRecordSum}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setCurrentView('PROGRESS')}
-                  className="bg-purple-100 border-4 border-slate-900 text-slate-900 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-md hover:scale-105 transition-transform cursor-pointer"
-                  aria-label={t('shared.openProgress')}
-                >
-                  <span className="text-sm">📊</span>
-                  <span className="text-xs font-black uppercase tracking-wider">{t('shared.progress')}</span>
-                </button>
-              </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setLanguage(language === 'en' ? 'ru' : 'en')}
+              aria-label={t('header.switchLabel')}
+              className="bg-white border-4 border-slate-900 px-3 py-1.5 rounded-2xl text-slate-900 font-black text-xs uppercase tracking-wider shadow-md"
+            >
+              {language === 'en' ? 'RU' : 'EN'}
+            </button>
+            <div className="bg-pink-100 border-4 border-slate-900 text-slate-900 px-4 py-1.5 rounded-2xl flex items-center gap-2 shadow-md hover:scale-105 transition-transform">
+              <Trophy className="w-5 h-5 text-yellow-600 fill-yellow-400 stroke-[2.5]" />
+              <span className="text-xs font-black">{t('header.totalRecord')}</span>
+              <span className="font-black text-sm text-yellow-700 font-mono tracking-tight">{totalRecordSum}</span>
             </div>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center gap-3">
-              <BackToHubButton
-                onClick={() => {
-                  speakSound.playCoin();
-                  if (recognitionRef.current) {
-                    recognitionRef.current.onend = null;
-                    recognitionRef.current.abort();
-                  }
-                  setCurrentView('HUB');
-                }}
-                label={t('shared.backToHub')}
-                className="mb-0 text-slate-900 hover:text-slate-700"
-                id="btn-back-to-hub-header"
-              />
-              <div className="w-10 h-10 rounded-xl bg-pink-500 border-4 border-slate-900 flex items-center justify-center shadow-md animate-bounce">
-                <span className="text-xl" role="img" aria-label="game-icon">
-                  {currentView === 'VOICE_RACER' ? '🚗' : currentView === 'ECHO_RECORDER' ? '🎤' : '🫧'}
-                </span>
-              </div>
-              <div className="text-left">
-                <h1 className="text-xs sm:text-sm md:text-base font-black tracking-wider text-slate-900 uppercase drop-shadow-[0_1px_0_rgba(255,255,255,1)] leading-none">
-                  {currentView === 'VOICE_RACER' ? t('games.voiceRacer.title') : currentView === 'ECHO_RECORDER' ? t('games.echoRecorder.title') : t('games.bubblePopper.title')}
-                </h1>
-                <p className="text-[9px] text-purple-900 tracking-wider font-extrabold uppercase bg-white/70 border-2 border-slate-900 px-1.5 py-0.5 rounded-full inline-block mt-0.5">
-                  {currentView === 'VOICE_RACER' ? `${t('header.level')} ${level}` : currentView === 'ECHO_RECORDER' ? t('games.echoRecorder.title') : `${t('header.level')} ${bubbleLevel}`}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center flex-wrap justify-center sm:justify-end gap-2">
-              {/* CURRENT GAME SCORE */}
-              <button
-                type="button"
-                onClick={() => setLanguage(language === 'en' ? 'ru' : 'en')}
-                aria-label={language === 'en' ? t('header.switchLabel') : t('header.switchLabel')}
-                className="bg-white border-4 border-slate-900 text-slate-900 px-2.5 py-1 rounded-2xl text-[10px] font-black uppercase tracking-wider shadow-sm"
-              >
-                {language === 'en' ? 'RU' : 'EN'}
-              </button>
-              <div className="bg-pink-100 border-4 border-slate-900 text-slate-900 px-2.5 py-1 rounded-2xl flex items-center gap-1 border-dashed shadow-sm">
-                <span className="text-[10px] font-black uppercase text-slate-600">{t('header.score')}</span>
-                <span className="font-black text-xs text-pink-600 font-mono tracking-tight">
-                  {currentView === 'VOICE_RACER' ? score : currentView === 'ECHO_RECORDER' ? echoRecorderHighScore : bubbleScore}
-                </span>
-              </div>
-
-              {/* HIGH SCORE FOR THE GAME */}
-              <div className="bg-amber-100 border-4 border-slate-900 text-slate-900 px-2.5 py-1 rounded-2xl flex items-center gap-1 shadow-sm">
-                <Trophy className="w-3.5 h-3.5 text-yellow-600 fill-yellow-400 stroke-[2.5]" />
-                <span className="text-[10px] font-black uppercase text-slate-600">{t('header.best')}</span>
-                <span className="font-black text-xs text-yellow-700 font-mono tracking-tight">
-                  {currentView === 'VOICE_RACER' ? highScore : currentView === 'ECHO_RECORDER' ? echoRecorderHighScore : bubbleHighScore}
-                </span>
-              </div>
-              
-              {/* SUM OF ALL HIGH SCORES */}
-              <div className="bg-purple-100 border-4 border-slate-900 text-slate-900 px-2.5 py-1 rounded-2xl flex items-center gap-1 shadow-md">
-                <span className="text-[10px] font-black uppercase text-slate-600">{t('header.total')}</span>
-                <span className="font-black text-xs text-purple-700 font-mono tracking-tight">
-                  {totalRecordSum}
-                </span>
-              </div>
-            </div>
-          </>
-        )}
-      </header>
+            <button
+              type="button"
+              onClick={() => setCurrentView('PROGRESS')}
+              className="bg-purple-100 border-4 border-slate-900 text-slate-900 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-md hover:scale-105 transition-transform cursor-pointer"
+              aria-label={t('shared.openProgress')}
+            >
+              <span className="text-sm">📊</span>
+              <span className="text-xs font-black uppercase tracking-wider">{t('shared.progress')}</span>
+            </button>
+          </div>
+        </header>
       )}
 
       {/* CORE DISPLAY WINDOW */}
@@ -1007,33 +935,30 @@ export default function App() {
           </div>
         ) : currentView === 'VOICE_RACER' ? (
           <>
-            <BackToHubButton
-              label={t('shared.backToHub')}
-              onClick={() => {
-                if (recognitionRef.current) {
-                  recognitionRef.current.onend = null;
-                  recognitionRef.current.abort();
-                }
-                setCurrentView('HUB');
-              }}
-            />
+            <div className={`w-full mx-auto ${gameState === 'PLAYING' ? 'max-w-5xl' : 'max-w-md px-2'}`}>
+              <BackToHubButton
+                label={t('shared.backToHub')}
+                onClick={() => {
+                  if (recognitionRef.current) {
+                    recognitionRef.current.onend = null;
+                    recognitionRef.current.abort();
+                  }
+                  setCurrentView('HUB');
+                }}
+              />
+            </div>
 
             {/* STATE A: GAME LOUNGE (KIDS BUBBLE THEMED INTERFACE) */}
             {gameState === 'START_SCREEN' && (
-          <div className="max-w-md mx-auto py-4 px-2 flex flex-col items-center justify-center" id="voice-racer-arcade-lounge">
-            
-            {/* BIG BOUNCY BOX GREETINGS */}
-            <div className="text-center mb-6 flex flex-col items-center animate-pulse">
-              <div className="w-18 h-18 rounded-3xl bg-amber-400 border-4 border-slate-900 hover:rotate-12 transition-transform flex items-center justify-center shadow-lg mb-3">
-                <Car className="w-10 h-10 text-slate-950 stroke-[3.5]" />
-              </div>
-              <h1 className="text-4xl font-black tracking-wider text-slate-900 uppercase drop-shadow-[0_3px_0_rgba(255,255,255,1)]">
-                {t('games.voiceRacer.title')}
-              </h1>
-            </div>
-
-            {/* MAIN ARCADE MENU CARD */}
-            <div className="w-full bg-slate-50 rounded-4xl border-8 border-slate-900 p-6 space-y-5 bubble-shadow-purple">
+          <div className="max-w-md mx-auto px-2 pb-4" id="voice-racer-arcade-lounge">
+            <GameSetupCard
+              icon={<Car className="w-10 h-10 text-slate-950 stroke-[3.5]" />}
+              title={t('games.voiceRacer.title')}
+              description={t('games.voiceRacer.description')}
+              toneClass="bg-amber-50"
+              iconClass="bg-amber-400"
+              shadowClass="bubble-shadow-purple"
+            >
               
               {/* Highway Theme Selection Mode */}
               <div className="space-y-2 text-left">
@@ -1145,38 +1070,37 @@ export default function App() {
               >
                 <Play className="w-6 h-6 fill-current stroke-[3.5]" /> {t('shared.startHighwayRace')}
               </button>
-
-            </div>
-
+            </GameSetupCard>
           </div>
         )}
 
         {/* STATE B: ACTIVE RACING GAME PLAYGROUND */}
         {gameState === 'PLAYING' && (
           <div className="w-full max-w-5xl mx-auto space-y-4 text-center" id="arcade-highway-centerage">
-            
-            {/* Play Score Header Info Strip */}
-            <div className="flex items-center justify-between bg-yellow-300 border-4 border-slate-900 px-5 py-2.5 rounded-2xl shadow-md" id="game-minimal-header">
-              <div className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-slate-900 animate-ping" />
-                <span className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-1">
-                  {t('racer.sayWordToDodge')}
-                </span>
-              </div>
-              
-              <div className="text-xs font-black text-purple-900 uppercase tracking-wider bg-white border-2 border-slate-900 px-2.5 py-0.5 rounded-full">
-                {t('racer.topic')}: {t(`wordSets.${activeCategory.id}`)}
-              </div>
-
-            </div>
-
-            <PauseButton
-              paused={racerPaused}
-              onToggle={toggleRacerPause}
-              pauseLabel={t('shared.pause')}
-              resumeLabel={t('shared.resume')}
-              ariaPause="Pause the race"
-              ariaResume="Resume the race"
+            <GameHeader
+              icon={<Car className="h-6 w-6 text-slate-900 stroke-[3]" />}
+              title={t('games.voiceRacer.title')}
+              subtitle={`${t('racer.sayWordToDodge')} - ${t('racer.topic')}: ${t(`wordSets.${activeCategory.id}`)}`}
+              stats={[
+                { label: t('racer.scoreHud'), value: score, tone: 'sky' },
+                { label: t('racer.levelHud'), value: level, tone: 'violet' },
+                {
+                  label: t('shared.lives'),
+                  value: lives > 0 ? '❤️'.repeat(lives) : t('racer.noLives'),
+                  tone: 'emerald',
+                },
+                { label: t('shared.best'), value: highScore, tone: 'amber' },
+              ]}
+              action={(
+                <div className="w-full sm:w-40">
+                  <PauseButton
+                    paused={racerPaused}
+                    onToggle={toggleRacerPause}
+                    pauseLabel={t('shared.pause')}
+                    resumeLabel={t('shared.resume')}
+                  />
+                </div>
+              )}
             />
 
             {/* HIGHWAY PHYSICAL CANVAS */}
@@ -1285,7 +1209,7 @@ export default function App() {
                                 triggerTTSHelp(targetWord);
                               }}
                               className="text-[9px] text-slate-900 font-black hover:bg-yellow-300 bg-white border-2 border-slate-900 px-2 py-1 rounded-xl cursor-pointer flex items-center gap-0.5 shadow-sm active:translate-y-0.5 duration-100 shrink-0 animate-none"
-                              aria-label={`Hear the word ${targetWord}`}
+                              aria-label={`${t('shared.hearWord')} ${targetWord}`}
                             >
                               🔊 EN
                             </button>
@@ -1340,124 +1264,36 @@ export default function App() {
 
         {/* STATE C: CHILD STUDY CARD RECAP (GAME OVER) */}
         {gameState === 'GAME_OVER' && (
-          <div className="max-w-md mx-auto py-6 animate-scale-up" id="game-over-console">
-            <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
-              
-              <span className="inline-flex items-center gap-1 bg-yellow-300 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest">
-                {t('racer.finishLine')}
-              </span>
-
-              <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
-                {t('racer.gameOverTitle')}
-              </h2>
-              <p className="text-xs text-slate-500 leading-normal font-bold">
-                {t('racer.gameOverDescription')}
-              </p>
-
-              {/* Driving stats grid boxes */}
-              <div className="grid grid-cols-2 gap-3.5 my-6">
-                <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                    <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest">{t('racer.drivingScore')}</span>
-                  <span className="text-lg font-black text-sky-900 mt-1 font-mono">{score} {t('racer.points')}</span>
-                </div>
-                <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                    <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">{t('racer.recordTarget')}</span>
-                  <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} {t('racer.points')}</span>
-                </div>
-              </div>
-
-              {/* SPEECH SUMMARY CARD */}
-              <div className="bg-purple-100 border-4 border-slate-900 p-4 rounded-3xl text-left mb-6" id="vocabulary-study-scorecard">
-                <div className="flex items-center gap-2 mb-2.5">
-                  <BookOpen className="w-5 h-5 text-purple-700 stroke-[2.5]" />
-                  <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">
-                    {t('racer.practiceScorecard')}
-                  </h4>
-                </div>
-
-                <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
-                  {Object.keys(wordStudyStats).length === 0 ? (
-                    <div className="text-center py-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl">
-                      <p className="text-xs text-slate-500 font-extrabold leading-normal">
-                        {t('racer.emptyScorecard')}
-                      </p>
-                    </div>
-                  ) : (
-                    Object.keys(wordStudyStats).map((word, index) => {
-                      const spoken = wordStudyStats[word].spoken;
-                      const struggled = wordStudyStats[word].struggled;
-                      
-                      return (
-                        <div
-                          key={index}
-                          className="bg-white border-2 border-slate-900 p-2.5 rounded-xl flex items-center justify-between"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-slate-950 font-black text-xs bg-slate-100 px-2 py-0.5 rounded-md border border-slate-900">{word}</span>
-                            <span className="text-slate-500 text-xs font-bold">
-                              ➔ {getSelectedVocabularyList().find(v => v.word === word)?.translation || ''}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-1.5">
-                            <span className="inline-flex items-center text-[9px] text-emerald-800 bg-emerald-100 px-2 py-1.5 rounded-full font-black border border-emerald-300">
-                              {t('racer.heard')}: {spoken}m
-                            </span>
-                            {struggled > 0 && (
-                              <span className="inline-flex items-center text-[9px] text-amber-800 bg-amber-100 px-2 py-1.5 rounded-full font-black border border-amber-350">
-                                Clues: {struggled}m
-                              </span>
-                            )}
-                            <button
-                              onClick={() => speakWord(word)}
-                              className="p-1 bg-yellow-100 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg cursor-pointer"
-                              aria-label={`Hear the word ${word}`}
-                              title={t('shared.listen')}
-                            >
-                              <Volume2 className="w-3.5 h-3.5 text-slate-900" />
-                            </button>
-                            {(() => {
-                              const found = getSelectedVocabularyList().find(v => v.word.toLowerCase() === word.toLowerCase());
-                              return found?.translationRu ? (
-                                <button
-                                  onClick={() => found?.translationRu && speakWord(found.translationRu, 'ru')}
-                                  className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-850 text-[10px] font-bold shrink-0 animate-none"
-                                  aria-label={t('shared.listenInRussian')}
-                                >
-                                  RU
-                                </button>
-                              ) : null;
-                            })()}
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-
-              {/* Navigation CTAs */}
-              <div className="flex flex-col gap-2.5 my-2 w-full">
-                <div className="flex flex-col sm:flex-row gap-2.5">
-                  <button
-                    onClick={triggerPlayGame}
-                    className="flex-1 bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs px-6 py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 active:shadow-none bubble-shadow-pink"
-                    id="btn-play-again-failed"
-                  >
-                    <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {t('racer.playAgain')}
-                  </button>
-                  <button
-                    onClick={() => setGameState('START_SCREEN')}
-                    className="flex-1 bg-white hover:bg-slate-50 border-4 border-slate-900 text-slate-800 font-black text-xs px-5 py-4 rounded-xl flex items-center justify-center cursor-pointer hover:scale-101 active:translate-y-1 transition-all"
-                    id="btn-home-screen-failed"
-                  >
-                    {t('racer.options')}
-                  </button>
-                </div>
-                
-              </div>
-
-            </div>
+          <div className="max-w-md mx-auto px-2 pb-6 animate-scale-up" id="game-over-console">
+            <GameResultCard
+              title={t('racer.gameOverTitle')}
+              description={t('racer.gameOverDescription')}
+              scoreLabel={t('racer.drivingScore')}
+              score={score}
+              bestLabel={t('racer.recordTarget')}
+              best={highScore}
+              wordStats={wordStudyStats}
+              words={getSelectedVocabularyList()}
+              replayLabel={t('racer.playAgain')}
+              onReplay={triggerPlayGame}
+              toneClass="bg-rose-50"
+              shadowClass="bubble-shadow-rose"
+              icon={(
+                <span className="inline-flex items-center justify-center gap-2 rounded-full border-4 border-slate-900 bg-yellow-300 px-4 py-2 text-xs font-black uppercase tracking-widest text-slate-900">
+                  <Car className="h-5 w-5 stroke-[3]" /> {t('racer.finishLine')}
+                </span>
+              )}
+              summary={(
+                <button
+                  type="button"
+                  onClick={() => setGameState('START_SCREEN')}
+                  className="inline-flex w-full items-center justify-center rounded-2xl border-4 border-slate-900 bg-white py-3 font-black uppercase tracking-wider text-slate-900 hover:bg-slate-50"
+                  id="btn-home-screen-failed"
+                >
+                  {t('racer.options')}
+                </button>
+              )}
+            />
           </div>
         )}
 

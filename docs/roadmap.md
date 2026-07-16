@@ -1,7 +1,8 @@
 # Voice Games - Product Roadmap
 
 A living, high-level view of where the product is going. Detailed work lives in GitHub
-Issues and the Sprint board; this file gives the customer and team the big picture.
+Issues and the [Sprint board](https://github.com/users/scaredofthesix/projects/1); this file
+gives the customer and team the big picture.
 Priorities follow the customer-approved MoSCoW scope and are revisited at each review.
 
 ## Done - MVP v1 (release v0.1.0, Sprint 1, 15-21 Jun 2026)
@@ -56,9 +57,9 @@ Every Sprint 2 customer review finding was addressed.
 ## Done - four more games (main pre-Sprint-4 work, not yet tagged as a release)
 
 Delivered on `main` between the Sprint 3 release and Sprint 4 planning, completing the
-customer's "four more games" request from the Sprint 3 review: Voice Treasure Hunter
-(submarine spelling game), Voice Magic Wizard (magic battle game), Sentence Bird
-(speech-driven cloud jumping), and Echo Microphone (speech memory chain). The product now
+  customer's "four more games" request from the Sprint 3 review: Voice Treasure Hunter
+  (submarine spelling game), Voice Maze Quest (voice labyrinth, originally Magic Wizard),
+  Sentence Bird (speech-driven cloud jumping), and Echo Microphone (speech memory chain). The product now
 has **ten games total**, meeting the "ten games total in the final version" target early.
 This work has not yet been cut into a tagged release; that happens as part of the Sprint 4
 trial release below.
@@ -96,13 +97,21 @@ planned beyond it.
 - Cross-game completion audit: all ten games use progress-weighted word scheduling, expose
   English and Russian playback for built-in and newly added custom words, and finish with
   score, record, and per-word practice reporting.
-- Product decision for #142: keep both Magic Wizard and Treasure Hunter in the final ten-game
-  roster, but make their gameplay clearly different. Magic Wizard now uses an untimed,
-  progressively larger spell recipe whose word runes can be charged in any order. A marked
-  cursed word creates a three-ward lose condition without penalizing unrelated speech, and
-  animated elemental effects make each completed recipe feel like a cast spell. Treasure
-  Hunter keeps the timed submarine, depth, and chest-collection loop. No game is merged or
-  retired without a later customer-backed roster decision.
+- Final customer decision for #142: keep both Voice Maze Quest and Treasure Hunter in the
+  ten-game roster, but remove the rejected Magic Wizard spell-recipe and cursed-rune
+  mechanic. Voice Maze Quest is now a visual labyrinth with route choices, crystals, a locked
+  portal, clear retry feedback, and endlessly generated floors. Treasure Hunter keeps the
+  timed submarine, depth, and chest-collection loop.
+- Final review hardening: remove custom-vocabulary file upload in favor of one tab-separated
+  paste flow; boost a word after its first failed or unrecognized attempt so it returns in
+  the following rounds; de-prioritize correctly pronounced words while preserving adaptation
+  between rounds; preserve Echo Microphone's memory mechanic with explicit TTS/listening and
+  retry phases; and deploy verified `main` builds through the GitHub Pages workflow.
+- Sentence Bird keeps explicit push-to-talk: its on-screen mic button, Space, or the active
+  word card opens a short listening window, and the microphone state is visible on screen.
+- Cross-game interface and localization audit: one Hub-back location and shared setup,
+  instruction, control, and result patterns, with no untranslated interface copy in Russian
+  mode. Learning vocabulary remains English by design.
 - README and documentation restructuring #146, completed during Week 6 finalization.
 - Confirm the final transition outcome and handover level with the customer against
   `docs/customer-handover.md` - issue #125.

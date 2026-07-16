@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { loadProgress, pickAdaptiveWordIndex, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, GameId } from '../progress';
-import { motion, AnimatePresence } from 'motion/react';
-import {
-  Sparkles,
-  Play,
-  RotateCcw,
-  Volume2,
-  Trophy,
-  BookOpen,
-  Sparkle,
-  Gamepad2,
-  Heart
-} from 'lucide-react';
+import { Heart, Play } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
-import { CustomWordsManager } from './CustomWordsManager';
-import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import {
+  BackToHubButton,
+  CustomWordsSection,
+  GameHeader,
+  GameResultCard,
+  GameSetupCard,
+  ListenAndLearnSection,
+  OptionPicker,
+  PauseButton,
+  TargetWordCard,
+  WordSetPicker,
+} from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 import { speakWord, speakSound, matchesWord, isSpeechSynthesisActive } from '../voice/engine';
 
@@ -76,7 +75,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 }) => {
   const [gameState, setGameState] = useState<'START_SCREEN' | 'PLAYING' | 'GAME_OVER'>('START_SCREEN');
   const [bubbleTheme, setBubbleTheme] = useState<BubbleTheme>('sky');
-  const { t, language, setLanguage } = useUiLanguage();
+  const { t } = useUiLanguage();
   const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
 
   // Collapsible drawers
@@ -220,7 +219,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
         } else {
           setVoiceStatus({
             status: 'idle',
-            message: 'Speech engine turned off.',
+            message: t('shared.voiceStopped'),
           });
         }
       };
@@ -1160,35 +1159,24 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
   }, [gameState, level, t]);
 
   return (
-    <div className="w-full flex flex-col gap-6" id="soap-bubble-popper-root">
-      <BackToHubButton label={t('shared.backToHub')} onClick={onBackToHub} />
+    <div className="w-full flex flex-col" id="soap-bubble-popper-root">
+      <div className={`w-full mx-auto ${gameState === 'PLAYING' ? 'max-w-xl' : 'max-w-md px-2'}`}>
+        <BackToHubButton label={t('shared.backToHub')} onClick={onBackToHub} />
+      </div>
 
       {/* START LOUNGE SCREEN */}
       {gameState === 'START_SCREEN' && (
-        <div className="max-w-md mx-auto w-full py-2 px-2 flex flex-col items-center justify-center">
-          <div className="text-center mb-6 flex flex-col items-center animate-pulse">
-            <div className="w-18 h-18 rounded-3xl bg-sky-400 border-4 border-slate-900 flex items-center justify-center shadow-lg mb-3">
-              <span className="text-4xl animate-bounce">🫧</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setLanguage(language === 'en' ? 'ru' : 'en')}
-                aria-label={language === 'en' ? t('header.switchLabel') : t('header.switchLabel')}
-                className="bg-white border-4 border-slate-900 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider"
-              >
-                {language === 'en' ? 'RU' : 'EN'}
-              </button>
-            </div>
-            <h1 className="text-3xl font-black tracking-wider text-slate-900 uppercase drop-shadow-[0_3px_0_rgba(255,255,255,1)]">
-              {t('bubble.title')}
-            </h1>
-          </div>
-
-          <div className="w-full bg-white rounded-4xl border-8 border-slate-900 p-6 space-y-5 bubble-shadow-pink">
-            
+        <div className="max-w-md mx-auto w-full pb-2 px-2 flex flex-col items-center justify-center">
+          <GameSetupCard
+            icon={<span className="text-4xl" aria-hidden="true">🫧</span>}
+            title={t('games.bubblePopper.title')}
+            description={t('games.bubblePopper.description')}
+            toneClass="bg-sky-50"
+            iconClass="bg-sky-400"
+            shadowClass="bubble-shadow-pink"
+          >
             {/* Atmosphere Sky Theme Choice */}
-            <div className="space-y-2 text-left">
+            <div className="space-y-2 rounded-2xl border-4 border-slate-900 bg-white p-3 text-left">
               <OptionPicker
                 label={t('bubble.chooseSkyAtmosphere')}
                 columns={2}
@@ -1269,8 +1257,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
             >
               <Play className="w-6 h-6 fill-current stroke-[3.5]" /> {t('shared.startPopping')}
             </button>
-
-          </div>
+          </GameSetupCard>
         </div>
       )}
 
@@ -1278,32 +1265,37 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
       {gameState === 'PLAYING' && (
         <div className="max-w-xl mx-auto w-full space-y-4 text-center">
           
-          {/* Header layout showing score metrics, task book category used, and Quit controls */}
-          <div className="flex items-center justify-between bg-yellow-300 border-4 border-slate-900 px-4 py-2 rounded-2xl shadow-md">
-            {/* Lives Hearts */}
-            <div className="flex items-center gap-1">
-              {[1, 2, 3].map((heart) => (
-                <Heart
-                  key={heart}
-                  className={`w-5 h-5 stroke-[2.5] ${
-                    heart <= lives ? 'text-red-500 fill-red-500 animate-bounce' : 'text-slate-300 stroke-slate-400'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Text info layout */}
-            <div className="text-xs font-black text-purple-900 uppercase">
-              {t('bubble.words')}
-              <span className="text-slate-900 uppercase">{activeCategory.name}</span>
-            </div>
-
-            {/* Score */}
-            <div className="bg-pink-100 border-2 border-slate-900 px-3 py-1 rounded-xl text-pink-600 font-mono font-black text-xs shadow-inner">
-              {t('bubble.points')} {score}
-            </div>
-
-          </div>
+          <GameHeader
+            icon={<span className="text-2xl" aria-hidden="true">🫧</span>}
+            title={t('games.bubblePopper.title')}
+            subtitle={`${t('bubble.words')} ${
+              activeCategory.id === 'custom'
+                ? t('shared.myWords')
+                : t(`wordSets.${activeCategory.id}`)
+            }`}
+            stats={[
+              {
+                label: t('shared.lives'),
+                value: (
+                  <span className="inline-flex items-center gap-0.5">
+                    {[1, 2, 3].map((heart) => (
+                      <Heart
+                        key={heart}
+                        className={`h-3.5 w-3.5 ${
+                          heart <= lives
+                            ? 'fill-rose-500 text-rose-600'
+                            : 'fill-slate-200 text-slate-300'
+                        }`}
+                      />
+                    ))}
+                  </span>
+                ),
+                tone: 'violet',
+              },
+              { label: t('racer.scoreHud'), value: score, tone: 'amber' },
+              { label: t('header.level'), value: level, tone: 'sky' },
+            ]}
+          />
 
           {/* Prominent pause / resume control */}
           <PauseButton
@@ -1369,120 +1361,31 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 
       {/* GAME OVER CARD RECAP */}
       {gameState === 'GAME_OVER' && (
-        <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
-          <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
-            
-            <span className="inline-flex items-center gap-1 bg-yellow-300 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest">
-              {t('bubble.gameOverTitle')}
-            </span>
-
-            <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
-              {t('bubble.gameOverTitle')}
-            </h2>
-            <p className="text-xs text-slate-500 leading-normal font-bold">
-              {t('bubble.gameOverSubtitle')}
-            </p>
-
-            {/* Score logs */}
-            <div className="grid grid-cols-2 gap-3.5 my-6">
-              <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest">{t('bubble.poppingScore')}</span>
-                <span className="text-lg font-black text-sky-900 mt-1 font-mono">{score} {t('bubble.points')}</span>
-              </div>
-              <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">{t('bubble.personalHigh')}</span>
-                <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} {t('bubble.points')}</span>
-              </div>
-            </div>
-
-            {/* Historic word review logs */}
-            <div className="bg-purple-100 border-4 border-slate-900 p-4 rounded-3xl text-left mb-6">
-              <div className="flex items-center gap-2 mb-2.5">
-                <BookOpen className="w-5 h-5 text-purple-700 stroke-[2.5]" />
-                <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">
-                  {t('bubble.scoreCard')}
-                </h4>
-              </div>
-
-              <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
-                {Object.keys(wordStudyStats).length === 0 ? (
-                  <div className="text-center py-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl">
-                    <p className="text-xs text-slate-500 font-extrabold leading-normal">
-                      {t('shared.customListEmpty')}
-                    </p>
-                  </div>
-                ) : (
-                  Object.keys(wordStudyStats).map((word, idx) => {
-                    const spoken = wordStudyStats[word].spoken;
-                    const struggled = wordStudyStats[word].struggled;
-                    
-                    return (
-                      <div
-                        key={idx}
-                        className="bg-white border-2 border-slate-900 p-2 rounded-xl flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-slate-950 font-black text-xs bg-slate-100 px-2 py-0.5 rounded-md border border-slate-900 truncate">{word}</span>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="text-[8px] md:text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-1 rounded-full font-black border border-emerald-300">
-                            {t('bubble.poppedLabel')} {spoken}m
-                          </span>
-                          {struggled > 0 && (
-                            <span className="text-[8px] md:text-[9px] text-amber-800 bg-amber-100 px-1.5 py-1 rounded-full font-black border border-amber-350">
-                              {t('bubble.clueLabel')} {struggled}m
-                            </span>
-                          )}
-                          <button
-                            onClick={() => speakWord(word)}
-                            className="p-1 bg-yellow-105 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg cursor-pointer"
-                            aria-label={`Hear the word ${word}`}
-                          >
-                            <Volume2 className="w-3.5 h-3.5 text-slate-900" />
-                          </button>
-                          {(() => {
-                            const matchedObj = vocabularyList.find(
-                              (item) => item.word.toLowerCase() === word.toLowerCase()
-                            );
-                            return matchedObj?.translationRu ? (
-                              <button
-                                onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
-                                className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
-                    aria-label={t('shared.listenInRussian')}
-                              >
-                                RU
-                              </button>
-                            ) : null;
-                          })()}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* Loop Controls */}
-            <div className="flex flex-col gap-2.5 w-full">
-              <div className="flex gap-2.5">
-                <button
-                  onClick={startGame}
-                  className="flex-1 bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs px-5 py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 shadow-md uppercase"
-                >
-                  <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {t('bubble.playAgain')}
-                </button>
-                <button
-                  onClick={() => setGameState('START_SCREEN')}
-                  className="flex-1 bg-white hover:bg-slate-50 border-4 border-slate-900 text-slate-800 font-black text-xs px-4 py-4 rounded-xl flex items-center justify-center cursor-pointer active:translate-y-1 transition-all shadow-sm"
-                >
-                  {t('bubble.bubbleOptions')}
-                </button>
-              </div>
-              
-            </div>
-
-          </div>
+        <div className="max-w-md mx-auto w-full px-2 pb-4 animate-scale-up">
+          <GameResultCard
+            title={t('bubble.gameOverTitle')}
+            description={t('bubble.gameOverSubtitle')}
+            scoreLabel={t('bubble.poppingScore')}
+            score={score}
+            bestLabel={t('bubble.personalHigh')}
+            best={Math.max(highScore, score)}
+            wordStats={wordStudyStats}
+            words={vocabularyList}
+            replayLabel={t('bubble.playAgain')}
+            onReplay={startGame}
+            icon={<span className="block text-5xl" aria-hidden="true">🫧🏆</span>}
+            summary={(
+              <button
+                type="button"
+                onClick={() => setGameState('START_SCREEN')}
+                className="w-full rounded-2xl border-4 border-slate-900 bg-white py-3 text-xs font-black uppercase tracking-wider text-slate-800 hover:bg-slate-50"
+              >
+                {t('bubble.bubbleOptions')}
+              </button>
+            )}
+            toneClass="bg-sky-50"
+            shadowClass="bubble-shadow-rose"
+          />
         </div>
       )}
 

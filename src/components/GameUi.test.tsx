@@ -5,9 +5,26 @@ import { BackToHubButton, GameResultCard, OptionPicker, PauseButton, TargetWordC
 import { UiLanguageProvider } from '../uiLanguage';
 
 describe('shared game UI', () => {
-  test('BackToHubButton uses the same high-contrast color in every game', () => {
-    render(<BackToHubButton label="Hub" onClick={() => undefined} />);
-    expect(screen.getByRole('button')).toHaveClass('bg-yellow-300');
+  test('BackToHubButton keeps the same compact high-contrast style in every game', () => {
+    const onClick = vi.fn();
+    render(<BackToHubButton label="Hub" onClick={onClick} />);
+
+    const button = screen.getByRole('button', { name: /back to hub|назад в хаб/i });
+    expect(button).toHaveClass(
+      'bg-yellow-300',
+      'border-4',
+      'self-start',
+      'w-auto',
+      'min-w-28',
+      'px-4',
+      'py-2.5',
+      'text-sm',
+      'shadow-[3px_3px_0_0_rgba(15,23,42,1)]',
+    );
+    expect(button.querySelector('svg')).toHaveClass('h-4', 'w-4');
+
+    fireEvent.click(button);
+    expect(onClick).toHaveBeenCalledOnce();
   });
 
   test('OptionPicker exposes and updates the selected option', () => {
@@ -146,6 +163,9 @@ describe('shared game UI', () => {
 
     expect(screen.getByText('Dolphin')).toBeInTheDocument();
     expect(screen.getByText(/Correct: 2/)).toBeInTheDocument();
+    expect(screen.getByTestId('result-practice-summary')).toHaveTextContent('Words practised1');
+    expect(screen.getByTestId('result-practice-summary')).toHaveTextContent('Correct2');
+    expect(screen.getByTestId('result-practice-summary')).toHaveTextContent('Needs practice1');
     expect(screen.getByRole('button', { name: /hear the word dolphin/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /listen in russian/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /play again/i }));

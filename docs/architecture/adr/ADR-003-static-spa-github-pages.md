@@ -40,7 +40,11 @@ artifact.
   SPA 404 fallback; on Git Bash for Windows the base flag must be protected
   from MSYS path mangling (`MSYS_NO_PATHCONV=1`). Documented in the
   [deployment view](../deployment-view/README.md).
-- Publishing is currently a manual command; a Pages deploy workflow in GitHub
-  Actions is a known improvement candidate.
+- Every push to `main` is verified and published by `.github/workflows/deploy-pages.yml`.
+  The job installs from `package-lock.json`, runs the type check and automated tests, builds
+  with the required project-page base path, creates the SPA fallback, and updates `gh-pages`
+  only after those steps succeed. The manual command remains the recovery path.
+- The hosted MkDocs documentation remains under `/docs/`. Application deployment preserves
+  that folder, while documentation changes are built and published separately.
 - Regional note: github.io can require a VPN in some regions; recorded in the
   README as an external restriction.

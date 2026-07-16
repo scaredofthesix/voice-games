@@ -1,12 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Play, Volume2, RotateCcw, BookOpen } from 'lucide-react';
+import { Play } from 'lucide-react';
 
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex } from '../progress';
 import { WordCategory, WordData } from '../types';
 import { BUILTIN_CATEGORIES } from '../data';
 import { matchesWord, speakSound, speakWord } from '../utils';
 import { useSpeechRecognition } from '../useSpeechRecognition';
-import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import {
+  BackToHubButton,
+  CustomWordsSection,
+  GameHeader,
+  GameResultCard,
+  GameSetupCard,
+  ListenAndLearnSection,
+  OptionPicker,
+  PauseButton,
+  TargetWordCard,
+  WordSetPicker,
+} from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 interface TreasureHunterGameProps {
@@ -384,6 +395,7 @@ export function TreasureHunterGame({
   const { status, isSupported, start, stop } = useSpeechRecognition(handleTranscript);
 
   const handleTimeout = useCallback(() => {
+    if (livesRef.current <= 0) return;
     speakSound.playLose();
     const nextL = livesRef.current - 1;
     setLives(nextL);
@@ -430,6 +442,7 @@ export function TreasureHunterGame({
     saveProgress(recordSessionPlayed(loadProgress(), 'treasure-hunter'));
     setScore(0);
     setLives(3);
+    livesRef.current = 3;
     depth.current = 0;
     targetDepth.current = 0;
     subY.current = 200;
@@ -857,52 +870,22 @@ export function TreasureHunterGame({
 
   return (
     <section className="flex-1 flex flex-col justify-between p-2 sm:p-4 md:p-8 max-w-6xl w-full mx-auto select-none relative animate-fade-in">
-      {/* Top action header bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 bg-slate-900/90 text-white p-3 sm:p-4 rounded-3xl border-4 border-slate-950 shadow-md">
-        <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} className="mb-0" />
-
-        <div className="flex flex-wrap items-center gap-2 sm:gap-6">
-          <div className="flex items-center gap-1">
-            <span className="text-yellow-400 font-extrabold text-sm">💰:</span>
-            <span className="font-mono font-black text-lg bg-slate-800 border-2 border-slate-955 px-2 py-0.5 rounded-xl text-emerald-400">${score * 100}</span>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <span className="text-yellow-400 font-extrabold text-sm">🏆 {strings.score}:</span>
-            <span className="font-mono font-black text-lg bg-slate-800 border-2 border-slate-955 px-2 py-0.5 rounded-xl">{score}</span>
-          </div>
-
-          <div className="flex items-center gap-0.5">
-            {Array.from({ length: 3 }).map((_, idx) => (
-              <span
-                key={idx}
-                className={`text-xl transition-all ${
-                  idx < lives ? 'opacity-100 scale-100 filter-none' : 'opacity-30 scale-75 grayscale'
-                }`}
-              >
-                ❤️
-              </span>
-            ))}
-          </div>
-        </div>
+      <div className={`w-full mx-auto ${phase === 'PLAYING' ? 'max-w-3xl' : 'max-w-md px-2'}`}>
+        <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} />
       </div>
 
       {/* Main Canvas view area */}
       <div className="flex-1 flex flex-col items-center justify-center relative">
         {phase === 'START' && (
-          <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
-            <div className="space-y-4 p-6 border-8 border-slate-900 rounded-4xl bg-cyan-50 bubble-shadow-cyan">
-              <div className="flex flex-col items-center gap-2 text-center">
-                <div className="w-18 h-18 rounded-3xl bg-cyan-400 border-4 border-slate-900 flex items-center justify-center animate-bounce">
-                  <span className="text-3.5xl">🐳</span>
-                </div>
-                <h1 className="text-4xl font-black uppercase tracking-wider text-slate-900">
-                  {strings.title}
-                </h1>
-                <p className="text-xs font-bold text-slate-655 max-w-xs leading-relaxed mx-auto">
-                  {strings.description}
-                </p>
-              </div>
+          <div className="max-w-md mx-auto w-full px-2 pb-4 animate-scale-up">
+            <GameSetupCard
+              icon={<span className="text-3.5xl" aria-hidden="true">🐳</span>}
+              title={strings.title}
+              description={strings.description}
+              toneClass="bg-cyan-50"
+              iconClass="bg-cyan-400"
+              shadowClass="bubble-shadow-cyan"
+            >
 
               {/* CHOOSE SUBMARINE COLOR */}
               <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
@@ -959,18 +942,51 @@ export function TreasureHunterGame({
               )}
 
               <button
+                type="button"
                 onClick={startGame}
                 disabled={!isSupported}
                 className="w-full py-3.5 bg-cyan-400 hover:bg-cyan-50 border-4 border-slate-900 text-slate-900 font-black uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Play className="w-4 h-4 fill-current stroke-[3]" /> {strings.start}
               </button>
-            </div>
+            </GameSetupCard>
           </div>
         )}
 
         {phase === 'PLAYING' && (
           <div className="w-full max-w-3xl flex flex-col gap-4 relative">
+            <GameHeader
+              icon={<span className="text-xl" aria-hidden="true">🐳</span>}
+              title={strings.title}
+              subtitle={`${
+                activeCategory.id === 'custom'
+                  ? strings.myWords
+                  : t(`wordSets.${activeCategory.id}`)
+              } - ${t(`themes.treasure.${subColor}`)}`}
+              stats={[
+                { label: '💰', value: `$${score * 100}`, tone: 'emerald' },
+                { label: strings.score, value: score, tone: 'amber' },
+                {
+                  label: t('shared.lives'),
+                  value: (
+                    <span className="inline-flex items-center gap-0.5">
+                      {Array.from({ length: 3 }).map((_, idx) => (
+                        <span
+                          key={idx}
+                          className={idx < lives ? 'opacity-100' : 'opacity-25 grayscale'}
+                          aria-hidden="true"
+                        >
+                          ❤️
+                        </span>
+                      ))}
+                    </span>
+                  ),
+                  tone: 'violet',
+                },
+                { label: strings.best, value: Math.max(highScore, score), tone: 'sky' },
+              ]}
+            />
+
             <PauseButton
               paused={paused}
               onToggle={() => setPaused((current) => !current)}
@@ -997,7 +1013,18 @@ export function TreasureHunterGame({
                   translationRu={currentWordItem?.translationRu}
                   heard={lastRecognized}
               heardLabel={t('shared.youSaidHeard')}
-                  onListenEn={() => playWordTTS(target)}
+                  onListenEn={() => {
+                    playWordTTS(target);
+                    if (!target) return;
+                    setWordStudyStats((previous) => ({
+                      ...previous,
+                      [target]: {
+                        spoken: previous[target]?.spoken || 0,
+                        struggled: (previous[target]?.struggled || 0) + 1,
+                      },
+                    }));
+                    saveProgress(recordWordStruggled(loadProgress(), 'treasure-hunter', target));
+                  }}
                   onListenRu={() =>
                     currentWordItem?.translationRu && speakWord(currentWordItem.translationRu, 'ru')
                   }
@@ -1019,120 +1046,24 @@ export function TreasureHunterGame({
         )}
 
         {phase === 'GAMEOVER' && (
-          <div className="w-full max-w-xl bg-white border-8 border-slate-955 rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-6">
-            <div className="w-20 h-20 bg-rose-500 border-4 border-slate-955 rounded-2xl flex items-center justify-center text-4xl mx-auto shadow-md animate-pulse">
-              💥
-            </div>
-
-            <div className="space-y-1">
-              <h2 className="text-2xl font-black uppercase text-slate-950 tracking-wider">
-              {t('treasure.diveCompleted')}
-              </h2>
-              <p className="text-slate-505 font-bold text-xs">
-                {language === 'ru'
-                  ? 'Подлодка исчерпала запасы прочности, но сундуки с сокровищами найдены!'
-                  : 'The submarine ran out of strength, but you gathered incredible treasures!'}
-              </p>
-            </div>
-
-            {/* Final stats card */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-cyan-50 border-4 border-slate-955 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                <span className="text-[10px] font-black text-cyan-600 uppercase tracking-widest text-center">
-                {t('treasure.totalChests')}
-                </span>
-                <span className="text-lg font-black text-cyan-850 mt-1 font-mono">{score}</span>
-              </div>
-              <div className="bg-amber-100 border-4 border-slate-955 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
-                {t('treasure.bestRecord')}
-                </span>
-                <span className="text-lg font-black text-amber-850 mt-1 font-mono">{Math.max(highScore, score)}</span>
-              </div>
-            </div>
-
-            {/* Scorecard table log */}
-            <div className="bg-purple-100 border-4 border-slate-955 p-4 rounded-3xl text-left max-h-56 overflow-y-auto">
-              <div className="flex items-center gap-2 mb-2.5">
-                <BookOpen className="w-5 h-5 text-purple-700 stroke-[2.5]" />
-                <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">
-              {t('treasure.scorecard')}
-                </h4>
-              </div>
-
-              <div className="space-y-1.5">
-                {Object.keys(wordStudyStats).length === 0 ? (
-                  <div className="text-center py-4 bg-white border-2 border-dashed border-slate-350 rounded-2xl">
-                    <p className="text-xs text-slate-500 font-extrabold">
-                  {t('treasure.emptyReport')}
-                    </p>
-                  </div>
-                ) : (
-                  Object.keys(wordStudyStats).map((word, idx) => {
-                    const spoken = wordStudyStats[word].spoken;
-                    const struggled = wordStudyStats[word].struggled;
-                    const matchedObj = list.find(
-                      (item) => item.word.toLowerCase() === word.toLowerCase()
-                    );
-                    
-                    return (
-                      <div
-                        key={idx}
-                        className="bg-white border-2 border-slate-955 p-2 rounded-xl flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-slate-950 font-black text-xs bg-slate-100 px-2 py-0.5 rounded-md border border-slate-955 truncate">
-                            {word}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="text-[8px] md:text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-1 rounded-full font-black border border-emerald-300">
-                              {t('treasure.correct')}: {spoken}
-                          </span>
-                          {struggled > 0 && (
-                            <span className="text-[8px] md:text-[9px] text-amber-800 bg-amber-100 px-1.5 py-1 rounded-full font-black border border-amber-350">
-                              {t('treasure.missed')}: {struggled}
-                            </span>
-                          )}
-                          <button
-                            onClick={() => speakWord(word)}
-                            className="p-1 bg-yellow-50 hover:bg-yellow-200 border-2 border-slate-955 rounded-lg cursor-pointer"
-                            aria-label={`Hear ${word}`}
-                          >
-                            <Volume2 className="w-3.5 h-3.5 text-slate-955" />
-                          </button>
-                          {matchedObj?.translationRu && (
-                            <button
-                              onClick={() => matchedObj.translationRu && speakWord(matchedObj.translationRu, 'ru')}
-                              className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-955 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
-                            >
-                              RU
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* Loop controls */}
-            <div className="flex flex-col gap-2.5 w-full">
-              <button
-                onClick={startGame}
-                className="w-full bg-pink-500 hover:bg-pink-600 border-4 border-slate-955 text-white font-black text-xs py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 shadow-md uppercase"
-              >
-                <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {strings.start}
-              </button>
-              
-              <BackToHubButton
-                label={t('shared.backToHub')}
-                onClick={() => { stop(); onBackToHub(); }}
-                className="w-full justify-center"
-              />
-            </div>
+          <div className="w-full max-w-md mx-auto px-2 pb-4 animate-scale-up">
+            <GameResultCard
+              title={t('treasure.diveCompleted')}
+              description={language === 'ru'
+                ? 'Подлодка исчерпала запасы прочности, но сундуки с сокровищами найдены!'
+                : 'The submarine ran out of strength, but you gathered incredible treasures!'}
+              scoreLabel={t('treasure.totalChests')}
+              score={score}
+              bestLabel={t('treasure.bestRecord')}
+              best={Math.max(highScore, score)}
+              wordStats={wordStudyStats}
+              words={list}
+              replayLabel={strings.start}
+              onReplay={startGame}
+              icon={<span className="block text-5xl" aria-hidden="true">🐳💰</span>}
+              toneClass="bg-cyan-50"
+              shadowClass="bubble-shadow-cyan"
+            />
           </div>
         )}
       </div>

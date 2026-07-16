@@ -1,15 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadProgress, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, pickAdaptiveWordIndex, GameId } from '../progress';
 import {
-  BookOpen,
   Heart,
-  Mic,
-  Pause,
   Play,
-  RotateCcw,
-  Shield,
   Swords,
-  Volume2,
 } from 'lucide-react';
 
 import { WordCategory, WordData } from '../types';
@@ -30,8 +24,18 @@ import { BossTheme } from './BossArena';
 import { matchesWord, speakSound, speakWord } from '../voice/engine';
 import { useSpeechRecognition } from '../useSpeechRecognition';
 import { BossArena } from './BossArena';
-import { CustomWordsManager } from './CustomWordsManager';
-import { BackToHubButton, CustomWordsSection, ListenAndLearnSection, OptionPicker, PauseButton, TargetWordCard, WordSetPicker } from './GameUi';
+import {
+  BackToHubButton,
+  CustomWordsSection,
+  GameHeader,
+  GameResultCard,
+  GameSetupCard,
+  ListenAndLearnSection,
+  OptionPicker,
+  PauseButton,
+  TargetWordCard,
+  WordSetPicker,
+} from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 
 // Boss Fight: a hero fights a short gauntlet of bosses (Goblin -> Ogre ->
@@ -64,7 +68,7 @@ export function BossFightGame({
   onDeleteCustomWord,
   onClearCustomWords,
 }: BossFightGameProps) {
-  const { t, language, setLanguage } = useUiLanguage();
+  const { t } = useUiLanguage();
   const [activeCategory, setActiveCategory] = useState<WordCategory>(
     BUILTIN_CATEGORIES[0],
   );
@@ -312,6 +316,17 @@ export function BossFightGame({
   useEffect(() => {
     if (phase !== 'PLAYING' || fight.status !== 'playing' || paused) return;
     if (timeLeft <= 0) {
+      const missedTarget = targetRef.current;
+      if (missedTarget) {
+        setWordStudyStats((prevStats) => ({
+          ...prevStats,
+          [missedTarget]: {
+            spoken: prevStats[missedTarget]?.spoken || 0,
+            struggled: (prevStats[missedTarget]?.struggled || 0) + 1,
+          },
+        }));
+        saveProgress(recordWordStruggled(loadProgress(), 'boss-fight', missedTarget));
+      }
       const hurt = playerHitByTimeout(fightRef.current);
       fightRef.current = hurt;
       setFight(hurt);
@@ -327,31 +342,65 @@ export function BossFightGame({
   const isOver = fight.status !== 'playing';
   const won = fight.status === 'won';
   const list = wordList();
+  const bossNameKey = boss.name === 'Dark Sorcerer'
+    ? 'darkSorcerer'
+    : boss.name.toLocaleLowerCase();
+  const localizedBossName = t(`boss.names.${bossNameKey}`);
+  const resultCard = (
+    <GameResultCard
+      title={won ? t('boss.youWon') : t('boss.gameOver')}
+      description={t('boss.report')}
+      scoreLabel={t('boss.wordsSmashed')}
+      score={score}
+      bestLabel={t('boss.personalHigh')}
+      best={Math.max(highScore, score)}
+      wordStats={wordStudyStats}
+      words={list}
+      replayLabel={t('boss.fightAgain')}
+      onReplay={restart}
+      icon={<span className="block text-5xl" aria-hidden="true">{won ? '🏆⚔️' : `${boss.emoji}🛡️`}</span>}
+      summary={(
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border-4 border-slate-900 bg-rose-100 p-3">
+            <p className="text-[10px] font-black uppercase text-rose-800">{t('boss.boss')}</p>
+            <p className="text-2xl font-black">{bossLevel + 1}</p>
+          </div>
+          <div className="rounded-2xl border-4 border-slate-900 bg-emerald-100 p-3">
+            <p className="text-[10px] font-black uppercase text-emerald-800">{t('shared.lives')}</p>
+            <p className="text-2xl font-black">{fight.playerHp}/{fight.playerMaxHp}</p>
+          </div>
+        </div>
+      )}
+      toneClass={won ? 'bg-amber-50' : 'bg-rose-50'}
+      shadowClass={won ? 'bubble-shadow-amber' : 'bubble-shadow-rose'}
+    />
+  );
 
   return (
     <section className="max-w-md mx-auto py-4 px-2" aria-label={t('games.bossFight.title')}>
       <BackToHubButton label={t('shared.backToHub')} onClick={() => { stop(); onBackToHub(); }} />
 
       {phase === 'START' ? (
-        <div className={`space-y-4 p-6 border-8 border-slate-900 rounded-4xl transition-all duration-300 ${
-          bossTheme === 'castle' ? 'bg-slate-100 bubble-shadow-purple' :
-          bossTheme === 'lava' ? 'bg-orange-50 bubble-shadow-pink' :
-          bossTheme === 'forest' ? 'bg-emerald-50 bubble-shadow-green' :
-          'bg-purple-50 bubble-shadow-purple'
-        }`} id="boss-fight-start">
-          <div className="flex flex-col items-center gap-2 text-center">
-            <div className="w-16 h-16 rounded-3xl bg-rose-500 border-4 border-slate-900 flex items-center justify-center">
-              <Swords className="w-9 h-9 text-white stroke-[3]" />
-            </div>
-            <h1 className="text-3xl font-black uppercase tracking-wider text-slate-900">
-              {t('games.bossFight.title')}
-            </h1>
-            <p className="text-xs font-bold text-slate-600 max-w-xs leading-relaxed">
-              {bossMode === -1
-                ? t('boss.endlessDescription')
-                : `${t('boss.beatPrefix')} ${bossMode} ${t('boss.beatSuffix')}`}
-            </p>
-          </div>
+        <div id="boss-fight-start">
+          <GameSetupCard
+            icon={<Swords className="h-10 w-10 text-white stroke-[3]" />}
+            title={t('games.bossFight.title')}
+            description={bossMode === -1
+              ? t('boss.endlessDescription')
+              : `${t('boss.beatPrefix')} ${bossMode} ${t('boss.beatSuffix')}`}
+            toneClass={
+              bossTheme === 'castle' ? 'bg-slate-100' :
+              bossTheme === 'lava' ? 'bg-orange-50' :
+              bossTheme === 'forest' ? 'bg-emerald-50' :
+              'bg-purple-50'
+            }
+            iconClass="bg-rose-500"
+            shadowClass={
+              bossTheme === 'lava' ? 'bubble-shadow-pink' :
+              bossTheme === 'forest' ? 'bubble-shadow-green' :
+              'bubble-shadow-purple'
+            }
+          >
 
           {/* Choose Arena Theme */}
           <div className="space-y-2 text-left bg-white border-4 border-slate-900 rounded-2xl p-3">
@@ -504,9 +553,46 @@ export function BossFightGame({
           >
             <Play className="w-4 h-4 fill-current stroke-[3]" /> {t('shared.startFight')}
           </button>
+          </GameSetupCard>
+        </div>
+      ) : isOver ? (
+        <div className="max-w-md mx-auto w-full pb-4 animate-scale-up">
+          {resultCard}
         </div>
       ) : (
         <div className="space-y-3" id="boss-fight-play">
+          <GameHeader
+            icon={<Swords className="h-5 w-5 text-slate-900 stroke-[3]" />}
+            title={t('games.bossFight.title')}
+            subtitle={`${boss.emoji} ${localizedBossName} - ${
+              bossMode === -1
+                ? `${t('boss.endless')} - ${t('boss.boss')} #${bossLevel + 1}`
+                : `${t('boss.boss')} ${bossLevel + 1}/${bossMode}`
+            }`}
+            stats={[
+              { label: t('boss.hits'), value: score, tone: 'amber' },
+              { label: t('shared.best'), value: Math.max(highScore, score), tone: 'sky' },
+              {
+                label: t('shared.lives'),
+                value: (
+                  <span className="inline-flex items-center gap-0.5">
+                    {Array.from({ length: fight.playerMaxHp }).map((_, index) => (
+                      <Heart
+                        key={index}
+                        className={`h-3.5 w-3.5 ${
+                          index < fight.playerHp
+                            ? 'fill-rose-500 text-rose-600'
+                            : 'fill-slate-200 text-slate-300'
+                        }`}
+                      />
+                    ))}
+                  </span>
+                ),
+                tone: 'violet',
+              },
+            ]}
+          />
+
           {/* Animated arena */}
           <div className="relative border-4 border-slate-900 rounded-2xl overflow-hidden bg-slate-900">
             <BossArena
@@ -519,7 +605,7 @@ export function BossFightGame({
               killNonce={killNonce}
               defeated={won}
               victory={won}
-              bossName={boss.name}
+              bossName={localizedBossName}
               theme={bossTheme}
             />
             {paused && !isOver && (
@@ -540,39 +626,10 @@ export function BossFightGame({
             <PauseButton
               paused={paused}
               onToggle={togglePause}
-            pauseLabel={t('shared.pause')}
-            resumeLabel={t('shared.resume')}
-              ariaPause="Pause the fight"
-              ariaResume="Resume the fight"
+              pauseLabel={t('shared.pause')}
+              resumeLabel={t('shared.resume')}
             />
           )}
-
-          {/* Boss name + level */}
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-wider text-rose-700 inline-flex items-center gap-1">
-              <Swords className="w-4 h-4 stroke-[3]" /> {boss.emoji} {boss.name}
-            </span>
-            <span className="text-[10px] font-black uppercase text-slate-500">
-              {bossMode === -1
-                ? `♾️ Boss #${bossLevel + 1}`
-                      : `${t('boss.boss')} ${bossLevel + 1}/${bossMode}`}
-            </span>
-          </div>
-
-          {/* Big, unambiguous hit counter (issue #108): the number is the
-              TOTAL of correctly pronounced words across the whole battle,
-              not the hits remaining on the current boss. */}
-          <div
-            className="flex items-center justify-center gap-2 bg-amber-100 border-4 border-slate-900 rounded-2xl py-1.5 px-3"
-            role="status"
-            aria-label={`${score} total hits this battle`}
-          >
-            <Swords className="w-5 h-5 text-amber-700 stroke-[3]" />
-            <span className="text-2xl font-black font-mono text-amber-900 leading-none">{score}</span>
-            <span className="text-[10px] font-black uppercase tracking-wider text-amber-800">
-                  {t('boss.totalHits')}
-            </span>
-          </div>
 
           {/* Boss health (accessible).
               Issue #108 dev note on the "duplicated" boss HP: it is shown both
@@ -590,7 +647,7 @@ export function BossFightGame({
             </div>
             <div
               className="h-4 rounded-full bg-rose-100 border-2 border-slate-900 overflow-hidden"
-              aria-label={`Boss health ${fight.bossHp} of ${fight.bossMaxHp}`}
+              aria-label={`${t('boss.health')} ${fight.bossHp}/${fight.bossMaxHp}`}
             >
               <div
                 className="h-full bg-rose-500 transition-all"
@@ -599,147 +656,7 @@ export function BossFightGame({
             </div>
           </div>
 
-          {/* Player lives */}
-          <div
-            className="flex items-center gap-1.5"
-            aria-label={`Your lives: ${fight.playerHp} of ${fight.playerMaxHp}`}
-          >
-            <Shield className="w-4 h-4 text-emerald-600 stroke-[3]" />
-            {Array.from({ length: fight.playerMaxHp }).map((_, i) => (
-              <Heart
-                key={i}
-                className={`w-5 h-5 stroke-[3] ${
-                  i < fight.playerHp
-                    ? 'text-rose-500 fill-rose-500'
-                    : 'text-slate-300'
-                }`}
-              />
-            ))}
-          </div>
-
-          {isOver ? (
-            <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
-              <div className="bg-white border-8 border-slate-900 rounded-4xl p-6 text-center relative overflow-hidden bubble-shadow-rose">
-                
-                <span className="inline-flex items-center gap-1 bg-yellow-300 border-4 border-slate-900 px-4 py-1.5 rounded-full text-slate-900 text-xs font-black uppercase tracking-widest animate-pulse">
-                  {won
-                    ? t('boss.victory')
-                    : t('boss.battleConcluded')}
-                </span>
-
-                <h2 className="text-3xl font-black text-slate-950 mt-6 mb-2 uppercase tracking-wide">
-                  {won
-                  ? t('boss.youWon')
-                  : t('boss.gameOver')}
-                </h2>
-                <p className="text-xs text-slate-500 leading-normal font-bold">
-                {t('boss.report')}
-                </p>
-
-                {/* Score logs */}
-                <div className="grid grid-cols-2 gap-3.5 my-6">
-                  <div className="bg-sky-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                    <span className="text-[10px] font-black text-sky-700 uppercase tracking-widest text-center">
-                  {t('boss.wordsSmashed')}
-                    </span>
-                    <span className="text-lg font-black text-sky-900 mt-1 font-mono">{score} {t('boss.hits')}</span>
-                  </div>
-                  <div className="bg-amber-100 border-4 border-slate-900 p-3.5 rounded-2xl flex flex-col items-center shadow-md">
-                    <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest text-center">
-                  {t('boss.personalHigh')}
-                    </span>
-                    <span className="text-lg font-black text-amber-800 mt-1 font-mono">{highScore} {t('boss.hits')}</span>
-                  </div>
-                </div>
-
-                {/* Historic word review logs */}
-                <div className="bg-purple-100 border-4 border-slate-900 p-4 rounded-3xl text-left mb-6">
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <BookOpen className="w-5 h-5 text-purple-700 stroke-[2.5]" />
-                    <h4 className="text-xs font-black text-purple-900 uppercase tracking-widest">
-                {t('boss.scorecard')}
-                    </h4>
-                  </div>
-
-                  <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
-                    {Object.keys(wordStudyStats).length === 0 ? (
-                      <div className="text-center py-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl">
-                        <p className="text-xs text-slate-500 font-extrabold leading-normal">
-                  {t('boss.emptyReport')}
-                        </p>
-                      </div>
-                    ) : (
-                      Object.keys(wordStudyStats).map((word, idx) => {
-                        const spoken = wordStudyStats[word].spoken;
-                        const struggled = wordStudyStats[word].struggled;
-                        
-                        return (
-                          <div
-                            key={idx}
-                            className="bg-white border-2 border-slate-900 p-2 rounded-xl flex items-center justify-between"
-                          >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="text-slate-950 font-black text-xs bg-slate-100 px-2 py-0.5 rounded-md border border-slate-900 truncate">{word}</span>
-                            </div>
-
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              <span className="text-[8px] md:text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-1 rounded-full font-black border border-emerald-300">
-                            {t('boss.hits')}: {spoken}
-                              </span>
-                              {struggled > 0 && (
-                                <span className="text-[8px] md:text-[9px] text-amber-800 bg-amber-100 px-1.5 py-1 rounded-full font-black border border-amber-350">
-                            {t('shared.clues')}: {struggled}
-                                </span>
-                              )}
-                              <button
-                                onClick={() => speakWord(word)}
-                                className="p-1 bg-yellow-50 hover:bg-yellow-200 border-2 border-slate-900 rounded-lg cursor-pointer"
-                                aria-label={`Hear the word ${word}`}
-                              >
-                                <Volume2 className="w-3.5 h-3.5 text-slate-900" />
-                              </button>
-                              {(() => {
-                                const matchedObj = list.find(
-                                  (item) => item.word.toLowerCase() === word.toLowerCase()
-                                );
-                                return matchedObj?.translationRu ? (
-                                  <button
-                                    onClick={() => matchedObj?.translationRu && speakWord(matchedObj.translationRu, 'ru')}
-                                    className="p-1 bg-blue-100 hover:bg-blue-200 border-2 border-slate-900 rounded-lg cursor-pointer text-blue-800 text-[10px] font-bold"
-                        aria-label={t('shared.listenInRussian')}
-                                  >
-                                    RU
-                                  </button>
-                                ) : null;
-                              })()}
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-
-                {/* Loop Controls */}
-                <div className="flex flex-col gap-2.5 w-full">
-                  <button
-                    onClick={restart}
-                    className="w-full bg-pink-500 hover:bg-pink-600 border-4 border-slate-900 text-white font-black text-xs py-4 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer active:translate-y-1 shadow-md uppercase"
-                  >
-            <RotateCcw className="w-4 h-4 text-white stroke-[3]" /> {t('boss.fightAgain')}
-                  </button>
-                  
-              <BackToHubButton
-                label={t('shared.backToHub')}
-                onClick={() => { stop(); onBackToHub(); }}
-                className="w-full justify-center"
-              />
-                </div>
-
-              </div>
-            </div>
-          ) : (
-            <div className="text-center space-y-4 py-1">
+          <div className="text-center space-y-4 py-1">
               {(() => {
                 const currentWordItem = list.find(
                   (item) => item.word.toLowerCase() === target.toLowerCase(),
@@ -772,7 +689,7 @@ export function BossFightGame({
 
               <div
                 className="h-3.5 rounded-full bg-slate-200 border-4 border-slate-900 overflow-hidden shadow-inner"
-                aria-label={`Time left: ${timeLeft} seconds`}
+                aria-label={`${t('boss.timeLeft')}: ${timeLeft} ${t('sentenceBird.secondsSuffix')}`}
               >
                 <div
                   className="h-full bg-amber-400 transition-all border-r-4 border-slate-900"
@@ -787,8 +704,7 @@ export function BossFightGame({
                 </p>
               </div>
 
-            </div>
-          )}
+          </div>
         </div>
       )}
     </section>
