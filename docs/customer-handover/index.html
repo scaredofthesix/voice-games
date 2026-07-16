@@ -1,0 +1,1593 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for Voice Games, browser voice-controlled English word games for children">
+      
+      
+      
+        <link rel="canonical" href="https://scaredofthesix.github.io/voice-games/docs/customer-handover/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../architecture/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Customer handover - Voice Games - Team 40</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#customer-handover-team-40" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Voice Games - Team 40" class="md-header__button md-logo" aria-label="Voice Games - Team 40" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Voice Games - Team 40
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Customer handover
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/scaredofthesix/voice-games" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    scaredofthesix/voice-games
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Voice Games - Team 40" class="md-nav__button md-logo" aria-label="Voice Games - Team 40" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Voice Games - Team 40
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/scaredofthesix/voice-games" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    scaredofthesix/voice-games
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer handover
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Customer handover
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#handover-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handover status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-transferred-delegated-or-retained" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is transferred, delegated, or retained
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-secrets-and-external-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration, secrets, and external services
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup-deployment-recovery-and-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup, deployment, recovery, and verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-documentation-entry-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main documentation entry points
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#is-the-current-documentation-set-sufficient-and-what-support-remains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Is the current documentation set sufficient, and what support remains
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/static-view/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Static view
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/dynamic-view/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dynamic view
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/deployment-view/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment view
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-001-client-only-web-speech/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-001 Client-only Web Speech
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-002-canvas-rendering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-002 Canvas rendering
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-003-static-spa-github-pages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-003 Static SPA on GitHub Pages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-004-tts-anti-feedback-gate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-004 TTS anti-feedback gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr/ADR-005-shared-voice-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-005 Shared voice module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Process
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Process
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../definition-of-done/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Definition of Done
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Quality
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quality-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quality-requirement-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quality requirement tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-acceptance-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User acceptance tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Product
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Product
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-stories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User stories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#handover-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handover status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-transferred-delegated-or-retained" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is transferred, delegated, or retained
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-secrets-and-external-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration, secrets, and external services
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup-deployment-recovery-and-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup, deployment, recovery, and verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-documentation-entry-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main documentation entry points
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#is-the-current-documentation-set-sufficient-and-what-support-remains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Is the current documentation set sufficient, and what support remains
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="customer-handover-team-40">Customer handover (Team 40)<a class="headerlink" href="#customer-handover-team-40" title="Permanent link">&para;</a></h1>
+<p>The maintained, customer-facing record of what has actually been handed over, what the
+customer needs to know to use and understand the product, and what is still outstanding.
+This describes the <strong>current, actual</strong> state - not an aspirational future state - and is
+updated whenever access, deployment, limitations, or transition status change.</p>
+<h2 id="handover-status">Handover status<a class="headerlink" href="#handover-status" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Handover level reached</strong></td>
+<td><strong>Ready for independent use</strong> as the team's technical assessment for the Week 6 trial: the product is reachable by anyone with a link and a Chrome browser, with no account, install, or team involvement required. The customer verified public access and repository read access during the guided Week 6 session, but independent use outside the session and customer-side deployment were not confirmed. Final customer confirmation of the handover level is a Week 7 activity.</td>
+</tr>
+<tr>
+<td><strong>Customer-confirmation status</strong></td>
+<td><strong>Accepted with follow-up items.</strong> At the Week 6 meeting the customer explicitly accepted the team's plan to fix the identified game and documentation issues and present the result in Week 7 ("I explicitly accept that plan in this meeting"). This is an interim status for the Week 6 trial, not the final Assignment 6 Part 8 confirmation; the Week 7 transition-confirmation request will determine the final status recorded in <code>reports/week7/README.md</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>This table is authoritative for the three levels defined in Assignment 6 Part 8
+(<code>Ready for independent use</code>, <code>Independently used by customer</code>, <code>Deployed or operated on
+customer side</code>) and the three confirmation states (<code>Accepted</code>, <code>Accepted with follow-up
+items</code>, <code>Not yet accepted</code>). See <code>reports/week6/README.md</code> and <code>reports/week7/README.md</code>
+for the dated record of how this status changed each week.</p>
+<h2 id="what-is-transferred-delegated-or-retained">What is transferred, delegated, or retained<a class="headerlink" href="#what-is-transferred-delegated-or-retained" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Public product access (transferred to the customer, no action needed):</strong> the live
+  build at <a href="https://scaredofthesix.github.io/voice-games/">https://scaredofthesix.github.io/voice-games/</a> is a public URL the customer can
+  open, bookmark, and share on their own, in any browser session, indefinitely (as long as
+  the repository exists). No login, invite, or team involvement is required to use it.</li>
+<li><strong>Product source code (public, read access already available):</strong> the repository
+  <a href="https://github.com/scaredofthesix/voice-games">https://github.com/scaredofthesix/voice-games</a> is public under the MIT license. The
+  customer (or anyone) can already read, fork, or self-host the code without asking the
+  team for access.</li>
+<li><strong>Repository ownership, GitHub Pages hosting, and CI/CD (retained by the team):</strong> the
+  GitHub repository, its Actions workflows, and the <code>gh-pages</code> publishing branch stay under
+  the team's account (<code>scaredofthesix</code>) for the duration of the course. This is a
+  deliberate, currently-retained arrangement, not an oversight - a university-course
+  repository is not handed over as an organisation transfer. If the customer wants to run
+  their own long-term deployment after the course, see "Recovery and re-deployment" below;
+  the code and instructions to do so are already public.</li>
+<li><strong>Internal Innopolis VM mirror (retained by the team, network-restricted):</strong> a secondary
+  copy of the released build runs on <code>https://10.93.26.180:8085/</code> via Docker, reachable only
+  from inside the Innopolis network/VPN. This is a team-operated convenience mirror, not the
+  primary customer access path, and is not part of the handover.</li>
+<li><strong>Write access to issues/PRs (not currently delegated):</strong> the customer gives feedback
+  through the Sprint Review / UAT sessions, which the team turns into tracked GitHub issues
+  (see the feedback-response tables in <code>reports/week5/README.md</code>, <code>reports/week6/README.md</code>,
+  <code>reports/week7/README.md</code>). The customer does not currently have write access to the
+  repository; this has not been requested and has not come up as a blocker.</li>
+</ul>
+<h2 id="configuration-secrets-and-external-services">Configuration, secrets, and external services<a class="headerlink" href="#configuration-secrets-and-external-services" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>No API keys or secrets are required to run or deploy the product.</strong> The app is a fully
+  client-side single-page application; there is no backend service, database, or third-party
+  API call other than the browser's own Web Speech API (which Chrome may delegate internally
+  to Google's speech service - this is a browser behaviour, not something the team
+  configures or has access to).</li>
+<li>The only environment variable in the project is an <strong>optional</strong>, non-secret <code>APP_URL</code> in
+  <code>.env.example</code>, used only for self-referential links; the app works with the placeholder
+  value and does not require a real <code>.env</code> file for local development, CI, or the public
+  Pages deployment.</li>
+<li>The internal VM's HTTPS server needs a TLS key pair (<code>server.crt</code> + <code>server.key</code>).
+  <code>server.crt</code> (the public certificate) is committed to the repository; <code>server.key</code> (the
+  private key) is intentionally <strong>not</strong> committed (excluded via <code>.gitignore</code>) and must be
+  generated or provided directly on the VM if that deployment path is ever reused. This only
+  matters for the internal VM mirror, not for the public GitHub Pages deployment the
+  customer actually uses.</li>
+<li>No user accounts, payment processing, or personal data collection exist anywhere in the
+  product. Game progress (scores, practised/struggled words, sessions) is stored only in the
+  browser's own <code>localStorage</code> on the child's device and never leaves it.</li>
+</ul>
+<h2 id="setup-deployment-recovery-and-verification">Setup, deployment, recovery, and verification<a class="headerlink" href="#setup-deployment-recovery-and-verification" title="Permanent link">&para;</a></h2>
+<p>Everything below is also covered in more detail in <a href="../README.md">README.md</a> and
+<a href="../development-process/">docs/development-process.md</a>; this section is the handover-level
+summary of what the customer needs to be able to do.</p>
+<ul>
+<li><strong>Everyday use (no setup):</strong> open <a href="https://scaredofthesix.github.io/voice-games/">https://scaredofthesix.github.io/voice-games/</a> in
+  Google Chrome (desktop or Android), allow microphone access when prompted, and play. This
+  is the only step most users, including the customer, ever need.</li>
+<li><strong>Local run (for inspection or if the public link is unreachable, e.g. from certain
+  networks without a VPN):</strong>
+  <div class="highlight"><pre><span></span><code>npm<span class="w"> </span>install
+npm<span class="w"> </span>run<span class="w"> </span>dev<span class="w">      </span><span class="c1"># http://localhost:3000</span>
+</code></pre></div>
+  Node.js 18+ and Google Chrome are the only prerequisites; no accounts or keys.</li>
+<li><strong>Re-publishing the public site</strong> (only needed if the team disbands and the customer or a
+  future maintainer wants to redeploy from the same public source):
+  <div class="highlight"><pre><span></span><code><span class="nv">MSYS_NO_PATHCONV</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>npx<span class="w"> </span>vite<span class="w"> </span>build<span class="w"> </span>--base<span class="o">=</span>/voice-games/
+cp<span class="w"> </span>dist/index.html<span class="w"> </span>dist/404.html
+touch<span class="w"> </span>dist/.nojekyll
+npx<span class="w"> </span>-y<span class="w"> </span>gh-pages<span class="w"> </span>-d<span class="w"> </span>dist<span class="w"> </span>-b<span class="w"> </span>gh-pages
+</code></pre></div>
+  This publishes to whichever repository the command is run against - a fork gets its own
+  independent Pages site, so a full re-deployment does not depend on the team's account.</li>
+<li><strong>Verification that a build is healthy (before trusting a new release):</strong>
+  <div class="highlight"><pre><span></span><code>npm<span class="w"> </span>run<span class="w"> </span>lint<span class="w">            </span><span class="c1"># TypeScript type check</span>
+npm<span class="w"> </span><span class="nb">test</span><span class="w">                </span><span class="c1"># unit + integration tests</span>
+npm<span class="w"> </span>run<span class="w"> </span>test:coverage<span class="w">   </span><span class="c1"># coverage gate for critical modules</span>
+npm<span class="w"> </span>run<span class="w"> </span>build<span class="w">            </span><span class="c1"># production build</span>
+</code></pre></div>
+  The same checks (plus a Lighthouse accessibility audit and a documentation link check) run
+  automatically in CI on every pull request and on <code>main</code>; see
+  <a href="../.github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a> and
+  <a href="../.github/workflows/links.yml"><code>.github/workflows/links.yml</code></a>.</li>
+<li><strong>Recovery if the public site goes down:</strong> GitHub Pages availability is outside the
+  team's control (see the VPN note in README.md); the fallback is always the local <code>npm run
+  dev</code> path above, or a fresh <code>gh-pages</code> re-publish per the commands above from any clone of
+  the public repository.</li>
+</ul>
+<h2 id="main-documentation-entry-points">Main documentation entry points<a class="headerlink" href="#main-documentation-entry-points" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>What it's for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../README.md">README.md</a></td>
+<td>Product overview, access links, setup/run instructions - start here.</td>
+</tr>
+<tr>
+<td><strong>This document</strong></td>
+<td>What was handed over, what the customer needs to know, current handover status.</td>
+</tr>
+<tr>
+<td><a href="../user-acceptance-tests/">docs/user-acceptance-tests.md</a></td>
+<td>The scenarios the product is expected to pass, and their latest results.</td>
+</tr>
+<tr>
+<td><a href="../testing/">docs/testing.md</a></td>
+<td>How the automated test suite and quality gates work.</td>
+</tr>
+<tr>
+<td><a href="../quality-requirements/">docs/quality-requirements.md</a></td>
+<td>The measurable quality goals (accuracy, performance, accessibility) and how they are checked.</td>
+</tr>
+<tr>
+<td><a href="../architecture/">docs/architecture/README.md</a></td>
+<td>How the product is built and deployed, for anyone maintaining or extending it.</td>
+</tr>
+<tr>
+<td><a href="../roadmap/">docs/roadmap.md</a></td>
+<td>What shipped each sprint and what remains for the current course version.</td>
+</tr>
+<tr>
+<td><a href="../CONTRIBUTING.md">CONTRIBUTING.md</a></td>
+<td>How to propose a change if the customer or a future maintainer wants to contribute code.</td>
+</tr>
+<tr>
+<td><a href="../AGENTS.md">AGENTS.md</a></td>
+<td>Guidance for AI coding agents working in this repository.</td>
+</tr>
+<tr>
+<td><a href="README.md">Repository documentation</a></td>
+<td>The maintained architecture/process docs, browsable without cloning the repo.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="is-the-current-documentation-set-sufficient-and-what-support-remains">Is the current documentation set sufficient, and what support remains<a class="headerlink" href="#is-the-current-documentation-set-sufficient-and-what-support-remains" title="Permanent link">&para;</a></h2>
+<p>As of Sprint 4 (Week 6), the documentation set above is <strong>sufficient for the "Ready for
+independent use" level</strong>: a first-time reader (customer or TA) can reach the product, run it
+locally, understand what it does, and see how quality is checked, without asking the team
+anything. The customer reviewed <code>README.md</code>, <code>CONTRIBUTING.md</code>, <code>AGENTS.md</code>, <code>CHANGELOG.md</code>,
+and this document directly at the Week 6 meeting (2026-07-11) and confirmed the underlying
+facts (no secrets required, repository ownership, access model, MIT license) are correct and
+sufficient. The customer requested a restructuring of <code>README.md</code> (product-facing content
+first, developer-facing content in its own section, coursework wording removed) rather than
+any factual correction. That restructuring, a new <code>docs/README.md</code> directory index, and the
+pinned TypeScript version were completed during Week 6 finalization
+(<a href="https://github.com/scaredofthesix/voice-games/issues/146">issue #146</a>, closed).</p>
+<p>This is the team's Week 6 sufficiency assessment, not a claim that the customer used the
+product independently outside the guided trial or deployed it on their side. The customer
+accepted the Week 7 follow-up plan, and final acceptance against this handover document will
+be requested and recorded during Week 7.</p>
+<p><strong>Known remaining gaps, honestly stated:</strong>
+- The documentation is written for a developer/TA audience. There is no separate,
+  non-technical "how to play with your child" quick-start beyond the README. The customer
+  confirmed this is a real gap and requested a short visual Quick Start showing how to add a
+  custom word; that Quick Start (with a screenshot) was added to <code>README.md</code> during Week 6
+  finalization (issue #146, closed).
+- Repository ownership and CI/CD stay with the team for the course; a future maintainer who
+  is not a current team member would need to fork the repository to gain publish rights (see
+  "Setup, deployment, recovery, and verification" above for how that fork would work). The
+  customer confirmed at the Week 6 meeting that this arrangement is acceptable and that write
+  access is not needed.
+- The customer has not yet been asked to deploy or operate a copy of the product themselves;
+  until that happens (or is explicitly declined), the handover level above cannot move past
+  <code>Ready for independent use</code>.</p>
+<p>This section, and the status table at the top, were updated after the Week 6
+transition-readiness meeting (2026-07-11) and will be updated again after the Week 7
+final-transition confirmation.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
