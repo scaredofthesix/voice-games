@@ -74,7 +74,7 @@ Each game trains pronunciation through a different mechanic:
 
 ## Documentation
 
-- **Hosted documentation site:** https://scaredofthesix.github.io/voice-games/docs/
+- **Repository documentation:** [docs/README.md](./docs/README.md)
 - **Customer handover** - current transition status, what is transferred vs. retained, and
   setup, recovery, and verification steps: [docs/customer-handover.md](./docs/customer-handover.md)
 - **Documentation index** (what each document contains): [docs/README.md](./docs/README.md)

@@ -94,8 +94,9 @@ gitGraph
 
 ## Documentation site
 
-Project documentation is published as a static MkDocs (Material) site at
-https://scaredofthesix.github.io/voice-games/docs/ - see `mkdocs.yml`.
+Project documentation is maintained under `docs/` and configured as a static MkDocs
+(Material) site in `mkdocs.yml`. The repository copy remains the current public source while
+the separate Pages documentation path is pending a redeploy.
 Publishing:
 
 ```bash

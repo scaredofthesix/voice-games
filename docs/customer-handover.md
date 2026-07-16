@@ -121,7 +121,7 @@ summary of what the customer needs to be able to do.
 | [docs/roadmap.md](./roadmap.md) | What shipped each sprint and what remains for the current course version. |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | How to propose a change if the customer or a future maintainer wants to contribute code. |
 | [AGENTS.md](../AGENTS.md) | Guidance for AI coding agents working in this repository. |
-| Hosted docs site: <https://scaredofthesix.github.io/voice-games/docs/> | The same architecture/process docs, browsable without cloning the repo. |
+| [Repository documentation](README.md) | The maintained architecture/process docs, browsable without cloning the repo. |
 
 ## Is the current documentation set sufficient, and what support remains
 

@@ -58,7 +58,7 @@ CSV-columns export (#104) landed earlier and is retained in Sprint 5 traceabilit
 - [CONTRIBUTING.md](../../CONTRIBUTING.md)
 - [AGENTS.md](../../AGENTS.md)
 - [docs/customer-handover.md](../../docs/customer-handover.md)
-- [Hosted documentation site](https://scaredofthesix.github.io/voice-games/docs/)
+- [Repository documentation](../../docs/README.md)
 - **Final product access (MVP v3):** _PENDING - link the final SemVer release once tagged._
   Current live product (latest trial release): https://scaredofthesix.github.io/voice-games/
 

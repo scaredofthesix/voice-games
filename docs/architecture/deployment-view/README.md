@@ -59,7 +59,7 @@ flowchart TB
 | Environment | URL | Purpose | Updated by |
 |---|---|---|---|
 | Production | https://scaredofthesix.github.io/voice-games/ | Public deployment used by the customer and for UAT | Manual publish of `dist/` to the `gh-pages` branch |
-| Docs site | https://scaredofthesix.github.io/voice-games/docs/ | Hosted project documentation (MkDocs Material) | `mkdocs build` published into the `docs/` folder of `gh-pages` |
+| Docs source | [Documentation index](../../README.md) | Maintained project documentation; the separate hosted MkDocs path is pending redeploy | `mkdocs build` published into the `docs/` folder of `gh-pages` |
 | Local dev | http://localhost:3000 | Development (`npm run dev`) | - |
 | Innopolis VM (internal mirror) | https://10.93.26.180:8085/ | Internal mirror of released builds (originally the MVP v0 host, now running v0.3.0); reachable only inside the Innopolis network | Manual deploy of tagged builds |
 

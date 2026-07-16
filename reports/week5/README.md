@@ -18,7 +18,7 @@ the target English word out loud (Web Speech API, Chrome only).
   (the GitHub Pages link may not open from some networks or regions without a
   VPN; this is an external GitHub availability restriction outside the team's
   control, and the same build can always be run locally from the repository)
-- Hosted documentation site (MkDocs): https://scaredofthesix.github.io/voice-games/docs/
+- Repository documentation (MkDocs source): [docs/README.md](../../docs/README.md)
 - Run / access instructions: [root README](../../README.md)
 
 ## Sprint
@@ -100,8 +100,8 @@ ADR-002 makes the DOM chrome the only accessible surface).
 - [Development process and configuration management](../../docs/development-process.md)
   (Scrum cadence, protected-trunk Git workflow with a gitGraph, quality gates,
   SemVer releases).
-- Hosted docs site: https://scaredofthesix.github.io/voice-games/docs/
-  (MkDocs Material, `mkdocs.yml`; published 2026-07-03).
+- Repository documentation: [docs/README.md](../../docs/README.md)
+  (MkDocs Material source, `mkdocs.yml`; the separate Pages path requires redeployment).
 - Definition of Done extended with the architecture documentation gate
   ([docs/definition-of-done.md](../../docs/definition-of-done.md), item 12).
 - Four new UAT scenarios UAT-05..08

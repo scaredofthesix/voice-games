@@ -46,7 +46,7 @@ tests, coverage gates, production build, Lighthouse, and the Lychee link check a
 - [CONTRIBUTING.md](../../CONTRIBUTING.md)
 - [AGENTS.md](../../AGENTS.md)
 - [docs/customer-handover.md](../../docs/customer-handover.md)
-- [Hosted documentation site](https://scaredofthesix.github.io/voice-games/docs/)
+- [Repository documentation](../../docs/README.md)
 - [docs/roadmap.md](../../docs/roadmap.md)
 - [Run, verification, and deployment instructions](../../README.md#setup-and-deployment)
 - [CHANGELOG.md](../../CHANGELOG.md)
