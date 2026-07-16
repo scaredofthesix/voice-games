@@ -45,13 +45,16 @@ out loud and the game reacts. If you are not sure how it sounds, press **Listen 
 
 ![Boss Fight in play: say the word on the card to strike the boss](./docs/images/game-boss-fight.png)
 
-**5. Review the result and progress.** The result screen at the end of a run shows only
-that run: score, record, and word practice results. To see progress across all games, return
-to the **Hub** and press **Progress** in the top-right corner. The Progress view shows
-sessions, high scores, and practised words per game, and can export the data as CSV for a
-parent or teacher. CSV export is separate from custom-word input.
+**5. Review the game result, then overall progress.** When the run ends, the result screen
+shows only that run: its score, your personal high, and a per-word practice report (which
+words were correct and which need more practice).
 
-![The Progress button highlighted in the top-right corner of the Hub](./docs/images/progress-location.svg)
+![Game result screen: run score, personal high, and a per-word practice report](./docs/images/game-result.png)
+
+To see progress across all games, press **Back to hub** to return to the **Hub**, then press
+**Progress** in the top-right corner. The Progress view shows sessions, high scores, and
+practised words per game, and can export the data as CSV for a parent or teacher. CSV export
+is separate from custom-word input.
 
 ![My Progress view with per-game stats and CSV export](./docs/images/progress.png)
 
