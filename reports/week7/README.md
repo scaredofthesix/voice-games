@@ -22,9 +22,10 @@
 
 ## Week 7 follow-up and MVP v3 summary
 
-Sprint 5 turned the Week 6 trial feedback into the final ten-game product. All six Week 6
-follow-up issues were implemented, reviewed by a second team member, and merged to the
-protected `main` branch, followed by a cross-cutting integration pass:
+Sprint 5 turned the Week 6 trial feedback into the final ten-game product. The initial fixes
+for all six Week 6 follow-up issues were reviewed by a second team member and merged to the
+protected `main` branch, followed by a cross-cutting integration pass. A final #142 follow-up
+then addressed the customer's deeper gameplay-overlap concern before the Week 7 review:
 
 - **Sentence Bird** (#140, PR #157): three hearts, a visible per-word timer, a defeat fall
   animation, high-contrast active word, and push-to-talk mic activation; unrelated speech no
@@ -32,9 +33,10 @@ protected `main` branch, followed by a cross-cutting integration pass:
 - **Echo Microphone** (#141, PR #153): the memory mechanic is restored - sequence words show
   during teaching playback then flip to hidden cards for recall - each recognized phrase is
   consumed once, and the hub button is brightened.
-- **Magic Wizard + Treasure Hunter** (#142, PR #158): spells now track the moving monster
-  (no more misses into empty space), one recognized word casts exactly one spell, and
-  Treasure Hunter shows a prominent top-of-screen countdown timer.
+- **Magic Wizard + Treasure Hunter** (#142, PR #158 plus the Week 7 follow-up branch):
+  Treasure Hunter keeps its timed submarine-and-chest loop and visible countdown. Magic
+  Wizard is now an untimed spell-crafting puzzle: the child can pronounce a growing recipe
+  of word runes in any order, with no approaching monster or lost lives.
 - **Adaptive word selection** (#143, PR #155): progress-weighted scheduling now reacts to
   in-round struggles, with a seeded distribution test suite; extended in integration to
   cover all ten games.
@@ -80,10 +82,10 @@ confirmed against the Week 7 meeting outcome (PENDING)._
 
 - Voice input requires Google Chrome (Web Speech API); this is a documented product
   limitation, not a defect.
-- Three Week 6 follow-up issues have their code merged but are held open pending live
-  customer confirmation: Echo Microphone short-phrase card count (#141), the Magic
-  Wizard / Treasure Hunter roster decision (#142), and any remaining preview-screen English
-  strings (#145).
+- Echo Microphone short-phrase card count (#141), the reworked Magic Wizard mechanic (#142),
+  and preview-screen language coverage (#145) still require live customer confirmation.
+- The final #142 follow-up must be reviewed, merged, and included in the review build before
+  the team presents it as delivered.
 - _Any further blockers or support expectations raised at the Week 7 meeting: PENDING._
 
 ## Customer-independent use / deployment evidence
@@ -98,7 +100,7 @@ belong only in the Week 7 Moodle PDF._
 |---|---|---|
 | Sentence Bird: contrast, silence handling, timer/lose animation, push-to-talk mic | [#140](https://github.com/scaredofthesix/voice-games/issues/140) | Merged (PR #157) |
 | Echo Microphone: restore memory mechanic, short-phrase card bug, brighten hub button | [#141](https://github.com/scaredofthesix/voice-games/issues/141) | Code merged (PR #153); short-phrase card count open for live customer confirmation |
-| Magic Wizard: hitbox bug, timer visibility, overlap with Treasure Hunter | [#142](https://github.com/scaredofthesix/voice-games/issues/142) | Code merged (PR #158); roster decision (keep both) open for customer confirmation |
+| Magic Wizard: hitbox bug, timer visibility, overlap with Treasure Hunter | [#142](https://github.com/scaredofthesix/voice-games/issues/142) | Initial hitbox/timer fix merged (PR #158); distinct untimed rune-recipe gameplay prepared for review and customer confirmation |
 | Adaptive word selection: dynamic within-round reweighting + tests | [#143](https://github.com/scaredofthesix/voice-games/issues/143) | Merged (PR #155), extended to all ten games in PR #160 |
 | Bulk custom-word import (multiline, file + paste) | [#144](https://github.com/scaredofthesix/voice-games/issues/144) | Merged (PR #154); CSV-file import added in PR #160 |
 | Stop audio on hub/game switch; internationalize preview; keep CSV English | [#145](https://github.com/scaredofthesix/voice-games/issues/145) | Code merged (PR #156); remaining preview English open for customer confirmation |
@@ -140,7 +142,8 @@ Moodle (not committed to the public repository).
 
 Ten voice-controlled English games share one UI shell, adaptive per-word scheduling,
 bilingual EN/RU playback for built-in and custom words, and per-word practice reporting.
-`main` is green (TypeScript check clean, 140 tests across 18 files, production build clean).
+The review branch is green (TypeScript check clean, 145 tests across 19 files, coverage
+gates and production build clean).
 The final MVP v3 release, transition confirmation, and demo video complete the picture -
 _release and confirmation PENDING per the sections above._
 
@@ -148,7 +151,7 @@ _release and confirmation PENDING per the sections above._
 
 | Team member | Issues / PRs authored | Review + merge | Testing | Docs / transition / release |
 |---|---|---|---|---|
-| scaredofthesix (Maksim Bodulev) | Sprint 5 fix PRs #153-#158, integration PR #160; issues #140-#145 implemented | - | Wrote adaptive/parser/game tests; ran lint + 140 tests + build gate | CHANGELOG, roadmap, Week 7 report, handover doc, git/release orchestration |
+| scaredofthesix (Maksim Bodulev) | Sprint 5 fix PRs #153-#158, integration PR #160; issues #140-#145 implemented | - | Wrote adaptive/parser/game tests; ran lint + 145 tests + coverage + build gate | CHANGELOG, roadmap, Week 7 report, handover doc, git/release orchestration |
 | Kotumbaa | - | Reviewed + merged #153 (Echo), #155 (adaptive) | Live-tested Echo memory mechanic and adaptive repeats | - |
 | flikspy | - | Reviewed + merged #154 (bulk import), #157 (Sentence Bird) | Live-tested import and mic push-to-talk | - |
 | TeraloToxin | - | Reviewed + merged #156 (cross-game audio); reviewing #160 | Live-tested audio stop on navigation | - |

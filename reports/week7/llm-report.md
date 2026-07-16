@@ -27,7 +27,11 @@
   and playback cleanup, Magic Wizard preview localization, and centralized audio shutdown.
 - Updated the changelog and recorded the non-destructive #142 product decision to keep Magic
   Wizard and Treasure Hunter as distinct games in the ten-game roster.
-- Ran TypeScript checking, 131 automated tests, coverage, the production build, and diff
+- Re-audited #142 against the original customer transcript after the initial hitbox fix and
+  identified that the gameplay-overlap concern was still unresolved. Reworked Magic Wizard
+  into an untimed, progressively larger rune-recipe puzzle, added pure recipe/matching logic
+  tests and integration coverage, and synchronized the UAT and Week 7 review materials.
+- Ran TypeScript checking, 145 automated tests, coverage, the production build, and diff
   whitespace validation.
 
 ## Human oversight
@@ -42,5 +46,5 @@
 
 - Automated speech tests use the repository's mocked Web Speech API. They verify state and
   interaction behavior but do not replace a Chrome test with a real microphone.
-- Canvas behavior is partly verified through mocked drawing contexts and pure logic tests;
-  the final visual and gameplay feel still require human browser UAT.
+- The redesigned Magic Wizard recipe state and mocked voice flow are automated, but the
+  final visual feel and real-microphone behavior still require human Chrome UAT.

@@ -57,7 +57,7 @@ Each game trains pronunciation through a different mechanic:
 7. **Voice Treasure Hunter** - steer a submarine deeper to collect treasure chests.
 8. **Sentence Bird** - guide a bird through the pipes by speaking the words.
 9. **Echo Microphone** - listen to a growing word chain and repeat it back from memory.
-10. **Magic Wizard** - cast elemental spells by pronouncing words to defeat dark forces.
+10. **Magic Wizard** - charge growing recipes of word runes in any order to craft spells.
 
 | Voice Lane Racer | Voice Bubble Popper |
 |---|---|

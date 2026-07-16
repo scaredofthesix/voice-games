@@ -139,13 +139,17 @@ https://scaredofthesix.github.io/voice-games/.
 
 ## UAT-12 Cast spells in Magic Wizard
 
-- **Goal:** A child can cast spells in Magic Wizard, and verify spell graphics/sounds.
+- **Goal:** A child can build spells from word runes in Magic Wizard without another timed
+  survival loop.
 - **Preconditions:** App open in Chrome, microphone allowed.
 - **Steps:**
   1. From the hub, press Play on Magic Wizard.
   2. Select a word set and press Start.
-  3. Pronounce the spell words.
-- **Expected result:** Spelling the words casts visual spells (fully opaque emojis) accompanied by a single clean chime sound.
+  3. Pronounce the glowing rune words in any order.
+  4. Complete four recipes and observe that each new recipe contains more runes.
+- **Expected result:** Each recognition event charges exactly one matching rune. Charging
+  every rune completes the spell and opens a larger recipe. There is no monster timer or
+  life loss, so the mechanic is visibly different from Voice Treasure Hunter.
 
 ## UAT-13 Reinforce learning with Adaptive Word Selection
 
