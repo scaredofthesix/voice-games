@@ -20,10 +20,10 @@ characters, solve voice puzzles, and complete ten different games.
    as *Nice to meet you* remain intact. CSV import is not used.
 3. Choose the difficulty, run length, or mode offered by the game.
 4. Press Start and play with your voice.
-5. Review the result for that run. For progress across every game, return to the Hub and
-   press **Progress** in the top-right corner.
+5. Review the result for that run, then open overall progress. Press **Back to hub** to
+   return to the Hub, then press **Progress** in the top-right corner.
 
-![The Progress button highlighted in the top-right corner of the Hub](images/progress-location.svg)
+![Game result screen: run score, personal high, and a per-word practice report](images/game-result.png)
 
 The end-of-game result reports one run. The separate Progress view combines sessions, high
 scores, and word practice across all games on this device.
