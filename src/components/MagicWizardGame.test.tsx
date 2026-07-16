@@ -26,26 +26,13 @@ describe('MagicWizardGame (integration)', () => {
   let cleanup: () => void;
 
   beforeEach(() => {
+    window.localStorage.clear();
     window.localStorage.setItem('ui_language', 'en');
-    // Mock HTMLCanvasElement.getContext to avoid canvas errors
-    HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
-      clearRect: vi.fn(),
-      fillRect: vi.fn(),
-      beginPath: vi.fn(),
-      arc: vi.fn(),
-      ellipse: vi.fn(),
-      fill: vi.fn(),
-      stroke: vi.fn(),
-      createLinearGradient: vi.fn().mockReturnValue({
-        addColorStop: vi.fn(),
-      }),
-      fillText: vi.fn(),
-      setLineDash: vi.fn(),
-    });
   });
 
   afterEach(() => {
     cleanup?.();
+    vi.useRealTimers();
     vi.clearAllMocks();
   });
 
@@ -58,7 +45,7 @@ describe('MagicWizardGame (integration)', () => {
     );
 
     expect(
-      screen.getByRole('button', { name: /begin spellcasting/i }),
+      screen.getByRole('button', { name: /open spellbook/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { name: /magic wizard/i }),
@@ -78,7 +65,7 @@ describe('MagicWizardGame (integration)', () => {
     expect(handleBack).toHaveBeenCalled();
   });
 
-  test('renders the animated preview canvas text in Russian', () => {
+  test('renders the spell-recipe preview in Russian', () => {
     window.localStorage.setItem('ui_language', 'ru');
     cleanup = installMockSpeechRecognition();
 
@@ -88,11 +75,117 @@ describe('MagicWizardGame (integration)', () => {
       </UiLanguageProvider>,
     );
 
-    const getContextMock = vi.mocked(HTMLCanvasElement.prototype.getContext);
-    const context = getContextMock.mock.results[0]?.value as unknown as {
-      fillText: ReturnType<typeof vi.fn>;
-    };
-    expect(context.fillText).toHaveBeenCalledWith('ОГНЕННЫЕ ЗАКЛИНАНИЯ', 110, 42);
-    expect(context.fillText).toHaveBeenCalledWith('Мечи пылающие огненные шары!', 110, 62);
+    expect(screen.getByText('ОГНЕННАЯ КНИГА')).toBeInTheDocument();
+    expect(
+      screen.getByText('Заряжай слова-руны для магии огня!'),
+    ).toBeInTheDocument();
+  });
+
+  test('starts with a two-rune recipe and speech charges one rune', () => {
+    cleanup = installMockSpeechRecognition();
+    render(
+      <UiLanguageProvider>
+        <MagicWizardGame onBackToHub={() => {}} customWords={[]} />
+      </UiLanguageProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /open spellbook/i }));
+
+    const runes = screen.getAllByRole('listitem');
+    expect(runes).toHaveLength(2);
+    const firstWord = runes[0].querySelector('p')?.textContent;
+    expect(firstWord).toBeTruthy();
+
+    act(() => {
+      MockSpeechRecognition.latest().emit(firstWord || '');
+    });
+
+    expect(screen.getAllByRole('listitem')[0]).toHaveAttribute('data-charged', 'true');
+    expect(screen.getAllByRole('listitem')[1]).toHaveAttribute('data-charged', 'false');
+  });
+
+  test('grows each recipe and finishes after four completed spells', () => {
+    vi.useFakeTimers();
+    cleanup = installMockSpeechRecognition();
+    render(
+      <UiLanguageProvider>
+        <MagicWizardGame onBackToHub={() => {}} customWords={[]} />
+      </UiLanguageProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /open spellbook/i }));
+
+    for (const expectedRuneCount of [2, 3, 4, 5]) {
+      const runes = screen.getAllByRole('listitem');
+      expect(runes).toHaveLength(expectedRuneCount);
+
+      for (const rune of runes) {
+        const word = rune.querySelector('p')?.textContent || '';
+        act(() => {
+          MockSpeechRecognition.latest().emit(word);
+        });
+      }
+
+      act(() => {
+        vi.advanceTimersByTime(900);
+      });
+    }
+
+    expect(
+      screen.getByRole('heading', { name: /spellbook complete/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Spells Crafted').parentElement).toHaveTextContent('4');
+  });
+
+  test('only a displayed cursed rune breaks wards and three curses lose the game', () => {
+    vi.useFakeTimers();
+    cleanup = installMockSpeechRecognition();
+    render(
+      <UiLanguageProvider>
+        <MagicWizardGame onBackToHub={() => {}} customWords={[]} />
+      </UiLanguageProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /open spellbook/i }));
+
+    act(() => {
+      MockSpeechRecognition.latest().emit('a harmless unrelated phrase');
+    });
+    expect(screen.getByLabelText(/magic wards: 3/i)).toBeInTheDocument();
+
+    for (const remainingWards of [2, 1, 0]) {
+      const curseWord = document.querySelector<HTMLElement>('[data-cursed-word="true"]')
+        ?.textContent;
+      expect(curseWord).toBeTruthy();
+
+      act(() => {
+        MockSpeechRecognition.latest().emit(curseWord || '');
+      });
+
+      expect(
+        screen.getByLabelText(new RegExp(`magic wards: ${remainingWards}`, 'i')),
+      ).toBeInTheDocument();
+
+      if (remainingWards === 0) break;
+
+      for (const rune of screen.getAllByRole('listitem')) {
+        const word = rune.querySelector('p')?.textContent || '';
+        act(() => {
+          MockSpeechRecognition.latest().emit(word);
+        });
+      }
+
+      act(() => {
+        vi.advanceTimersByTime(900);
+      });
+    }
+
+    act(() => {
+      vi.advanceTimersByTime(750);
+    });
+
+    expect(
+      screen.getByRole('heading', { name: /the curse won/i }),
+    ).toBeInTheDocument();
   });
 });

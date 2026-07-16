@@ -1,7 +1,8 @@
 # Voice Games documentation
 
-This directory holds the maintained documentation for Voice Games. The same content is
-browsable as a hosted site at <https://scaredofthesix.github.io/voice-games/docs/>.
+This directory holds the maintained documentation for Voice Games. It is also browsable in
+the [public GitHub repository](https://github.com/scaredofthesix/voice-games/tree/main/docs).
+The separate MkDocs Pages publish is currently pending a documentation redeploy.
 
 New here? Start with the [customer handover](./customer-handover.md) for the current
 transition status, or the [root README](../README.md) to play the product.

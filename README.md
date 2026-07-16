@@ -57,7 +57,8 @@ Each game trains pronunciation through a different mechanic:
 7. **Voice Treasure Hunter** - steer a submarine deeper to collect treasure chests.
 8. **Sentence Bird** - guide a bird through the pipes by speaking the words.
 9. **Echo Microphone** - listen to a growing word chain and repeat it back from memory.
-10. **Magic Wizard** - cast elemental spells by pronouncing words to defeat dark forces.
+10. **Magic Wizard** - charge growing rune recipes, cast animated elemental spells, and
+    avoid the cursed word before all three magic wards break.
 
 | Voice Lane Racer | Voice Bubble Popper |
 |---|---|
@@ -73,7 +74,7 @@ Each game trains pronunciation through a different mechanic:
 
 ## Documentation
 
-- **Hosted documentation site:** https://scaredofthesix.github.io/voice-games/docs/
+- **Repository documentation:** [docs/README.md](./docs/README.md)
 - **Customer handover** - current transition status, what is transferred vs. retained, and
   setup, recovery, and verification steps: [docs/customer-handover.md](./docs/customer-handover.md)
 - **Documentation index** (what each document contains): [docs/README.md](./docs/README.md)
