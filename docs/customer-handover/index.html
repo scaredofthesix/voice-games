@@ -16,7 +16,7 @@
         <link rel="prev" href="..">
       
       
-        <link rel="next" href="../architecture/">
+        <link rel="next" href="../admin/">
       
       
         
@@ -426,6 +426,33 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Administration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     
     
     
@@ -440,10 +467,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
@@ -461,8 +488,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -601,10 +628,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
             
   
   
@@ -622,8 +649,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -836,10 +863,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -857,8 +884,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -979,10 +1006,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   
@@ -1000,8 +1027,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1150,10 +1177,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
             
   
   
@@ -1171,8 +1198,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1405,23 +1432,50 @@ for the dated record of how this status changed each week.</p>
 <li>No user accounts, payment processing, or personal data collection exist anywhere in the
   product. Game progress (scores, practised/struggled words, sessions) is stored only in the
   browser's own <code>localStorage</code> on the child's device and never leaves it.</li>
+<li>The development toolchain uses the exact TypeScript version <strong>5.8.3</strong> in both
+  <code>package.json</code> and <code>package-lock.json</code>. <code>npm ci</code> therefore installs the same compiler in
+  local verification and GitHub Actions.</li>
 </ul>
 <h2 id="setup-deployment-recovery-and-verification">Setup, deployment, recovery, and verification<a class="headerlink" href="#setup-deployment-recovery-and-verification" title="Permanent link">&para;</a></h2>
-<p>Everything below is also covered in more detail in <a href="../README.md">README.md</a> and
+<p>Everything below is also covered in more detail in the
+<a href="https://github.com/scaredofthesix/voice-games#readme">root README</a> and
 <a href="../development-process/">docs/development-process.md</a>; this section is the handover-level
 summary of what the customer needs to be able to do.</p>
 <ul>
 <li><strong>Everyday use (no setup):</strong> open <a href="https://scaredofthesix.github.io/voice-games/">https://scaredofthesix.github.io/voice-games/</a> in
-  Google Chrome (desktop or Android), allow microphone access when prompted, and play. This
-  is the only step most users, including the customer, ever need.</li>
+  Google Chrome (desktop or Android), allow microphone access when prompted, and play. If
+  access was denied, open the site controls icon to the left of Chrome's address bar, allow
+  the microphone for this site, and reload. This is the only setup most users need.</li>
+<li><strong>Microphone controls:</strong> most games listen after Start and show a listening indicator.
+  Sentence Bird is push-to-talk: press <strong>Click &amp; say / Нажми и скажи</strong>, click the active word
+  card, or press Space once, then speak while its green microphone indicator is active. Echo
+  Microphone pauses recognition while the chain is read aloud, starts listening automatically
+  on the <strong>Speak now</strong> phase, gives a retry window after a non-match, and replays the chain
+  after a failed retry.</li>
+<li><strong>Custom vocabulary:</strong> from the Hub, open any game and expand <strong>Add my own words</strong> before
+  starting. Add one pair manually or copy two columns from Excel/LibreOffice Calc and paste
+  them into the single bulk field. Column 1 is the English word or phrase, column 2 is its
+  translation. Separate the two columns with the spreadsheet tab or at least four
+  consecutive ordinary spaces. One to three spaces do not separate columns, so a phrase
+  such as <em>Nice to meet you</em> stays intact. Multiple rows and Russian/Unicode translations
+  are supported. CSV file upload is intentionally not part of the final product.</li>
+<li><strong>Results and overall progress:</strong> an end-of-game result describes only that run. To see
+  combined progress, return to the Hub and press <strong>Progress</strong> in the top-right corner. The
+  <a href="https://github.com/scaredofthesix/voice-games#how-to-play-example-boss-fight">README quick start</a>
+  includes an annotated
+  screenshot of the button.</li>
 <li><strong>Local run (for inspection or if the public link is unreachable, e.g. from certain
   networks without a VPN):</strong>
   <div class="highlight"><pre><span></span><code>npm<span class="w"> </span>install
 npm<span class="w"> </span>run<span class="w"> </span>dev<span class="w">      </span><span class="c1"># http://localhost:3000</span>
 </code></pre></div>
   Node.js 18+ and Google Chrome are the only prerequisites; no accounts or keys.</li>
-<li><strong>Re-publishing the public site</strong> (only needed if the team disbands and the customer or a
-  future maintainer wants to redeploy from the same public source):
+<li><strong>Automatic production deployment:</strong> every push to <code>main</code> triggers
+  <code>.github/workflows/deploy-pages.yml</code>. It installs
+  locked dependencies, runs the type check and tests, builds the production project-page
+  bundle, and publishes only after those steps pass.</li>
+<li><strong>Manual re-publishing</strong> (recovery only, or if the team disbands and a future maintainer
+  wants to redeploy from the same public source):
   <div class="highlight"><pre><span></span><code><span class="nv">MSYS_NO_PATHCONV</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>npx<span class="w"> </span>vite<span class="w"> </span>build<span class="w"> </span>--base<span class="o">=</span>/voice-games/
 cp<span class="w"> </span>dist/index.html<span class="w"> </span>dist/404.html
 touch<span class="w"> </span>dist/.nojekyll
@@ -1437,8 +1491,11 @@ npm<span class="w"> </span>run<span class="w"> </span>build<span class="w">     
 </code></pre></div>
   The same checks (plus a Lighthouse accessibility audit and a documentation link check) run
   automatically in CI on every pull request and on <code>main</code>; see
-  <a href="../.github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a> and
-  <a href="../.github/workflows/links.yml"><code>.github/workflows/links.yml</code></a>.</li>
+  <a href="https://github.com/scaredofthesix/voice-games/blob/main/.github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a>
+  and
+  <a href="https://github.com/scaredofthesix/voice-games/blob/main/.github/workflows/links.yml"><code>.github/workflows/links.yml</code></a>.
+  The production workflow
+  repeats the release-critical type check, tests and build before publishing.</li>
 <li><strong>Recovery if the public site goes down:</strong> GitHub Pages availability is outside the
   team's control (see the VPN note in README.md); the fallback is always the local <code>npm run
   dev</code> path above, or a fresh <code>gh-pages</code> re-publish per the commands above from any clone of
@@ -1454,12 +1511,16 @@ npm<span class="w"> </span>run<span class="w"> </span>build<span class="w">     
 </thead>
 <tbody>
 <tr>
-<td><a href="../README.md">README.md</a></td>
+<td><a href="https://github.com/scaredofthesix/voice-games#readme">README.md</a></td>
 <td>Product overview, access links, setup/run instructions - start here.</td>
 </tr>
 <tr>
 <td><strong>This document</strong></td>
 <td>What was handed over, what the customer needs to know, current handover status.</td>
+</tr>
+<tr>
+<td><a href="../admin/">docs/admin.md</a></td>
+<td>Routine administration, automatic release operation, player-data boundaries, browser support, and recovery.</td>
 </tr>
 <tr>
 <td><a href="../user-acceptance-tests/">docs/user-acceptance-tests.md</a></td>
@@ -1482,16 +1543,24 @@ npm<span class="w"> </span>run<span class="w"> </span>build<span class="w">     
 <td>What shipped each sprint and what remains for the current course version.</td>
 </tr>
 <tr>
-<td><a href="../CONTRIBUTING.md">CONTRIBUTING.md</a></td>
+<td><a href="https://github.com/scaredofthesix/voice-games/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a></td>
 <td>How to propose a change if the customer or a future maintainer wants to contribute code.</td>
 </tr>
 <tr>
-<td><a href="../AGENTS.md">AGENTS.md</a></td>
+<td><a href="https://github.com/scaredofthesix/voice-games/blob/main/AGENTS.md">AGENTS.md</a></td>
 <td>Guidance for AI coding agents working in this repository.</td>
 </tr>
 <tr>
-<td><a href="README.md">Repository documentation</a></td>
-<td>The maintained architecture/process docs, browsable without cloning the repo.</td>
+<td><a href="https://scaredofthesix.github.io/voice-games/docs/">Hosted documentation</a></td>
+<td>The MkDocs version of the maintained architecture and process documentation.</td>
+</tr>
+<tr>
+<td><a href="https://github.com/scaredofthesix/voice-games/tree/main/docs">Repository documentation</a></td>
+<td>The documentation source, browsable without cloning the repo.</td>
+</tr>
+<tr>
+<td><a href="https://github.com/scaredofthesix/voice-games/milestone/5">Current Sprint Backlog</a></td>
+<td>Issues selected for Sprint 5 and the final MVP v3 transition.</td>
 </tr>
 </tbody>
 </table>
