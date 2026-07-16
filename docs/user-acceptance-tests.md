@@ -196,6 +196,24 @@ https://scaredofthesix.github.io/voice-games/.
   2. Open SkateWord, start the game, locate the Back to Hub button. Press it.
 - **Expected result:** Both games immediately return the player to the hub using the same unified button appearance.
 
+## UAT-15 Paste custom words and phrases in bulk
+
+- **Goal:** A parent can paste several English words or phrases with Unicode translations
+  without multi-word phrases being split into separate vocabulary items.
+- **Preconditions:** App open on any game setup screen.
+- **Steps:**
+  1. Expand **Add my own words** and open the bulk-paste field.
+  2. Paste `Nice to meet you   Приятно познакомиться` with only three ordinary spaces
+     between the English phrase and translation, then try to add it.
+  3. Replace that separator with four ordinary spaces.
+  4. On a second line, paste `Good morning`, a Tab character, and `Доброе утро`, then add
+     both rows.
+  5. Select **My words** and inspect the saved vocabulary.
+- **Expected result:** The three-space version is not silently split or saved as two
+  columns. Both the four-space row and the tab-separated row are accepted together.
+  *Nice to meet you* and *Good morning* each remain one English phrase, and both Russian
+  translations are preserved exactly.
+
 ---
 
 ## Execution history
@@ -223,9 +241,10 @@ minor stability limitation (UAT-11), rejected the old Magic Wizard mechanic and 
 obsolete, required a one-failure adaptive-selection retest for UAT-13, and kept UAT-14 open
 only for the visual comparison of the first-generation games. The scenarios above now
 describe the replacement behavior. Automated tests cover the new Voice Maze Quest path,
-tab-separated vocabulary paste, deterministic reinforcement queue, and Echo memory/TTS
-phase separation. Customer execution of the revised UAT-12 and UAT-13 is still required;
-this repository does not claim those customer retests have happened.
+tab-or-four-space vocabulary paste, preservation of multi-word phrases, deterministic
+reinforcement queue, and Echo memory/TTS phase separation. Customer execution of the
+revised UAT-12, UAT-13, and new UAT-15 is still required; this repository does not claim
+those customer retests have happened.
 
 Results were recorded during the recorded Sprint Review / UAT sessions of
 2026-06-27, 2026-07-03, and 2026-07-11, and are summarized (without private customer

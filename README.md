@@ -27,8 +27,10 @@ Most games follow the same five steps.
 **2. Choose the vocabulary.** Select a built-in word set, or open **Add my own words**
 before starting. Add one English word or phrase with its translation, or paste several rows
 copied from Excel or LibreOffice Calc. Column 1 is English, column 2 is the translation, and
-the separator between them must be a tab. Spaces inside phrases such as *Nice to meet you*
-are kept. CSV file import is not used. Select **My words** after saving the new vocabulary.
+the separator between them may be a tab or at least four consecutive ordinary spaces.
+One to three spaces never split a row, so phrases such as *Nice to meet you* are kept as
+one English item. Multiple rows and Unicode translations are supported. CSV file import is
+not used. Select **My words** after saving the new vocabulary.
 
 ![Add a custom word and its translation](./docs/images/custom-words.png)
 

@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added one clear bulk custom-word flow for two tab-separated columns pasted from Excel or
-  LibreOffice Calc. It preserves multi-word phrases and Unicode translations, accepts BOM
-  and Windows/Unix line endings, and reports malformed or duplicate rows (#144).
+- Added one clear bulk custom-word flow for two-column rows pasted from Excel, LibreOffice
+  Calc, or plain text. A tab or at least four consecutive ordinary spaces separates the
+  English word/phrase from its translation; one to three spaces do not. The flow preserves
+  multi-word phrases and Unicode translations, accepts BOM and Windows/Unix line endings,
+  and reports malformed or duplicate rows (#144).
 - Added a deterministic in-round reinforcement queue so a word failed once returns within
   the next one to three eligible prompts, then loses extra priority gradually after correct
   answers (#143).
@@ -48,7 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   kept Progress CSV export in English, and localized every visible game HUD and result
   label (#145).
 - Removed the fragile custom-vocabulary CSV file upload and ambiguous comma, semicolon,
-  pipe and ordinary-space delimiter guessing (#144).
+  pipe, and one-to-three-space delimiter guessing; an explicit run of four or more spaces
+  remains a supported bulk-paste separator (#144).
 - Preserved Russian playback for newly added custom words, standardized high-contrast hub
   buttons and pink replay buttons, and tightened Treasure Hunter's narrow-screen header.
 

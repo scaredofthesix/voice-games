@@ -89,8 +89,10 @@ summary of what the customer needs to be able to do.
 - **Custom vocabulary:** from the Hub, open any game and expand **Add my own words** before
   starting. Add one pair manually or copy two columns from Excel/LibreOffice Calc and paste
   them into the single bulk field. Column 1 is the English word or phrase, column 2 is its
-  translation, and the spreadsheet tab is the separator. CSV file upload is intentionally
-  not part of the final product.
+  translation. Separate the two columns with the spreadsheet tab or at least four
+  consecutive ordinary spaces. One to three spaces do not separate columns, so a phrase
+  such as *Nice to meet you* stays intact. Multiple rows and Russian/Unicode translations
+  are supported. CSV file upload is intentionally not part of the final product.
 - **Results and overall progress:** an end-of-game result describes only that run. To see
   combined progress, return to the Hub and press **Progress** in the top-right corner. The
   [README quick start](https://github.com/scaredofthesix/voice-games#how-to-play-example-boss-fight)
