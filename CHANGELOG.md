@@ -27,9 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the redundant top memory card was removed and the word reference offers EN/RU playback
   (#141).
 - Magic Wizard now has its own untimed spell-crafting loop: each round presents a growing
-  recipe of word runes that can be pronounced in any order, with no approaching monster or
-  lost lives. Treasure Hunter retains its submarine-and-chest loop with a prominent
-  top-of-screen countdown (#142).
+  recipe of word runes that can be pronounced in any order, an animated elemental spell
+  circle, and one clearly marked cursed word. Only saying that word breaks one of three
+  magic wards; unrelated speech is safe. Treasure Hunter retains its submarine-and-chest
+  loop with a prominent top-of-screen countdown (#142).
 - Adaptive word scheduling now also covers Voice Racer, Bubble Popper, Sentence Bird, and
   Echo Microphone, so all ten games react to recorded struggles (#143).
 

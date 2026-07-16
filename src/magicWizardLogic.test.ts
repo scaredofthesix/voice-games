@@ -4,6 +4,7 @@ import {
   buildSpellRecipe,
   findSpokenRune,
   MAX_RECIPE_SIZE,
+  matchesCursedRune,
 } from './magicWizardLogic';
 import type { WordData } from './types';
 
@@ -26,12 +27,15 @@ describe('Magic Wizard spell recipes', () => {
     expect(new Set(final.runes.map((rune) => rune.word))).toHaveLength(
       MAX_RECIPE_SIZE,
     );
+    expect(final.cursedRune?.word).toBe('Forest');
+    expect(final.runes).not.toContain(final.cursedRune);
   });
 
   test('supports a one-word custom list', () => {
     const recipe = buildSpellRecipe(WORDS.slice(0, 1), {}, 3, -1, () => 0.5);
 
     expect(recipe.runes.map((rune) => rune.word)).toEqual(['Apple']);
+    expect(recipe.cursedRune).toBeNull();
   });
 
   test('one recognition event charges only the first matching open rune', () => {
@@ -40,5 +44,11 @@ describe('Magic Wizard spell recipes', () => {
     expect(findSpokenRune('apple', repeated, new Set())).toBe(0);
     expect(findSpokenRune('apple', repeated, new Set([0]))).toBe(1);
     expect(findSpokenRune('apple', repeated, new Set([0, 1]))).toBe(-1);
+  });
+
+  test('only the displayed curse word triggers the curse', () => {
+    expect(matchesCursedRune('dragon', WORDS[3])).toBe(true);
+    expect(matchesCursedRune('apple', WORDS[3])).toBe(false);
+    expect(matchesCursedRune('dragon', null)).toBe(false);
   });
 });

@@ -145,11 +145,17 @@ https://scaredofthesix.github.io/voice-games/.
 - **Steps:**
   1. From the hub, press Play on Magic Wizard.
   2. Select a word set and press Start.
-  3. Pronounce the glowing rune words in any order.
-  4. Complete four recipes and observe that each new recipe contains more runes.
+  3. Say an unrelated word and confirm that all three magic wards remain active.
+  4. Pronounce the marked cursed word and confirm that one ward breaks and the curse seals
+     for the rest of that recipe.
+  5. Pronounce the glowing rune words in any order.
+  6. Complete four recipes and observe that each new recipe contains more runes, or trigger
+     the curse on three different recipes to reach the defeat result.
 - **Expected result:** Each recognition event charges exactly one matching rune. Charging
-  every rune completes the spell and opens a larger recipe. There is no monster timer or
-  life loss, so the mechanic is visibly different from Voice Treasure Hunter.
+  every rune plays a visible spell-cast effect and opens a larger recipe. Only the explicitly
+  displayed cursed word can break a ward, each curse breaks at most one ward per recipe, and
+  three broken wards produce a clear defeat result. There is no monster timer, and unrelated
+  speech is safe, so the mechanic is visibly different from Voice Treasure Hunter.
 
 ## UAT-13 Reinforce learning with Adaptive Word Selection
 

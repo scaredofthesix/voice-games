@@ -98,7 +98,9 @@ planned beyond it.
   score, record, and per-word practice reporting.
 - Product decision for #142: keep both Magic Wizard and Treasure Hunter in the final ten-game
   roster, but make their gameplay clearly different. Magic Wizard now uses an untimed,
-  progressively larger spell recipe whose word runes can be charged in any order. Treasure
+  progressively larger spell recipe whose word runes can be charged in any order. A marked
+  cursed word creates a three-ward lose condition without penalizing unrelated speech, and
+  animated elemental effects make each completed recipe feel like a cast spell. Treasure
   Hunter keeps the timed submarine, depth, and chest-collection loop. No game is merged or
   retired without a later customer-backed roster decision.
 - README and documentation restructuring #146, completed during Week 6 finalization.

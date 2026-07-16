@@ -136,4 +136,56 @@ describe('MagicWizardGame (integration)', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Spells Crafted').parentElement).toHaveTextContent('4');
   });
+
+  test('only a displayed cursed rune breaks wards and three curses lose the game', () => {
+    vi.useFakeTimers();
+    cleanup = installMockSpeechRecognition();
+    render(
+      <UiLanguageProvider>
+        <MagicWizardGame onBackToHub={() => {}} customWords={[]} />
+      </UiLanguageProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /open spellbook/i }));
+
+    act(() => {
+      MockSpeechRecognition.latest().emit('a harmless unrelated phrase');
+    });
+    expect(screen.getByLabelText(/magic wards: 3/i)).toBeInTheDocument();
+
+    for (const remainingWards of [2, 1, 0]) {
+      const curseWord = document.querySelector<HTMLElement>('[data-cursed-word="true"]')
+        ?.textContent;
+      expect(curseWord).toBeTruthy();
+
+      act(() => {
+        MockSpeechRecognition.latest().emit(curseWord || '');
+      });
+
+      expect(
+        screen.getByLabelText(new RegExp(`magic wards: ${remainingWards}`, 'i')),
+      ).toBeInTheDocument();
+
+      if (remainingWards === 0) break;
+
+      for (const rune of screen.getAllByRole('listitem')) {
+        const word = rune.querySelector('p')?.textContent || '';
+        act(() => {
+          MockSpeechRecognition.latest().emit(word);
+        });
+      }
+
+      act(() => {
+        vi.advanceTimersByTime(900);
+      });
+    }
+
+    act(() => {
+      vi.advanceTimersByTime(750);
+    });
+
+    expect(
+      screen.getByRole('heading', { name: /the curse won/i }),
+    ).toBeInTheDocument();
+  });
 });

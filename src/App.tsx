@@ -305,8 +305,8 @@ export default function App() {
       id: "magic-wizard",
       title: language === 'en' ? 'Magic Wizard' : 'Магический Волшебник',
       description: language === 'en' 
-        ? 'Charge word runes in any order to craft growing elemental spell recipes!'
-        : 'Заряжай слова-руны в любом порядке и создавай растущие рецепты стихийных заклинаний!',
+        ? 'Charge glowing runes, cast elemental spells, and avoid the cursed word before all three wards break!'
+        : 'Заряжай руны, создавай стихийные заклинания и не дай проклятому слову разрушить три щита!',
       icon: "🧙‍♂️",
       accent: "bg-violet-400",
       record: magicWizardHighScore,

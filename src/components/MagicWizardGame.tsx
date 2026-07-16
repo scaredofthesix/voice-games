@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, Check, Pause, Sparkles, Volume2 } from 'lucide-react';
+import { BookOpen, Check, Pause, Shield, Skull, Sparkles, Volume2 } from 'lucide-react';
 
 import { BUILTIN_CATEGORIES } from '../data';
 import {
   buildSpellRecipe,
   findSpokenRune,
+  matchesCursedRune,
   SPELLS_PER_SESSION,
 } from '../magicWizardLogic';
 import {
@@ -41,6 +42,19 @@ interface MagicWizardGameProps {
 
 type WizardTheme = 'fire' | 'ice' | 'lightning';
 type GamePhase = 'START' | 'PLAYING' | 'GAMEOVER';
+type GameOutcome = 'won' | 'lost' | null;
+
+const WARDS_PER_SESSION = 3;
+const MAGIC_STARS = [
+  ['7%', '14%', '0s'],
+  ['18%', '68%', '0.7s'],
+  ['29%', '24%', '1.4s'],
+  ['42%', '78%', '0.2s'],
+  ['55%', '12%', '1.8s'],
+  ['66%', '70%', '1s'],
+  ['78%', '21%', '0.4s'],
+  ['91%', '63%', '1.3s'],
+] as const;
 
 const THEME_STYLE: Record<
   WizardTheme,
@@ -76,16 +90,20 @@ export function MagicWizardGame({
   onDeleteCustomWord = () => undefined,
   onClearCustomWords = () => undefined,
 }: MagicWizardGameProps) {
-  const { t } = useUiLanguage();
+  const { language, t } = useUiLanguage();
   const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
   const [phase, setPhase] = useState<GamePhase>('START');
   const [paused, setPaused] = useState(false);
   const [theme, setTheme] = useState<WizardTheme>('fire');
   const [spellNumber, setSpellNumber] = useState(0);
   const [recipe, setRecipe] = useState<WordData[]>([]);
+  const [cursedRune, setCursedRune] = useState<WordData | null>(null);
+  const [curseTriggered, setCurseTriggered] = useState(false);
   const [chargedRunes, setChargedRunes] = useState<Set<number>>(() => new Set());
+  const [wards, setWards] = useState(WARDS_PER_SESSION);
+  const [outcome, setOutcome] = useState<GameOutcome>(null);
   const [lastRecognized, setLastRecognized] = useState('');
-  const [feedback, setFeedback] = useState<'listening' | 'charged' | 'complete'>('listening');
+  const [feedback, setFeedback] = useState<'listening' | 'charged' | 'complete' | 'curse'>('listening');
   const [wordStudyStats, setWordStudyStats] = useState<
     Record<string, { spoken: number; struggled: number }>
   >({});
@@ -93,7 +111,10 @@ export function MagicWizardGame({
   const phaseRef = useRef<GamePhase>('START');
   const pausedRef = useRef(false);
   const recipeRef = useRef<WordData[]>([]);
+  const cursedRuneRef = useRef<WordData | null>(null);
+  const curseTriggeredRef = useRef(false);
   const chargedRunesRef = useRef<Set<number>>(new Set());
+  const wardsRef = useRef(WARDS_PER_SESSION);
   const spellNumberRef = useRef(0);
   const previousWordIndexRef = useRef(-1);
   const changingRecipeRef = useRef(false);
@@ -124,6 +145,15 @@ export function MagicWizardGame({
       youSaid: t('wizard.youSaid'),
       hearRune: t('wizard.hearRune'),
       workshop: t('wizard.workshop'),
+      wards: t('wizard.wards'),
+      cursedRune: t('wizard.cursedRune'),
+      doNotSay: t('wizard.doNotSay'),
+      curseSealed: t('wizard.curseSealed'),
+      curseHit: t('wizard.curseHit'),
+      safeMistakes: t('wizard.safeMistakes'),
+      spellCast: t('wizard.spellCast'),
+      defeatTitle: t('wizard.defeatTitle'),
+      defeatSubtitle: t('wizard.defeatSubtitle'),
     }),
     [t],
   );
@@ -184,8 +214,12 @@ export function MagicWizardGame({
       );
       previousWordIndexRef.current = nextRecipe.lastWordIndex;
       recipeRef.current = nextRecipe.runes;
+      cursedRuneRef.current = nextRecipe.cursedRune;
+      curseTriggeredRef.current = false;
       chargedRunesRef.current = new Set();
       setRecipe(nextRecipe.runes);
+      setCursedRune(nextRecipe.cursedRune);
+      setCurseTriggered(false);
       setChargedRunes(new Set());
       setFeedback('listening');
       setLastRecognized('');
@@ -203,6 +237,7 @@ export function MagicWizardGame({
 
     nextRecipeTimerRef.current = setTimeout(() => {
       if (completedSpells >= SPELLS_PER_SESSION) {
+        setOutcome('won');
         phaseRef.current = 'GAMEOVER';
         setPhase('GAMEOVER');
         changingRecipeRef.current = false;
@@ -224,6 +259,42 @@ export function MagicWizardGame({
 
       setLastRecognized(text);
       if (Date.now() - lastTtsPlayTimeRef.current < 750) return;
+
+      if (
+        !curseTriggeredRef.current &&
+        matchesCursedRune(text, cursedRuneRef.current)
+      ) {
+        const curseWord = cursedRuneRef.current?.word;
+        curseTriggeredRef.current = true;
+        setCurseTriggered(true);
+        setFeedback('curse');
+        speakSound.playLose();
+
+        if (curseWord) {
+          setWordStudyStats((current) => ({
+            ...current,
+            [curseWord]: {
+              spoken: current[curseWord]?.spoken || 0,
+              struggled: (current[curseWord]?.struggled || 0) + 1,
+            },
+          }));
+          saveProgress(recordWordStruggled(loadProgress(), 'magic-wizard', curseWord));
+        }
+
+        const nextWards = wardsRef.current - 1;
+        wardsRef.current = nextWards;
+        setWards(nextWards);
+        if (nextWards <= 0) {
+          changingRecipeRef.current = true;
+          setOutcome('lost');
+          nextRecipeTimerRef.current = setTimeout(() => {
+            phaseRef.current = 'GAMEOVER';
+            setPhase('GAMEOVER');
+            changingRecipeRef.current = false;
+          }, 700);
+        }
+        return;
+      }
 
       const matchedRuneIndex = findSpokenRune(
         text,
@@ -268,8 +339,15 @@ export function MagicWizardGame({
     if (nextRecipeTimerRef.current) clearTimeout(nextRecipeTimerRef.current);
     previousWordIndexRef.current = -1;
     spellNumberRef.current = 0;
+    wardsRef.current = WARDS_PER_SESSION;
+    cursedRuneRef.current = null;
+    curseTriggeredRef.current = false;
     changingRecipeRef.current = false;
     setSpellNumber(0);
+    setWards(WARDS_PER_SESSION);
+    setOutcome(null);
+    setCursedRune(null);
+    setCurseTriggered(false);
     setWordStudyStats({});
     setPaused(false);
     pausedRef.current = false;
@@ -293,6 +371,10 @@ export function MagicWizardGame({
   }, []);
 
   const themeStyle = THEME_STYLE[theme];
+  const translatedWord = (word: WordData) =>
+    language === 'ru'
+      ? word.translationRu || word.translation
+      : word.translation;
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6" style={{ fontFamily: 'Fredoka, sans-serif' }}>
@@ -388,16 +470,37 @@ export function MagicWizardGame({
 
       {phase === 'PLAYING' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-2 bg-white border-4 border-slate-900 rounded-2xl p-3">
-            <div className="text-center">
+          <div className="grid grid-cols-2 gap-2 rounded-2xl border-4 border-slate-900 bg-white p-2 sm:grid-cols-4 sm:p-3">
+            <div className="rounded-xl bg-violet-50 p-2 text-center">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">{strings.score}</span>
               <span className="text-xl font-black text-slate-900">🪄 {spellNumber}</span>
             </div>
-            <div className="text-center border-x-4 border-slate-900">
+            <div className="rounded-xl bg-purple-50 p-2 text-center">
               <span className="text-[10px] font-black uppercase tracking-widest text-violet-600 block">{strings.spellProgress}</span>
-              <span className="text-xl font-black text-violet-700">{Math.min(spellNumber + 1, SPELLS_PER_SESSION)} / {SPELLS_PER_SESSION}</span>
+              <span className="text-xl font-black text-violet-700">
+                {Math.min(
+                  feedback === 'complete' ? spellNumber : spellNumber + 1,
+                  SPELLS_PER_SESSION,
+                )}{' '}
+                / {SPELLS_PER_SESSION}
+              </span>
             </div>
-            <div className="text-center">
+            <div className="rounded-xl bg-cyan-50 p-2 text-center">
+              <span className="block text-[10px] font-black uppercase tracking-widest text-cyan-700">{strings.wards}</span>
+              <span className="mt-1 flex justify-center gap-1" aria-label={`${strings.wards}: ${wards}`}>
+                {Array.from({ length: WARDS_PER_SESSION }).map((_, index) => (
+                  <Shield
+                    key={index}
+                    className={`h-5 w-5 stroke-[3] ${
+                      index < wards
+                        ? 'fill-cyan-300 text-cyan-800'
+                        : 'fill-slate-100 text-slate-300'
+                    }`}
+                  />
+                ))}
+              </span>
+            </div>
+            <div className="rounded-xl bg-emerald-50 p-2 text-center">
               <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">{strings.best}</span>
               <span className="text-xl font-black text-emerald-600 block">{highScore}</span>
             </div>
@@ -412,23 +515,63 @@ export function MagicWizardGame({
 
           <section
             aria-label={strings.workshop}
-            className={`relative overflow-hidden rounded-3xl border-8 border-slate-900 bg-gradient-to-br ${themeStyle.glow} p-4 sm:p-6 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]`}
+            className={`wizard-spell-stage relative overflow-hidden rounded-3xl border-8 border-slate-900 bg-gradient-to-br ${themeStyle.glow} p-3 sm:p-6 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]`}
           >
-            <div className="flex items-center justify-center gap-3 text-white" aria-hidden="true">
-              <span className="text-5xl sm:text-6xl">🧙‍♂️</span>
-              <Sparkles className="h-8 w-8 animate-pulse" />
-              <span className="text-5xl sm:text-6xl">{themeStyle.icon}</span>
+            <div className="wizard-stars" aria-hidden="true">
+              {MAGIC_STARS.map(([left, top, delay], index) => (
+                <span
+                  key={index}
+                  style={{ left, top, animationDelay: delay }}
+                >
+                  ✦
+                </span>
+              ))}
             </div>
 
-            <div className="mt-4 rounded-2xl border-4 border-slate-900 bg-white/95 p-3 sm:p-4">
-              <h2 className="text-center text-lg font-black uppercase tracking-wider text-slate-900">
-                {strings.recipeTitle}
-              </h2>
+            <div className="wizard-duel-scene relative z-10 grid grid-cols-[auto_1fr_auto] items-center gap-2 px-1 py-2 text-white sm:gap-5 sm:px-8" aria-hidden="true">
+              <div className={`wizard-character ${feedback === 'curse' ? 'is-hit' : ''}`}>
+                <span className="text-5xl sm:text-7xl">🧙‍♂️</span>
+                <span className="wizard-wand-spark">✦</span>
+              </div>
+
+              <div className={`wizard-spell-circle wizard-spell-circle-${theme} ${feedback === 'complete' ? 'is-casting' : ''}`}>
+                <span className="wizard-orbit wizard-orbit-one" />
+                <span className="wizard-orbit wizard-orbit-two" />
+                <span className="wizard-element-core">{themeStyle.icon}</span>
+                <span className="wizard-charge-count">{chargedRunes.size}/{recipe.length}</span>
+              </div>
+
+              <div className={`wizard-curse-cloud ${curseTriggered ? 'is-sealed' : ''}`}>
+                <span className="text-4xl sm:text-6xl">{curseTriggered ? '🔒' : '🌑'}</span>
+                <Skull className="wizard-curse-skull h-5 w-5 sm:h-7 sm:w-7" />
+              </div>
+            </div>
+
+            {feedback === 'complete' && (
+              <div className="wizard-cast-overlay" aria-hidden="true">
+                <span>{themeStyle.icon}</span>
+                <strong>{strings.spellCast}</strong>
+              </div>
+            )}
+            {feedback === 'curse' && (
+              <div className="wizard-curse-overlay" aria-hidden="true">
+                <span>💥</span>
+                <strong>{strings.curseHit}</strong>
+              </div>
+            )}
+
+            <div className="wizard-spellbook relative z-10 mt-2 rounded-2xl border-4 border-slate-900 bg-white/95 p-3 sm:mt-4 sm:p-5">
+              <div className="flex items-center justify-center gap-2 text-slate-900">
+                <BookOpen className="h-5 w-5 text-violet-700" />
+                <h2 className="text-center text-lg font-black uppercase tracking-wider">
+                  {strings.recipeTitle}
+                </h2>
+              </div>
               <p className="mb-3 text-center text-xs font-bold text-violet-700">
                 {strings.recipeHint}
               </p>
 
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="list">
+              <div className="wizard-rune-grid grid grid-cols-2 gap-2 sm:grid-cols-3" role="list">
                 {recipe.map((rune, index) => {
                   const charged = chargedRunes.has(index);
                   return (
@@ -436,12 +579,13 @@ export function MagicWizardGame({
                       key={`${rune.word}-${index}`}
                       role="listitem"
                       data-charged={charged ? 'true' : 'false'}
-                      className={`relative min-w-0 rounded-2xl border-4 border-slate-900 p-3 text-center transition-all ${
+                      className={`wizard-rune-card relative min-w-0 rounded-2xl border-4 border-slate-900 p-3 text-center transition-all ${
                         charged
-                          ? `${themeStyle.charged} scale-[0.98]`
+                          ? `${themeStyle.charged} is-charged scale-[0.98]`
                           : `${themeStyle.panel} shadow-[3px_3px_0_0_rgba(15,23,42,1)]`
                       }`}
                     >
+                      {charged && <span className="wizard-rune-energy" aria-hidden="true">✦</span>}
                       <span className="block text-2xl" aria-hidden="true">
                         {charged ? '✨' : '◇'}
                       </span>
@@ -449,7 +593,7 @@ export function MagicWizardGame({
                         {rune.word}
                       </p>
                       <p className="mt-0.5 break-words text-[10px] font-bold text-violet-900">
-                        {rune.translationRu || rune.translation}
+                        {translatedWord(rune)}
                       </p>
                       {charged ? (
                         <span className="mt-2 inline-flex items-center gap-1 text-[10px] font-black uppercase text-slate-900">
@@ -470,10 +614,42 @@ export function MagicWizardGame({
                 })}
               </div>
 
+              {cursedRune && (
+                <aside
+                  data-cursed-rune="true"
+                  className={`wizard-cursed-rune mt-3 rounded-2xl border-4 p-3 text-center ${
+                    curseTriggered
+                      ? 'is-sealed border-slate-500 bg-slate-200 text-slate-600'
+                      : 'border-rose-950 bg-gradient-to-r from-slate-950 via-purple-950 to-rose-950 text-white'
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-rose-300">
+                      <Skull className="h-4 w-4" /> {strings.cursedRune}
+                    </span>
+                    <p data-cursed-word="true" className={`text-base font-black ${curseTriggered ? 'line-through' : ''}`}>
+                      {cursedRune.word}
+                    </p>
+                    <span className="text-[10px] font-bold text-violet-200">
+                      {translatedWord(cursedRune)}
+                    </span>
+                  </div>
+                  <p className={`mt-1 text-[10px] font-black uppercase ${curseTriggered ? 'text-slate-600' : 'text-rose-300 animate-pulse'}`}>
+                    {curseTriggered ? strings.curseSealed : strings.doNotSay}
+                  </p>
+                </aside>
+              )}
+
+              <p className="mt-2 text-center text-[10px] font-bold text-slate-500">
+                {strings.safeMistakes}
+              </p>
+
               <div className="mt-3 min-h-8 rounded-xl border-2 border-slate-900 bg-slate-100 px-3 py-2 text-center" role="status" aria-live="polite">
                 <p className="text-xs font-black uppercase tracking-wider text-slate-800">
                   {feedback === 'complete'
                     ? strings.spellComplete
+                    : feedback === 'curse'
+                      ? strings.curseHit
                     : status.status === 'listening'
                       ? t('shared.micListening')
                       : status.message}
@@ -487,7 +663,7 @@ export function MagicWizardGame({
             </div>
 
             {paused && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-900/90 text-white">
+              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-2 bg-slate-900/90 text-white">
                 <Pause className="h-12 w-12" />
                 <span className="text-lg font-black uppercase tracking-widest">{strings.paused}</span>
               </div>
@@ -499,8 +675,8 @@ export function MagicWizardGame({
       {phase === 'GAMEOVER' && (
         <div className="max-w-md mx-auto w-full py-4 animate-scale-up">
           <GameResultCard
-            title={strings.gameOverTitle}
-            description={strings.gameOverSubtitle}
+            title={outcome === 'lost' ? strings.defeatTitle : strings.gameOverTitle}
+            description={outcome === 'lost' ? strings.defeatSubtitle : strings.gameOverSubtitle}
             scoreLabel={strings.score}
             score={score}
             bestLabel={strings.best}
@@ -509,7 +685,7 @@ export function MagicWizardGame({
             words={list}
             replayLabel={strings.playAgain}
             onReplay={startGame}
-            icon={<span className="block text-5xl">🧙‍♂️📖✨</span>}
+            icon={<span className="block text-5xl">{outcome === 'lost' ? '🧙‍♂️💨📕' : '🧙‍♂️📖✨'}</span>}
           />
         </div>
       )}

@@ -36,7 +36,8 @@ then addressed the customer's deeper gameplay-overlap concern before the Week 7 
 - **Magic Wizard + Treasure Hunter** (#142, PR #158 plus the Week 7 follow-up branch):
   Treasure Hunter keeps its timed submarine-and-chest loop and visible countdown. Magic
   Wizard is now an untimed spell-crafting puzzle: the child can pronounce a growing recipe
-  of word runes in any order, with no approaching monster or lost lives.
+  of word runes in any order, see the elemental spell take shape, and avoid a clearly marked
+  cursed word. Only that word can break one of three wards; unrelated speech is safe.
 - **Adaptive word selection** (#143, PR #155): progress-weighted scheduling now reacts to
   in-round struggles, with a seeded distribution test suite; extended in integration to
   cover all ten games.
@@ -100,7 +101,7 @@ belong only in the Week 7 Moodle PDF._
 |---|---|---|
 | Sentence Bird: contrast, silence handling, timer/lose animation, push-to-talk mic | [#140](https://github.com/scaredofthesix/voice-games/issues/140) | Merged (PR #157) |
 | Echo Microphone: restore memory mechanic, short-phrase card bug, brighten hub button | [#141](https://github.com/scaredofthesix/voice-games/issues/141) | Code merged (PR #153); short-phrase card count open for live customer confirmation |
-| Magic Wizard: hitbox bug, timer visibility, overlap with Treasure Hunter | [#142](https://github.com/scaredofthesix/voice-games/issues/142) | Initial hitbox/timer fix merged (PR #158); distinct untimed rune-recipe gameplay prepared for review and customer confirmation |
+| Magic Wizard: hitbox bug, timer visibility, overlap with Treasure Hunter | [#142](https://github.com/scaredofthesix/voice-games/issues/142) | Initial hitbox/timer fix merged (PR #158); distinct rune recipes, spell effects, cursed-word challenge, and three-ward defeat prepared in PR #162 for review and customer confirmation |
 | Adaptive word selection: dynamic within-round reweighting + tests | [#143](https://github.com/scaredofthesix/voice-games/issues/143) | Merged (PR #155), extended to all ten games in PR #160 |
 | Bulk custom-word import (multiline, file + paste) | [#144](https://github.com/scaredofthesix/voice-games/issues/144) | Merged (PR #154); CSV-file import added in PR #160 |
 | Stop audio on hub/game switch; internationalize preview; keep CSV English | [#145](https://github.com/scaredofthesix/voice-games/issues/145) | Code merged (PR #156); remaining preview English open for customer confirmation |

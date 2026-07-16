@@ -8,6 +8,7 @@ export const MAX_RECIPE_SIZE = 5;
 
 export interface SpellRecipe {
   runes: WordData[];
+  cursedRune: WordData | null;
   lastWordIndex: number;
 }
 
@@ -24,7 +25,7 @@ export function buildSpellRecipe(
   rng: () => number = Math.random,
 ): SpellRecipe {
   if (words.length === 0) {
-    return { runes: [], lastWordIndex: -1 };
+    return { runes: [], cursedRune: null, lastWordIndex: -1 };
   }
 
   const recipeSize = Math.min(
@@ -52,7 +53,22 @@ export function buildSpellRecipe(
     lastWordIndex = selected.originalIndex;
   }
 
-  return { runes, lastWordIndex };
+  const runeWords = new Set(runes.map((rune) => rune.word.toLocaleLowerCase()));
+  const curseCandidates = available.filter(
+    ({ word }) => !runeWords.has(word.word.toLocaleLowerCase()),
+  );
+  const curseIndex = curseCandidates.length > 0
+    ? Math.min(
+        curseCandidates.length - 1,
+        Math.floor(rng() * curseCandidates.length),
+      )
+    : -1;
+
+  return {
+    runes,
+    cursedRune: curseCandidates[curseIndex]?.word || null,
+    lastWordIndex,
+  };
 }
 
 /** Return the first uncharged rune matched by one recognition event. */
@@ -65,4 +81,12 @@ export function findSpokenRune(
     (rune, index) =>
       !chargedRuneIndexes.has(index) && matchesWord(transcript, rune.word, true),
   );
+}
+
+/** A curse only triggers when its explicitly displayed English word is spoken. */
+export function matchesCursedRune(
+  transcript: string,
+  cursedRune: WordData | null,
+): boolean {
+  return cursedRune ? matchesWord(transcript, cursedRune.word, true) : false;
 }
