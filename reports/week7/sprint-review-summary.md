@@ -57,10 +57,12 @@ approved as release requirements.
 The final follow-up fixes are implemented in the `v0.5.0` build. They were independently
 reviewed in PR #167, merged to protected `main`, and deployed successfully. The customer
 explicitly agreed to send a short Telegram acceptance confirmation after receiving and
-checking the final release link. Until that release exists and the written reply is received,
-the handover level remains **Ready for independent use** and the confirmation status remains
-**Accepted with follow-up items**.
+checking the final release link. The
+[v0.5.0 release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0) now exists
+and is ready to send. Until the written reply is received, the handover level remains
+**Ready for independent use** and the confirmation status remains **Accepted with follow-up
+items**.
 
 The [public sanitized MVP3 gameplay demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA) was
-published after the session. It demonstrates the final reviewed build but is not customer
+published after the session. It demonstrates the final release build but is not customer
 acceptance evidence.

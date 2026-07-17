@@ -29,14 +29,19 @@
   local run passed TypeScript checking, 172 tests across 23 files, coverage thresholds at
   71.73% statement coverage, and the production build.
 - Assisted with issue-linked branch preparation, PR description, release evidence audit, and
-  capture of the public product and successful GitHub Pages deployment screenshots.
+  capture of the public product, successful GitHub Pages deployment, and final GitHub Release
+  screenshots.
+- Assisted with creating and verifying the final `v0.5.0` GitHub Release from the exact
+  protected `main` commit, including the required milestone, product, handover, report, demo,
+  run-instruction, and changelog links.
 
 ## Human oversight and original team work
 
 - Team members conducted the real customer meetings, interpreted product priorities, selected
   the final scope, and recorded the public demo. TeraloToxin independently reviewed and merged
-  PR #167, after which the repository workflow deployed the reviewed build. The team remains
-  responsible for the Moodle evidence, Demo Day materials, final release, and Telegram request.
+  PR #167 and approved release-preparation PR #168, after which the repository workflow
+  deployed the reviewed build. The team remains responsible for the Moodle evidence, Demo Day
+  materials, and Telegram request.
 - Codex worked from repository evidence and the supplied cleaned transcript. It did not invent
   customer quotes, UAT results, rehearsal completion, deployment, or written acceptance.
 - A different human team member reviewed and merged the final implementation PR. Codex neither
@@ -47,7 +52,7 @@
 - Automated speech tests use the repository's mocked Web Speech API. They verify event
   consumption and game state but cannot measure the accuracy of Chrome's external
   speech-to-text service.
-- The public gameplay demo shows the release candidate, but it is not evidence of customer
+- The public gameplay demo shows the final release build, but it is not evidence of customer
   acceptance or customer-side deployment.
 - Week 7 rehearsal completion and the customer's final written Telegram confirmation remain
   separate human evidence and are not inferred from code, tests, or the demo video.

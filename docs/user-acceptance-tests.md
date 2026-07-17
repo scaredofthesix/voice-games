@@ -244,8 +244,8 @@ accepted the browser speech-to-text limitations for the MVP3 release and did not
 Skip, Report, Reroll, or manual-play controls. The small follow-up fixes recorded above are
 implemented and the public demo video is available. They were independently reviewed and
 verified on protected `main`; the GitHub Pages workflow deployed them after PR #167 was
-merged. The SemVer release and the customer's written confirmation after receiving the
-release link remain.
+merged. The final `v0.5.0` SemVer release is published from protected `main`. The customer's
+written confirmation after receiving the release link remains.
 
 **Final MVP v3 confirmation scenarios:** the three retests below were the customer-facing
 agenda for the 2026-07-17 review. Their Pass results are recorded in the execution-history

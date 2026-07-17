@@ -41,8 +41,9 @@ Held after the Sprint 5 Sprint Review / Week 7 customer session (2026-07-16).
   trail is complete, and do not admin-merge again.
 - **Completed 2026-07-17:** run the customer retests of UAT-12 (Voice Maze Quest), UAT-13
   (one-failure adaptive) and UAT-15 (bulk paste), then record the results.
-- **In progress:** cut the MVP v3 SemVer release. Independent review, protected merge,
-  deployment, the confirmation call, and the public demo video are complete; the release must
-  link the demo and the Week 7 report.
+- **Completed 2026-07-17:** publish the MVP v3 `v0.5.0` SemVer release after independent
+  approval and protected merge, linking the demo and Week 7 report.
+- **In progress:** send the final release link to the customer and preserve the written reply
+  in the private Week 7 Moodle evidence.
 - Keep the "understandable from the first screen" and "acceptance criteria as testable numbers"
   checks as standing practice for any future work past this course.
