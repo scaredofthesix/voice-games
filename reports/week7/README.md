@@ -138,13 +138,13 @@ UAT document.
   after independent review, green CI, merge, and deployment._
 - [CHANGELOG.md](../../CHANGELOG.md)
 - **Public sanitized demo video:** [MVP3 v0.5.0 gameplay demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA)
-  (public view link verified on 2026-07-17; no credentials or customer-identifying content).
+  (public view link verified on 2026-07-17).
 
 ## Demo Day preparation
 
-_PENDING - confirmation that the required Week 7 lab rehearsal preparation was completed._
-Slide deck is prepared under the team's presentation working folder and submitted through
-Moodle (not committed to the public repository).
+_PENDING - confirmation that the required Week 7 lab rehearsal preparation and Moodle slide
+submission were completed._ Presentation slides and rehearsal recordings are private
+Assignment 6 evidence and are not committed to the public repository.
 
 ## Sprint Review
 
