@@ -6,7 +6,7 @@ import { UiLanguageProvider } from '../uiLanguage';
 import { installMockSpeechRecognition, MockSpeechRecognition } from '../test/mockSpeechRecognition';
 import { AsteWordGame } from './AsteWordGame';
 
-function installCanvasAndAnimationMocks() {
+function installCanvasAndAnimationMocks(frameDurationMs = 16.67) {
   const gradient = { addColorStop: vi.fn() };
   const context = new Proxy({}, {
     get: (_target, property) => {
@@ -30,7 +30,7 @@ function installCanvasAndAnimationMocks() {
     pending.delete(id);
   });
   vi.spyOn(performance, 'now').mockImplementation(() => {
-    now += 16.67;
+    now += frameDurationMs;
     return now;
   });
 
@@ -102,7 +102,7 @@ describe('AsteWordGame shared interface', () => {
   });
 
   test('shows one Hub action and a meaningful per-word report after game over', async () => {
-    const animation = installCanvasAndAnimationMocks();
+    const animation = installCanvasAndAnimationMocks(100);
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const customWords = [{
       word: 'Ocean',
@@ -121,10 +121,15 @@ describe('AsteWordGame shared interface', () => {
     fireEvent.click(screen.getByRole('button', { name: /start defense/i }));
     act(() => animation.runFrames(1));
     act(() => MockSpeechRecognition.latest().emit('Ocean'));
-    // After the accepted word is removed, allow enough deterministic frames
-    // for three separately spawned asteroids to reach the shield. The previous
-    // budget could stop after only two misses under coverage instrumentation.
-    act(() => animation.runFrames(1_800));
+    // Flush React and zero-delay game-over work between frame batches. A single
+    // large synchronous batch can postpone those updates under coverage.
+    for (let batch = 0; batch < 20; batch += 1) {
+      await act(async () => {
+        animation.runFrames(100);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+      if (screen.queryByRole('heading', { name: /game over/i })) break;
+    }
 
     await waitFor(() => expect(screen.getByRole('heading', { name: /game over/i })).toBeInTheDocument());
     const resultHeading = screen.getByRole('heading', { name: /game over/i });
