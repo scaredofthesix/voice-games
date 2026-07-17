@@ -235,6 +235,7 @@ export function SkateWordGame({
         }));
         saveProgress(recordWordSpoken(loadProgress(), 'skate-word', current));
         if (phaseRef.current === 'PLAYING') nextWord();
+        return true;
       }
     },
     [nextWord, triggerJump]

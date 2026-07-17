@@ -9,8 +9,8 @@ updated whenever access, deployment, limitations, or transition status change.
 
 | | |
 |---|---|
-| **Handover level reached** | **Ready for independent use** as the team's technical assessment for the Week 6 trial: the product is reachable by anyone with a link and a Chrome browser, with no account, install, or team involvement required. The customer verified public access and repository read access during the guided Week 6 session, but independent use outside the session and customer-side deployment were not confirmed. Final customer confirmation of the handover level is a Week 7 activity. |
-| **Customer-confirmation status** | **Accepted with follow-up items.** At the Week 6 meeting the customer explicitly accepted the team's plan to fix the identified game and documentation issues and present the result in Week 7 ("I explicitly accept that plan in this meeting"). This is an interim status for the Week 6 trial, not the final Assignment 6 Part 8 confirmation; the Week 7 transition-confirmation request will determine the final status recorded in `reports/week7/README.md`. |
+| **Handover level reached** | **Ready for independent use.** The product is reachable by anyone with a link and a Chrome browser, with no account, install, or team involvement required. The customer used the public product during the guided 2026-07-17 review, but independent use outside the session and customer-side deployment were not confirmed. |
+| **Customer-confirmation status** | **Accepted with follow-up items.** The customer passed revised UAT-12, UAT-13, and UAT-15, requested the small final-release fixes recorded in the Week 7 report, and agreed to provide short written acceptance after receiving the final release link. That link and reply do not exist yet, so final acceptance must remain pending. |
 
 This table is authoritative for the three levels defined in Assignment 6 Part 8
 (`Ready for independent use`, `Independently used by customer`, `Deployed or operated on
@@ -87,12 +87,13 @@ summary of what the customer needs to be able to do.
   on the **Speak now** phase, gives a retry window after a non-match, and replays the chain
   after a failed retry.
 - **Custom vocabulary:** from the Hub, open any game and expand **Add my own words** before
-  starting. Add one pair manually or copy two columns from Excel/LibreOffice Calc and paste
+  starting. Add one pair manually or copy two columns from Google Sheets and paste
   them into the single bulk field. Column 1 is the English word or phrase, column 2 is its
-  translation. Separate the two columns with the spreadsheet tab or at least four
-  consecutive ordinary spaces. One to three spaces do not separate columns, so a phrase
-  such as *Nice to meet you* stays intact. Multiple rows and Russian/Unicode translations
-  are supported. CSV file upload is intentionally not part of the final product.
+  translation. Separate the two columns with the spreadsheet tab or exactly four ordinary
+  spaces. Three or five spaces do not separate columns, so a phrase such as *Nice to meet
+  you* stays intact. Invalid and duplicate rows stay visible with a correction reason.
+  Multiple rows and Russian/Unicode translations are supported. CSV file upload is
+  intentionally not part of the final product.
 - **Results and overall progress:** an end-of-game result describes only that run. To see
   combined progress, return to the Hub and press **Progress** in the top-right corner. The
   [README quick start](https://github.com/scaredofthesix/voice-games#how-to-play-example-boss-fight)
@@ -155,6 +156,7 @@ summary of what the customer needs to be able to do.
 | [Hosted documentation](https://scaredofthesix.github.io/voice-games/docs/) | The MkDocs version of the maintained architecture and process documentation. |
 | [Repository documentation](https://github.com/scaredofthesix/voice-games/tree/main/docs) | The documentation source, browsable without cloning the repo. |
 | [Current Sprint Backlog](https://github.com/scaredofthesix/voice-games/milestone/5) | Issues selected for Sprint 5 and the final MVP v3 transition. |
+| [Public MVP3 demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA) | Sanitized v0.5.0 candidate gameplay demonstration; no login required. |
 
 ## Is the current documentation set sufficient, and what support remains
 
@@ -170,10 +172,11 @@ any factual correction. That restructuring, a new `docs/README.md` directory ind
 pinned TypeScript version were completed during Week 6 finalization
 ([issue #146](https://github.com/scaredofthesix/voice-games/issues/146), closed).
 
-This is the team's Week 6 sufficiency assessment, not a claim that the customer used the
-product independently outside the guided trial or deployed it on their side. The customer
-accepted the Week 7 follow-up plan, and final acceptance against this handover document will
-be requested and recorded during Week 7.
+This remains the team's technical sufficiency assessment, not a claim that the customer used
+the product independently outside a guided trial or deployed it on their side. During the
+2026-07-17 review, the customer agreed to provide final written acceptance after receiving
+the `v0.5.0` release link. The public demo is available, but the SemVer release link and
+customer confirmation are still pending.
 
 **Known remaining gaps, honestly stated:**
 - The documentation is written for a developer/TA audience. There is no separate,
@@ -190,6 +193,6 @@ be requested and recorded during Week 7.
   until that happens (or is explicitly declined), the handover level above cannot move past
   `Ready for independent use`.
 
-This section, and the status table at the top, were updated after the Week 6
-transition-readiness meeting (2026-07-11) and will be updated again after the Week 7
-final-transition confirmation.
+This section and the status table were updated after the Week 6 transition-readiness meeting
+on 2026-07-11 and the guided final-product review on 2026-07-17. They will be updated again
+after the final release link and written customer confirmation exist.

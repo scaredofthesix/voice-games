@@ -387,6 +387,7 @@ export function TreasureHunterGame({
           targetDepth.current += 100; // dive deeper
           nextWord();
         }, 800);
+        return true;
       }
     },
     [nextWord, triggerDive]

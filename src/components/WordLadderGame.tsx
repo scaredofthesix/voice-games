@@ -150,6 +150,7 @@ export function WordLadderGame({
         speakSound.playCorrect();
         nextWord();
       }
+      return true;
     },
     [nextWord],
   );

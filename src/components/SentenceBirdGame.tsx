@@ -222,11 +222,13 @@ export default function SentenceBirdGame({
     if (target && (matchesWord(text, target) || cleanText(text).includes(cleanText(target)))) {
       lastWrongTextRef.current = '';
       onSuccessHopRef.current();
+      return true;
     } else if (target && text.trim()) {
       // Wrong or unrelated speech is echoed back as feedback but never costs a
       // life - only the per-word countdown running out does.
       lastWrongTextRef.current = text;
     }
+    return undefined;
   }, []);
 
   const { start, stop } = useSpeechRecognition(handleTranscript);

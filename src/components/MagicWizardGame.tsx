@@ -65,12 +65,23 @@ type Feedback = 'ready' | 'correct' | 'retry' | 'silent' | 'crystal' | 'locked';
 
 const SILENCE_TIMEOUT_MS = 12_000;
 const MOVE_DELAY_MS = 460;
+const MAZE_DIFFICULTY_STORAGE_KEY = 'voice_maze_difficulty';
 
 const DIFFICULTY: Record<MazeDifficulty, { size: number; crystals: number }> = {
   trail: { size: 5, crystals: 2 },
   quest: { size: 7, crystals: 3 },
   epic: { size: 9, crystals: 4 },
 };
+
+function loadMazeDifficulty(): MazeDifficulty {
+  try {
+    const saved = localStorage.getItem(MAZE_DIFFICULTY_STORAGE_KEY);
+    if (saved === 'trail' || saved === 'quest' || saved === 'epic') return saved;
+  } catch {
+    // Storage may be unavailable in a restricted browser context.
+  }
+  return 'trail';
+}
 
 const THEME_STYLE: Record<
   MazeTheme,
@@ -138,7 +149,7 @@ export function MagicWizardGame({
   const [activeCategory, setActiveCategory] = useState<WordCategory>(BUILTIN_CATEGORIES[0]);
   const [phase, setPhase] = useState<GamePhase>('START');
   const [theme, setTheme] = useState<MazeTheme>('library');
-  const [difficulty, setDifficulty] = useState<MazeDifficulty>('quest');
+  const [difficulty, setDifficulty] = useState<MazeDifficulty>(loadMazeDifficulty);
   const [maze, setMaze] = useState<VoiceMaze | null>(null);
   const [player, setPlayer] = useState<MazePosition>({ row: 0, col: 0 });
   const [choices, setChoices] = useState<DoorChoice[]>([]);
@@ -177,6 +188,15 @@ export function MagicWizardGame({
 
   const previewMaze = useMemo(() => createVoiceMaze(5, 2, previewRandom()), []);
   const activeTheme = THEME_STYLE[theme];
+
+  const selectDifficulty = (nextDifficulty: MazeDifficulty) => {
+    setDifficulty(nextDifficulty);
+    try {
+      localStorage.setItem(MAZE_DIFFICULTY_STORAGE_KEY, nextDifficulty);
+    } catch {
+      // Keep the in-memory selection when storage is unavailable.
+    }
+  };
 
   const strings = useMemo(() => ({
     title: t('wizard.title'),
@@ -266,7 +286,7 @@ export function MagicWizardGame({
     const base = DIFFICULTY[difficulty];
     const growth = Math.floor((nextFloor - 1) / 2);
     const nextMaze = createVoiceMaze(
-      Math.min(9, base.size + growth * 2),
+      base.size,
       Math.min(5, base.crystals + growth),
     );
     const nextVisited = new Set<string>([mazeCellKey(nextMaze.start)]);
@@ -380,6 +400,7 @@ export function MagicWizardGame({
       makeChoices(currentMaze, destination);
       movingRef.current = false;
     }, MOVE_DELAY_MS);
+    return true;
   }, [award, floor, makeChoices, updateStudyStats]);
 
   const { status, isSupported, start, stop } = useSpeechRecognition(handleTranscript);
@@ -496,11 +517,12 @@ export function MagicWizardGame({
     const mapCollected = isPreview ? new Set<string>() : collected;
     return (
       <div
-        className="mx-auto grid w-full max-w-2xl overflow-hidden rounded-2xl border-4 border-slate-900 bg-slate-950 shadow-[5px_5px_0_0_rgba(15,23,42,1)]"
+        className="mx-auto grid w-full max-w-3xl overflow-hidden rounded-2xl border-4 border-slate-900 bg-slate-950 shadow-[5px_5px_0_0_rgba(15,23,42,1)]"
         style={{ gridTemplateColumns: `repeat(${map.size}, minmax(0, 1fr))` }}
         role="grid"
         aria-label={strings.map}
         data-testid={isPreview ? 'maze-preview' : 'voice-maze'}
+        data-maze-size={map.size}
       >
         {map.cells.map((cell) => {
           const key = mazeCellKey(cell);
@@ -572,12 +594,12 @@ export function MagicWizardGame({
                 </>
               )}
               {route && !isPlayer && (
-                <span data-testid="maze-door-word" className={`absolute left-1/2 top-1/2 z-30 flex min-h-[38%] max-h-[88%] w-[92%] -translate-x-1/2 -translate-y-1/2 items-center justify-center overflow-hidden break-words rounded-md border border-white/90 bg-slate-950/95 px-0.5 py-0.5 text-center font-black leading-[1.02] text-yellow-200 shadow-[0_2px_6px_rgba(0,0,0,0.8)] ${
+                <span data-testid="maze-door-word" className={`absolute left-1/2 top-1/2 z-30 flex min-h-[42%] max-h-[94%] w-[96%] -translate-x-1/2 -translate-y-1/2 items-center justify-center overflow-hidden break-words [overflow-wrap:anywhere] rounded-md border border-white/90 bg-slate-950/95 px-0.5 py-0.5 text-center font-black leading-[1.05] text-yellow-200 shadow-[0_2px_6px_rgba(0,0,0,0.8)] ${
                   route.target.word.length > 15
-                    ? 'text-[clamp(6px,1.15vw,9px)]'
+                    ? 'text-[clamp(7px,1.25vw,10px)]'
                     : route.target.word.length > 9
-                      ? 'text-[clamp(7px,1.45vw,11px)]'
-                      : 'text-[clamp(9px,1.8vw,14px)]'
+                      ? 'text-[clamp(8px,1.55vw,12px)]'
+                      : 'text-[clamp(10px,1.9vw,15px)]'
                 }`}>
                   {route.target.word}
                 </span>
@@ -622,7 +644,7 @@ export function MagicWizardGame({
                 label: t(`wizard.difficulties.${id}`),
               }))}
               selected={difficulty}
-              onSelect={setDifficulty}
+              onSelect={selectDifficulty}
             />
             <div className={`rounded-2xl border-4 border-slate-900 bg-gradient-to-br ${activeTheme.stage} p-3 text-white`}>
               {renderMaze(previewMaze, true)}
@@ -794,22 +816,22 @@ export function MagicWizardGame({
 
         {maze && renderMaze(maze)}
 
-        <div className="mx-auto mt-4 max-w-3xl rounded-3xl border-4 border-slate-900 bg-white/95 p-3 sm:p-4">
+        <div className="mx-auto mt-4 w-full max-w-4xl rounded-3xl border-4 border-slate-900 bg-white/95 p-3 sm:p-4" data-testid="available-routes">
           <div className="mb-3 flex items-center justify-center gap-2 text-center">
             <Sparkles className="h-5 w-5 text-violet-600" />
             <h3 className="text-sm font-black uppercase text-slate-900">{strings.sayDoor}</h3>
           </div>
-          <div className={`grid gap-2 ${choices.length === 1 ? 'grid-cols-1' : choices.length === 3 ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-4'}`}>
+          <div className={`grid gap-2 ${choices.length === 1 ? 'grid-cols-1' : choices.length === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'}`}>
             {choices.map((choice) => (
               <div
                 key={choice.direction}
-                className="relative rounded-2xl border-4 border-slate-900 bg-amber-100 p-2 text-center shadow-[3px_3px_0_0_rgba(15,23,42,1)]"
+                className="relative rounded-2xl border-4 border-slate-900 bg-amber-100 p-3 text-center shadow-[3px_3px_0_0_rgba(15,23,42,1)]"
                 data-testid="door-choice"
               >
                 <span className="block text-2xl font-black text-violet-700" aria-hidden="true">{DIRECTION_ICON[choice.direction]}</span>
-                <span className="block text-[9px] font-black uppercase text-slate-500">{directionLabel(choice.direction)}</span>
-                <span className="mt-1 block break-words text-sm font-black text-slate-950" data-testid="door-word">{choice.target.word}</span>
-                <span className="block truncate text-[9px] font-bold text-violet-700">{translatedWord(choice.target)}</span>
+                <span className="block text-[10px] font-black uppercase text-slate-500">{directionLabel(choice.direction)}</span>
+                <span className="mt-1 block break-words [overflow-wrap:anywhere] text-base font-black leading-tight text-slate-950 sm:text-lg" data-testid="door-word">{choice.target.word}</span>
+                <span className="mt-1 block break-words text-xs font-bold leading-tight text-violet-700">{translatedWord(choice.target)}</span>
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-1">
                   <button
                     type="button"
@@ -833,7 +855,9 @@ export function MagicWizardGame({
               </div>
             ))}
           </div>
+        </div>
 
+        <div className="mx-auto mt-4 max-w-3xl rounded-3xl border-4 border-slate-900 bg-white/95 p-3 sm:p-4">
           <div
             className={`mt-4 rounded-2xl border-4 border-slate-900 p-3 text-center text-xs font-black ${
               feedback === 'correct' || feedback === 'crystal'

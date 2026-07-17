@@ -18,6 +18,7 @@ import {
 } from './GameUi';
 import { useUiLanguage } from '../uiLanguage';
 import { speakWord, speakSound, matchesWord, isSpeechSynthesisActive } from '../voice/engine';
+import { SUCCESS_RECOGNITION_DELAY_MS } from '../useSpeechRecognition';
 
 type BubbleTheme = 'sky' | 'snow' | 'starry' | 'nebula';
 
@@ -117,6 +118,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 
   // Web Speech ref
   const recognitionRef = useRef<any>(null);
+  const recognitionRestartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Authoritative state reference to completely avoid stale closures in requestAnimationFrame loops
   const stateRef = useRef({
@@ -171,6 +173,10 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 
   // Speech Recognition continuous thread startup
   const startVoiceEngine = useCallback(() => {
+    if (recognitionRestartTimerRef.current) {
+      clearTimeout(recognitionRestartTimerRef.current);
+      recognitionRestartTimerRef.current = null;
+    }
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setVoiceStatus({
@@ -238,7 +244,27 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 
         if (textResult) {
           setLastHeardTranscript(textResult);
-          evaluateVoiceInput(textResult);
+          const accepted = evaluateVoiceInput(textResult);
+          if (!accepted) return;
+
+          rec.onend = null;
+          rec.onresult = null;
+          try {
+            rec.abort();
+          } catch {
+            // ignore abort races
+          }
+          if (recognitionRef.current === rec) recognitionRef.current = null;
+          setVoiceStatus({
+            status: 'idle',
+            message: t('shared.processingNextWord'),
+          });
+          recognitionRestartTimerRef.current = setTimeout(() => {
+            recognitionRestartTimerRef.current = null;
+            if (stateRef.current.gameState === 'PLAYING' && !stateRef.current.paused) {
+              startVoiceEngine();
+            }
+          }, SUCCESS_RECOGNITION_DELAY_MS);
         }
       };
 
@@ -252,7 +278,7 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
   // Check if spoken word matches any floating bubble
   const evaluateVoiceInput = (speechText: string) => {
     const s = stateRef.current;
-    if (s.gameState !== 'PLAYING' || s.paused) return;
+    if (s.gameState !== 'PLAYING' || s.paused) return false;
 
     // Search active unburst bubbles for matches
     let matchedIndex = -1;
@@ -303,7 +329,9 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
 
       // reset transcript so buffer parses next values cleanly
       setLastHeardTranscript('');
+      return true;
     }
+    return false;
   };
 
   // Launch splattered watercolor bubble particle droplets on canvas
@@ -442,6 +470,10 @@ export const BubblePopperGame: React.FC<BubblePopperGameProps> = ({
   // Cleanup effect
   useEffect(() => {
     return () => {
+      if (recognitionRestartTimerRef.current) {
+        clearTimeout(recognitionRestartTimerRef.current);
+        recognitionRestartTimerRef.current = null;
+      }
       if (recognitionRef.current) {
         recognitionRef.current.onend = null;
         recognitionRef.current.abort();

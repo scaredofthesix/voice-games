@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added one clear bulk custom-word flow for two-column rows pasted from Excel, LibreOffice
-  Calc, or plain text. A tab or at least four consecutive ordinary spaces separates the
+- Added one clear bulk custom-word flow for two-column rows pasted from Google Sheets or
+  plain text. A tab or exactly four consecutive ordinary spaces separates the
   English word/phrase from its translation; one to three spaces do not. The flow preserves
   multi-word phrases and Unicode translations, accepts BOM and Windows/Unix line endings,
   and reports malformed or duplicate rows (#144).
@@ -24,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Voice Maze Quest now starts at 5x5, remembers the selected maze size, keeps that size for
+  every newly generated floor, and shows the available route words below the map in larger,
+  wrapping cards so long phrases remain readable without zooming.
+- Custom vocabulary guidance now recommends Google Sheets and documents the two exact
+  supported separators: a real tab character or exactly four ordinary spaces.
 - Sentence Bird now uses a dedicated microphone button, its active word card, or Space as
   explicit push-to-talk controls. A clear active state and short listening window ensure
   that the game never listens before the child asks it to (#140).
@@ -46,12 +51,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Prevented one accepted speech-recognition event from completing two consecutive prompts.
+  After a successful match, the microphone pauses, the previous transcript is cleared, and
+  a fresh recognition session starts after a short processing delay.
+- Valid bulk vocabulary rows are saved while invalid and duplicate rows remain in the input
+  with a specific correction reason, including "This word already exists."
 - Stopped speech synthesis and generated sound effects when leaving or switching games,
   kept Progress CSV export in English, and localized every visible game HUD and result
   label (#145).
 - Removed the fragile custom-vocabulary CSV file upload and ambiguous comma, semicolon,
-  pipe, and one-to-three-space delimiter guessing; an explicit run of four or more spaces
-  remains a supported bulk-paste separator (#144).
+  pipe, and one-to-three-space delimiter guessing; exactly four ordinary spaces
+  remain a supported bulk-paste separator (#144).
 - Preserved Russian playback for newly added custom words, standardized high-contrast hub
   buttons and pink replay buttons, and tightened Treasure Hunter's narrow-screen header.
 

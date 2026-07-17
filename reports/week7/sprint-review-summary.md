@@ -1,96 +1,65 @@
 # Sprint 5 Review summary (Week 7)
 
-**Date:** 2026-07-16 (Sprint 5 review / customer-trial session).
+Sprint 5 used two recorded customer sessions: the Sprint Review and trial on 2026-07-16,
+followed by the final-candidate review and remaining UAT retests on 2026-07-17. Customer
+identity and full attendance evidence remain in the private Week 7 Moodle submission.
 
-**Attendees:** the customer (product stakeholder), and Team 40 members running the session and
-screen-share. Full team attendance is recorded privately in the Week 7 Moodle PDF, per the
-assignment's public/private evidence split.
+## Sprint Review and customer trial, 2026-07-16
 
-**Format:** one recorded video call covering the Sprint 5 Sprint Review, a customer trial of
-the Sprint 5 build, and customer-executed UAT (UAT-10 through UAT-14). See
-[`reports/week7/sprint-review-transcript.md`](./sprint-review-transcript.md) for the full
-sanitized transcript.
+The session covered the Sprint 5 Goal, the Week 6 follow-up work, the ten-game roster,
+documentation and deployment readiness, and customer-executed UAT-10 through UAT-14. The
+[sanitized public transcript](./sprint-review-transcript.md) records this session.
 
-> **Final confirmation pending.** The customer explicitly asked for a second, short MVP v3
-> confirmation call after the last fixes land (transcript, `[00:57:32]`-`[00:59:03]`). The
-> final customer-confirmation of handover and the customer-executed retests of UAT-12 (Voice
-> Maze Quest), UAT-13 (one-failure adaptive selection) and UAT-15 (bulk paste) are recorded
-> after that session. This summary does not claim they have happened.
+- **UAT-10, Sentence Bird:** Pass. The explicit push-to-talk flow addressed the Week 6 issue.
+- **UAT-11, Echo Microphone:** Pass with a browser speech-recognition limitation. The restored
+  hidden-card memory mechanic was accepted.
+- **UAT-12, Magic Wizard:** Obsolete. The customer requested a simpler voice puzzle or
+  labyrinth, so the spell-recipe mechanic was replaced by Voice Maze Quest.
+- **UAT-13, adaptive selection:** Rework and retest. The customer asked the scheduler to react
+  after one failed or silent attempt.
+- **UAT-14, shared Hub:** Pass. Navigation worked, with further UI consistency requested for
+  the oldest games.
 
-## Agenda (as run)
+The same session confirmed the decision to keep paste-based custom vocabulary, support a real
+tab separator, pin TypeScript 5.8.3, make GitHub Pages deployment automatic, and improve the
+README ordering. These requests were implemented before the follow-up review.
 
-- Sprint 5 Goal recap and open-question walkthrough.
-- Walkthrough of the reworked games: Sentence Bird (push-to-talk), Echo Microphone (memory
-  mechanic), and the then-current Magic Wizard.
-- Adaptive word selection and custom-vocabulary import demo.
-- Customer-executed UAT-10 through UAT-14.
-- Navigation / UI consistency and preview localization review.
-- README, documentation, and deployment review.
-- Arrangement for the final MVP v3 confirmation session.
+## Final-candidate review and UAT retests, 2026-07-17
 
-## What was demonstrated
+The customer reviewed Voice Maze Quest, adaptive word selection, the shared Hub, custom
+vocabulary, Progress, Clear Progress, English and Russian playback, and the result screen in
+Google Chrome.
 
-- Sentence Bird's press-to-speak mechanic, Echo Microphone's hidden-word memory mechanic, and
-  the Magic Wizard spell-recipe build (later replaced).
-- Adaptive word selection on a small word set, and the custom-vocabulary import flow.
-- The ten-game roster with the shared Hub navigation.
+- **UAT-12, Voice Maze Quest:** Pass. Route movement, visited rooms, the avoidable hazard,
+  crystals, the portal, the next random floor, results, and Progress were exercised.
+- **UAT-13, adaptive selection:** Pass. Failed or unrecognized words returned after a short
+  interval while new words remained available.
+- **UAT-14, shared Hub:** Already passed and remained correct.
+- **UAT-15, bulk custom-word paste:** Pass with small usability follow-up. Tab and four-space
+  rows were accepted, three spaces were rejected, and duplicate words were not saved.
+- Progress totals and Clear Progress continued to work.
 
-## Customer trial / UAT results
+## Final follow-up requested before release
 
-Executed live this session (detail in the transcript and in the UAT execution history):
+- Prevent one accepted speech event from completing two consecutive identical prompts.
+- Make 5x5 the default maze and preserve the user's selected maze size.
+- Keep invalid and duplicate bulk-input rows visible with a correction reason.
+- Recommend Google Sheets and document the exact tab or four-space formats.
+- Keep the available maze words below the map and make long route phrases readable.
+- Tell users to speak slowly and clearly and wait for each word to be processed.
 
-- **UAT-10 (Sentence Bird)** - **Pass.** The customer called the push-to-talk flow "pretty good".
-- **UAT-11 (Echo Microphone)** - **Pass with limitation.** Accepted as "basically a pass", but
-  the customer observed one false-failure and noted that microphone activation state is not
-  always obvious.
-- **UAT-12 (Magic Wizard)** - **Obsolete.** Skipped at the team's request; the customer did not
-  understand the spell-recipe / cursed-rune mechanic and asked for a simple voice puzzle or
-  labyrinth instead. The game was subsequently replaced by Voice Maze Quest, and UAT-12 was
-  rewritten around it (retest pending the final session).
-- **UAT-13 (Adaptive selection)** - **Rework and retest.** The customer could not clearly see
-  prioritization; the team committed to reacting after a single failure (three hearts make
-  two-failure waits too slow). Reworked; customer retest pending.
-- **UAT-14 (Unified Hub navigation)** - **Pass.** Navigation works; the customer asked that the
-  first-generation game layouts be aligned with the newer shared shell.
+The customer accepted the current browser speech-to-text limitations for MVP3. Replacing the
+speech engine, manual word entry during play, and Skip, Report, or Reroll controls were not
+approved as release requirements.
 
-## Requested changes and resulting decisions
+## Acceptance and release status
 
-- **Replace Magic Wizard** with a simple voice-controlled puzzle / labyrinth; remove the
-  unexplained cursed rune.
-- **Remove CSV file import** (fragile across laptops and encodings) and keep the paste-from-Excel
-  flow. Confirmed live that the Excel/LibreOffice column separator is a **tab**, and asked that
-  a tab be a supported separator so multi-word phrases survive.
-- **Adaptive selection must react after one failed or silent attempt.**
-- **Unify the first-generation game UI** (Voice Line Racer and the first two games) with the
-  newer shared layout and Hub placement.
-- **Pin TypeScript to 5.8.3** in `package.json` + lockfile and reconcile the documentation
-  (the docs had said 7.0.2).
-- **Make deployment truthful:** implement automatic CI deployment (the team committed to it) or
-  reword the README to manual.
-- **README:** reorder the gameplay steps, show the game result before overall progress with a
-  screenshot, and present the custom-word path earlier. Direct game links from screenshots are
-  a could-have, not a blocker.
+The final follow-up fixes are implemented in the `v0.5.0` candidate. The customer explicitly
+agreed to send a short Telegram acceptance confirmation after receiving and checking the final
+release link. Until that release exists and the written reply is received, the handover level
+remains **Ready for independent use** and the confirmation status remains **Accepted with
+follow-up items**.
 
-Localized previews and the overall README/documentation structure were **accepted**.
-
-## Status against the requests
-
-All of the above were implemented and merged to `main` during Sprint 5 (see
-[`reports/week7/README.md`](./README.md) for the feedback-to-issue/PR mapping). What remains is
-the customer's own final confirmation and the three UAT retests, scheduled for the short
-follow-up call.
-
-## Decisions and approvals
-
-- The customer **approved the other nine games** in this session ("I consider them approved").
-- The customer agreed to a **final short MVP v3 confirmation call** to test the last changes
-  directly before final acceptance.
-- Repository ownership, GitHub Pages hosting, and CI/CD stay with the team; the customer does
-  not need write access (carried over, unchanged from Week 6).
-
-## Risks and open items carried to final delivery
-
-- Final customer confirmation of the handover level and the UAT-12/13/15 retests are still
-  outstanding and depend on the follow-up call.
-- The MVP v3 SemVer release is not yet cut; it is cut after the confirmation call and the public
-  demo video, so the release can link both.
+The [public sanitized MVP3 gameplay demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA) was
+published after the session. It demonstrates the final candidate but is not customer
+acceptance evidence.

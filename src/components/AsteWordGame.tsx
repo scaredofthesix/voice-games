@@ -288,6 +288,7 @@ export function AsteWordGame({
       if (matched) {
         lastTriggerTime.current = now;
         shootLaserAt(matched);
+        return true;
       }
     },
     []

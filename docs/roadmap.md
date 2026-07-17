@@ -103,8 +103,8 @@ planned beyond it.
   portal, clear retry feedback, and endlessly generated floors. Treasure Hunter keeps the
   timed submarine, depth, and chest-collection loop.
 - Final review hardening: remove custom-vocabulary file upload in favor of one bulk paste
-  flow that accepts either a tab or at least four consecutive ordinary spaces between the
-  English phrase and translation, while preserving phrases containing one to three spaces;
+  flow that accepts either a tab or exactly four ordinary spaces between the English phrase
+  and translation, while preserving phrases containing one to three spaces;
   boost a word after its first failed or unrecognized attempt so it returns in
   the following rounds; de-prioritize correctly pronounced words while preserving adaptation
   between rounds; preserve Echo Microphone's memory mechanic with explicit TTS/listening and
@@ -119,5 +119,10 @@ planned beyond it.
   `docs/customer-handover.md` - issue #125.
 - Final SemVer release mapped to **MVP v3**, the last course version, plus a public
   sanitized demo video and Demo Day preparation.
+- Final 2026-07-17 review follow-up implemented in the `v0.5.0` candidate: one-event speech
+  consumption, 5x5 maze default with persistent size selection, editable invalid and duplicate
+  bulk rows, Google Sheets guidance, readable route phrases below the maze, and a slow-speaking
+  tip. The public sanitized demo is available; independent PR review, protected merge, the
+  SemVer release, and written customer confirmation remain.
 - US-20 phrase-assembly mode (issue #53) and the accessibility pass (keyboard fallback,
   captions) are stretch scope for Sprint 5 if time allows; not committed.

@@ -43,6 +43,7 @@ import {
   stopAllAudio,
 } from './voice/engine';
 import { useUiLanguage } from './uiLanguage';
+import { SUCCESS_RECOGNITION_DELAY_MS } from './useSpeechRecognition';
 import { loadProgress, pickAdaptiveWordIndex, saveProgress, recordSessionPlayed, recordWordSpoken, recordWordStruggled, recordHighScore } from './progress';
 
 export default function App() {
@@ -379,6 +380,14 @@ export default function App() {
 
   // Speech Recognition hook
   const recognitionRef = useRef<any>(null);
+  const recognitionRestartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (currentView !== 'VOICE_RACER' && recognitionRestartTimerRef.current) {
+      clearTimeout(recognitionRestartTimerRef.current);
+      recognitionRestartTimerRef.current = null;
+    }
+  }, [currentView]);
 
   // Vocabulary arrays matching selection (either standard categories or user's custom lists)
   const getSelectedVocabularyList = useCallback(() => {
@@ -448,6 +457,10 @@ export default function App() {
 
   // Setup Web Speech API Continuous Listener
   const startVoiceEngine = useCallback(() => {
+    if (recognitionRestartTimerRef.current) {
+      clearTimeout(recognitionRestartTimerRef.current);
+      recognitionRestartTimerRef.current = null;
+    }
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setVoiceStatus({
@@ -516,7 +529,27 @@ export default function App() {
         }
         
         if (textResult) {
-          evaluateVoiceTrigger(textResult);
+          const accepted = evaluateVoiceTrigger(textResult);
+          if (!accepted) return;
+
+          rec.onend = null;
+          rec.onresult = null;
+          try {
+            rec.abort();
+          } catch {
+            // ignore abort races
+          }
+          if (recognitionRef.current === rec) recognitionRef.current = null;
+          setVoiceStatus({
+            status: 'idle',
+            message: t('shared.processingNextWord'),
+          });
+          recognitionRestartTimerRef.current = setTimeout(() => {
+            recognitionRestartTimerRef.current = null;
+            if (gameStateRef.current === 'PLAYING' && !racerPausedRef.current) {
+              startVoiceEngine();
+            }
+          }, SUCCESS_RECOGNITION_DELAY_MS);
         }
       };
 
@@ -529,9 +562,9 @@ export default function App() {
 
   // Evaluate if spoken transcript matches target adjacent lane words
   const evaluateVoiceTrigger = (spokenText: string) => {
-    if (gameStateRef.current !== 'PLAYING') return;
-    if (racerPausedRef.current) return;
-    if (!isBulletTimeRef.current) return;
+    if (gameStateRef.current !== 'PLAYING') return false;
+    if (racerPausedRef.current) return false;
+    if (!isBulletTimeRef.current) return false;
 
     const activeWords = currentLaneWordsRef.current;
     const laneKeys = Object.keys(activeWords).map(Number) as Lane[];
@@ -561,9 +594,10 @@ export default function App() {
         saveProgress(recordWordSpoken(loadProgress(), 'voice-racer', target));
 
         speakSound.playCorrect();
-        break;
+        return true;
       }
     }
+    return false;
   };
 
   // High score checker & Levels up
@@ -702,6 +736,10 @@ export default function App() {
       const remaining = prev - 1;
       if (remaining <= 0) {
         setGameState('GAME_OVER');
+        if (recognitionRestartTimerRef.current) {
+          clearTimeout(recognitionRestartTimerRef.current);
+          recognitionRestartTimerRef.current = null;
+        }
         if (recognitionRef.current) {
           recognitionRef.current.onend = null;
           recognitionRef.current.abort();

@@ -34,7 +34,7 @@ describe('parseWordPairs', () => {
 
   test('parses four-space separators without splitting English phrases', () => {
     const { pairs, skipped } = parseWordPairs(
-      'word    translation\nNice to meet you    Приятно познакомиться\nHow are you?     Как дела?',
+      'word    translation\nNice to meet you    Приятно познакомиться\nHow are you?    Как дела?',
     );
 
     expect(skipped).toBe(0);
@@ -44,13 +44,13 @@ describe('parseWordPairs', () => {
     ]);
   });
 
-  test('rejects CSV, semicolon, pipe and one-to-three-space separators', () => {
+  test('rejects CSV, semicolon, pipe, three-space and five-space separators', () => {
     const { pairs, skipped } = parseWordPairs(
-      'cat,кот\ndog;собака\nfox | лиса\ngood morning доброе утро\nthank you   спасибо',
+      'cat,кот\ndog;собака\nfox | лиса\ngood morning доброе утро\nthank you   спасибо\nsee you     увидимся',
     );
 
     expect(pairs).toEqual([]);
-    expect(skipped).toBe(5);
+    expect(skipped).toBe(6);
   });
 
   test('keeps valid rows and reports missing or extra columns', () => {

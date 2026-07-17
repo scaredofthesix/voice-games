@@ -233,18 +233,18 @@ https://scaredofthesix.github.io/voice-games/.
 | 2026-07-11 | UAT-12 | Customer | Issues found | Magic Wizard: spell-cast hitbox problems observed; customer flagged mechanic overlap with Voice Treasure Hunter (#142). |
 | 2026-07-11 | UAT-13 | Customer | Inconclusive | Could not confirm live whether adaptive word selection re-weights within the current round rather than only between rounds; team acknowledged the behavior was unverified (#143). |
 | 2026-07-11 | UAT-14 | Customer | Pass | Both tested games returned to the hub via the same button; audio from the previous game was still audible after switching games (#145). |
+| 2026-07-17 | UAT-12 | Customer | Pass | Voice Maze Quest was playable; route movement, visited rooms, the avoidable hazard, crystals, portal flow, random next floor, results, and progress were reviewed. Small follow-up fixes were requested for 5x5 selection and long route-label readability. |
+| 2026-07-17 | UAT-13 | Customer | Pass | Failed or unrecognized words returned after a short interval while new words remained available. The customer accepted current browser speech-to-text limitations for MVP3. |
+| 2026-07-17 | UAT-15 | Customer | Pass, with usability follow-up | Tab and four-space rows were accepted, three spaces were rejected, and duplicates were not saved. The customer requested Google Sheets guidance and preservation of invalid or duplicate rows for correction. |
 
 ### Final-review disposition
 
-The final customer review accepted Sentence Bird (UAT-10), accepted Echo Microphone with a
-minor stability limitation (UAT-11), rejected the old Magic Wizard mechanic and made UAT-12
-obsolete, required a one-failure adaptive-selection retest for UAT-13, and kept UAT-14 open
-only for the visual comparison of the first-generation games. The scenarios above now
-describe the replacement behavior. Automated tests cover the new Voice Maze Quest path,
-tab-or-four-space vocabulary paste, preservation of multi-word phrases, deterministic
-reinforcement queue, and Echo memory/TTS phase separation. Customer execution of the
-revised UAT-12, UAT-13, and new UAT-15 is still required; this repository does not claim
-those customer retests have happened.
+The 2026-07-17 customer review passed the revised UAT-12, UAT-13, and UAT-15. The customer
+accepted the browser speech-to-text limitations for the MVP3 release and did not approve
+Skip, Report, Reroll, or manual-play controls. The small follow-up fixes recorded above are
+implemented and the public demo video is available. Independent PR review, final verification
+on protected `main`, the SemVer release, and the customer's written confirmation after
+receiving the release link remain.
 
 **Scheduled for the final MVP v3 confirmation session:** the three retests below are the
 customer-facing agenda for that call. Their execution-history rows and pass/fail are added

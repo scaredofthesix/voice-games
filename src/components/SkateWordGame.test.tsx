@@ -6,7 +6,7 @@ import { UiLanguageProvider } from '../uiLanguage';
 import { installMockSpeechRecognition, MockSpeechRecognition } from '../test/mockSpeechRecognition';
 import { SkateWordGame } from './SkateWordGame';
 
-function installCanvasAndAnimationMocks() {
+function installCanvasAndAnimationMocks(frameDurationMs = 16.67) {
   const gradient = { addColorStop: vi.fn() };
   const context = new Proxy({}, {
     get: (_target, property) => {
@@ -30,7 +30,7 @@ function installCanvasAndAnimationMocks() {
     pending.delete(id);
   });
   vi.spyOn(performance, 'now').mockImplementation(() => {
-    now += 16.67;
+    now += frameDurationMs;
     return now;
   });
 
@@ -101,7 +101,7 @@ describe('SkateWordGame shared interface', () => {
   });
 
   test('shows one Hub action and a meaningful per-word report after game over', async () => {
-    const animation = installCanvasAndAnimationMocks();
+    const animation = installCanvasAndAnimationMocks(100);
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const customWords = [{
       word: 'Ocean',
@@ -119,7 +119,7 @@ describe('SkateWordGame shared interface', () => {
     fireEvent.click(screen.getByRole('button', { name: /my words \(1\)/i }));
     fireEvent.click(screen.getByRole('button', { name: /start skating/i }));
     act(() => MockSpeechRecognition.latest().emit('Ocean'));
-    act(() => animation.runFrames(900));
+    act(() => animation.runFrames(400));
 
     await waitFor(() => expect(screen.getByRole('heading', { name: /game over/i })).toBeInTheDocument());
     const resultHeading = screen.getByRole('heading', { name: /game over/i });

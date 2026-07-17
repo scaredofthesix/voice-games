@@ -1,53 +1,51 @@
 # Week 7 LLM Usage Report - Team 40
 
-> **Status: IN PROGRESS.** This report records completed Sprint 5 assistance and will be
-> extended if the team uses LLM tools for the remaining final-transition or release work.
-
 ## Tools used
 
 - OpenAI Codex.
 
 ## How it was used
 
-- Collected the Week 6 customer-review follow-up scope from the maintained transcript,
-  Sprint Review summary, GitHub issues #140-#146, and their linked pull requests.
-- Audited the combined Sprint 5 integration branch against every acceptance criterion.
-- Identified and fixed gaps left after the first implementation pass: Echo Microphone could
-  reuse one recognized phrase for several cards and did not clearly separate teaching
-  playback from hidden-card recall; Magic Wizard's animated canvas preview bypassed the translation dictionary;
-  generated Web Audio effects and queued Echo speech needed explicit navigation cleanup.
-- Audited all ten games for bilingual word playback, adaptive selection, detailed result
-  reporting, replay/back-button consistency, custom-word behavior, and narrow-screen layout.
-- Removed the redundant Sentence Bird mic button and Echo target card, added three-heart
-  defeat timing, extended adaptive scheduling to the four remaining games, and added a
-  shared bilingual per-word result report to Sentence Bird, Echo, and Magic Wizard.
-- Replaced pasted delimiter-based custom-word bulk entry with a tested two-column CSV file
-  importer and corrected batched state updates so every imported row is retained.
-- Added focused tests for Sentence Bird push-to-talk and timeout behavior, Echo card matching
-  and playback cleanup, Magic Wizard preview localization, and centralized audio shutdown.
-- Updated the changelog and recorded the non-destructive #142 product decision to keep Magic
-  Wizard and Treasure Hunter as distinct games in the ten-game roster.
-- Re-audited #142 against the original customer transcript after the initial hitbox fix and
-  identified that the gameplay-overlap concern was still unresolved. Reworked Magic Wizard
-  into an untimed, progressively larger rune-recipe puzzle, then added an animated spell
-  scene and an explicit cursed-word challenge with three protective wards. Unrelated speech
-  remains safe. Added pure recipe/matching logic and win/loss integration coverage, and
-  synchronized the UAT and Week 7 review materials.
-- Ran TypeScript checking, 147 automated tests, coverage, the production build, and diff
-  whitespace validation.
+- Audited the combined Sprint 5 implementation against the Week 6 issues, maintained UAT
+  scenarios, customer-review transcripts, handover requirements, and GitHub workflow rules.
+- Helped implement and test the final cross-game speech-recognition gate so one accepted
+  browser recognition event cannot complete two consecutive prompts. The implementation stops
+  the active recognizer, clears the accepted result, waits briefly, and starts a fresh session.
+- Helped make Voice Maze Quest default to 5x5, pass the selected size to the generator, persist
+  it across reopening and new floors, and keep larger wrapping route cards below the map.
+- Helped refine bulk custom-word paste so only a real tab or exactly four spaces split the two
+  columns. Valid rows are saved while invalid and duplicate rows remain editable with a reason.
+- Updated the English and Russian interface guidance, README, changelog candidate, maintained
+  UAT history, roadmap, handover document, Week 7 report, and Sprint Review summary from the
+  real 2026-07-17 customer feedback.
+- Reconciled the final-review branch with the already merged PR #166 so its real Sprint 5
+  retrospective, reflection, and sanitized 2026-07-16 transcript were preserved instead of
+  overwritten.
+- Verified the public Yandex Disk demo through an anonymous HTTP request, the public resource
+  API, video metadata, and five sampled frames across its 1:52.5 duration before adding it to
+  customer-facing documentation. The sampled frames showed product gameplay only.
+- Assisted with the release-candidate quality gate, including stabilization of two canvas
+  frame simulations that were timing-sensitive only under coverage instrumentation. The final
+  local run passed TypeScript checking, 172 tests across 23 files, coverage thresholds at
+  71.73% statement coverage, and the production build.
+- Assisted with issue-linked branch preparation, PR description, and release evidence audit.
 
-## Human oversight
+## Human oversight and original team work
 
-- A human team member selected the task and remains responsible for reviewing the changes,
-  performing real-browser and microphone UAT, assigning reviewers, and merging the linked
-  pull requests. Codex did not approve, merge, release, or deploy anything.
-- The Week 6 customer feedback and issue acceptance criteria were treated as source material;
-  no new customer quote, approval, or test outcome was invented.
+- Team members conducted the real customer meetings, interpreted product priorities, selected
+  the final scope, recorded the public demo, and remain responsible for the Moodle evidence,
+  Demo Day materials, independent PR review, merge, release, deployment, and Telegram request.
+- Codex worked from repository evidence and the supplied cleaned transcript. It did not invent
+  customer quotes, UAT results, rehearsal completion, deployment, or written acceptance.
+- A different human team member must review and merge the final PR. Codex neither approves its
+  own changes nor bypasses the protected-branch workflow.
 
 ## Limitations observed
 
-- Automated speech tests use the repository's mocked Web Speech API. They verify state and
-  interaction behavior but do not replace a Chrome test with a real microphone.
-- The redesigned Magic Wizard recipe, curse, victory, and defeat flows use mocked voice input
-  in automation. Desktop and 390 px mobile Chrome layouts were visually reviewed, including
-  curse-hit and spell-cast effects, but real-microphone behavior still requires human UAT.
+- Automated speech tests use the repository's mocked Web Speech API. They verify event
+  consumption and game state but cannot measure the accuracy of Chrome's external
+  speech-to-text service.
+- The public gameplay demo shows the release candidate, but it is not evidence of customer
+  acceptance or customer-side deployment.
+- Week 7 rehearsal completion and the customer's final written Telegram confirmation remain
+  separate human evidence and are not inferred from code, tests, or the demo video.

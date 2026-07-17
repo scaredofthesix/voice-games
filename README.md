@@ -8,6 +8,8 @@ voice is the only controller**. No login, no install, and no accounts.
 
 **Live product (public, HTTPS):** https://scaredofthesix.github.io/voice-games/
 
+**Public MVP3 demo:** [watch the final v0.5.0 gameplay video](https://disk.yandex.ru/i/xfaSgCVd2CijnA)
+
 Open it in **Google Chrome** (desktop or Android). The browser asks for microphone access
 the first time a game starts listening - choose **Allow**. The hub below lists all ten
 games; tap **Play** on any card to start.
@@ -26,11 +28,28 @@ Most games follow the same five steps.
 
 **2. Choose the vocabulary.** Select a built-in word set, or open **Add my own words**
 before starting. Add one English word or phrase with its translation, or paste several rows
-copied from Excel or LibreOffice Calc. Column 1 is English, column 2 is the translation, and
-the separator between them may be a tab or at least four consecutive ordinary spaces.
-One to three spaces never split a row, so phrases such as *Nice to meet you* are kept as
-one English item. Multiple rows and Unicode translations are supported. CSV file import is
-not used. Select **My words** after saving the new vocabulary.
+copied from two columns in **Google Sheets**. Column 1 is English and column 2 is the
+Russian translation. The supported row formats are:
+
+```text
+English word<Tab>Russian translation
+English word    Russian translation
+```
+
+`<Tab>` means the real tab character produced when two Google Sheets columns are copied,
+not the five visible characters in the label. The second format uses exactly four ordinary
+spaces. Three spaces, five spaces, commas, semicolons, and pipe characters are not
+separators. For example:
+
+```text
+good morning<Tab>доброе утро
+nice to meet you<Tab>приятно познакомиться
+```
+
+Valid rows are saved immediately. Invalid and duplicate rows stay in the input field with
+a reason, such as **This word already exists.**, so the parent can correct them without
+typing the whole row again. Multiple rows and Unicode translations are supported. CSV file
+import is not used. Select **My words** after saving the new vocabulary.
 
 ![Add a custom word and its translation](./docs/images/custom-words.png)
 
@@ -67,6 +86,8 @@ is separate from custom-word input.
   for this site, then reload the page.
 - Most games listen after their **Start** button is pressed and show a microphone/listening
   indicator. Wait for that indicator before speaking.
+- Speak slowly and clearly. Wait for the game to process each word before saying the next
+  one.
 - **Sentence Bird is push-to-talk.** It does not listen in the background. Press
   **Click & say / Нажми и скажи**, click the active word card, or press **Space** once. Then
   speak while the green microphone indicator is active.
