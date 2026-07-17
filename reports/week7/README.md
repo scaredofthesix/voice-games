@@ -1,13 +1,15 @@
 # Week 7 report - Assignment 6, Sprint 5 (Team 40)
 
-> **Status: MVP V3 RELEASED, CUSTOMER CONFIRMATION PENDING.**
+> **Status: MVP V3 RELEASED AND ACCEPTED BY THE CUSTOMER.**
 > The 2026-07-17 customer review is complete: revised
 > UAT-12, UAT-13, and UAT-15 passed. The requested follow-up fixes were independently
 > reviewed in PR #167, merged to protected `main`, and deployed successfully to GitHub Pages.
 > CI and the public demo are green. The final
 > [`v0.5.0` release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0)
-> is published from protected `main`. Written customer confirmation remains pending and is
-> not reported as complete.
+> is published from protected `main`. After receiving the final release and live product
+> links, the customer confirmed in writing on 2026-07-17 that MVP v3 v0.5.0 is accepted and
+> the handover is completed. The confirmation status is therefore **Accepted**; the private
+> written confirmation is kept in the Week 7 Moodle submission.
 
 **Week 6 report (full context, evidence, and process detail):** [reports/week6/README.md](../week6/README.md)
 
@@ -78,11 +80,12 @@ CSV-columns export (#104) landed earlier and is retained in Sprint 5 traceabilit
 
 ## Final transition outcome
 
-The customer completed the guided Week 7 review and agreed to provide a short written
-acceptance confirmation after receiving the final release link. The release now exists and is
-ready to send. Until the reply is received, the handover level remains **Ready for independent
-use** and the confirmation status remains **Accepted with follow-up items**. No customer-side
-deployment or operation was demonstrated.
+The customer completed the guided Week 7 review, received the final release and live product
+links, and confirmed acceptance in writing on 2026-07-17 ("MVP v3 v0.5.0 is accepted and the
+handover is completed"). The handover level reached is **Ready for independent use** and the
+customer-confirmation status is **Accepted**. No customer-side deployment or operation was
+demonstrated, so the handover level is not claimed above "Ready for independent use". The
+private written confirmation is retained in the Week 7 Moodle submission.
 
 ## What was transferred, delegated, or retained
 
@@ -97,8 +100,6 @@ write access or customer-side hosting during the Week 7 review.
 
 - Voice input requires Google Chrome (Web Speech API); this is a documented product
   limitation, not a defect.
-- The final release link must be sent to the customer, followed by the agreed written
-  acceptance confirmation.
 - Chrome's browser speech-to-text can be unreliable for words such as *owl*, *pig*, *hill*,
   *frog*, and *sun*. The customer accepted this external limitation for MVP3 and recommended
   speaking slowly and clearly.
@@ -106,9 +107,10 @@ write access or customer-side hosting during the Week 7 review.
 ## Customer-independent use / deployment evidence
 
 The customer opened the public GitHub Pages product in Chrome and operated it during the
-guided review. This proves public access and hands-on use in the review, but it is not
-evidence of independent use outside the session or customer-side deployment. The handover
-level therefore remains **Ready for independent use**.
+guided review, then accepted the released product in writing. This proves public access and
+hands-on use in the review, but it is not evidence of independent use outside the session or
+customer-side deployment. The handover level therefore remains **Ready for independent use**
+even though the confirmation status is **Accepted**.
 
 ## Customer feedback response table (Sprint 5 follow-up)
 
@@ -177,18 +179,21 @@ The reviewed `v0.5.0` build contains the final review fixes, is live on GitHub P
 a public sanitized demo. The local and protected-branch gates passed TypeScript checking,
 172 automated tests across 23 files, coverage thresholds (71.73% statement coverage), the
 production build, link checking, deployment, and Lighthouse on 2026-07-17. The final SemVer
-release is published. Only written transition confirmation remains pending as described
-above.
+release is published and the customer confirmed acceptance of MVP v3 v0.5.0 in writing on
+2026-07-17, completing the handover.
 
 ## Contribution traceability
 
+Team members are shown with the GitHub handle used in issues and PRs alongside the full name
+used in the Demo Day deck, so contribution evidence can be cross-checked between both.
+
 | Team member | Issues / PRs authored | Review + merge | Testing | Docs / transition / release |
 |---|---|---|---|---|
-| scaredofthesix (Maksim Bodulev) | Sprint 5 fix PRs #153-#158, integration PR #160; issues #140-#145 and #125 follow-up implemented in PR #167; release preparation PR #168 | Prepared #167 and #168 for independent review; merged #168 after approval | Wrote adaptive/parser/game tests and ran the release quality gate | CHANGELOG, roadmap, Week 7 report, handover doc, public demo, v0.5.0 release orchestration |
-| Kotumbaa | - | Reviewed + merged #153 (Echo), #155 (adaptive) | Live-tested Echo memory mechanic and adaptive repeats | - |
-| flikspy | - | Reviewed + merged #154 (bulk import), #157 (Sentence Bird) | Live-tested import and mic push-to-talk | - |
-| TeraloToxin | - | Reviewed + merged #156 (cross-game audio), #160 (integration), and #167 (final MVP3 review fixes); approved #168 (release preparation) | Live-tested audio stop on navigation and independently reviewed the final release build | - |
-| MMavInno | - | Reviewed + merged #158 (Magic Wizard + Treasure Hunter) | Live-tested both canvas games | - |
+| scaredofthesix (Maksim Bodulev, Scrum Master) | Implemented all Sprint 5 fix PRs #153-#158 and integration PR #160 for issues #140-#145; implemented the final MVP3 review fixes in PR #167 (including the **Voice Maze Quest** replacement of Magic Wizard, 5x5 default, editable invalid rows, readable route words, and the duplicate-recognition gate) under #125; release-preparation PR #168 | Prepared #167 and #168 for independent review; #167 was reviewed and merged by TeraloToxin; #168 was approved by TeraloToxin | Wrote adaptive/parser/game/Maze tests and ran the release quality gate | CHANGELOG, roadmap, Week 7 report, handover doc, public demo, v0.5.0 release orchestration |
+| Kotumbaa (Svyatoslav Stanko, Developer) | - | Reviewed + merged #153 (Echo Microphone), #155 (adaptive selection) | Live-tested Echo memory mechanic and adaptive repeats | - |
+| flikspy (Mikhail Petrunin, Developer) | - | Reviewed + merged #154 (bulk import), #157 (Sentence Bird) | Live-tested import and mic push-to-talk | - |
+| TeraloToxin (Aleksandr Sheinin, Developer) | - | Reviewed + merged #156 (cross-game audio), #160 (integration), and #167 (final MVP3 review fixes, including **Voice Maze Quest**); approved release-preparation #168 | Live-tested audio stop on navigation and independently reviewed the final release build including Voice Maze Quest | - |
+| MMavInno (Marat Mavlanov, Product Owner) | - | Reviewed + merged #158 (Magic Wizard hitbox + Treasure Hunter timer); reviewed #162 (Magic Wizard rune-recipe iteration, later superseded by Voice Maze Quest) | Live-tested the canvas games; ran the customer Reviews and UAT | Backlog and priorities; customer Review and UAT facilitation |
 
 _Demo Day materials and timing preparation are complete. Week 7 live rehearsal completion
 remains unconfirmed and is not inferred from the public product demo._

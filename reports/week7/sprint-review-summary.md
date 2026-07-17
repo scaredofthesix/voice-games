@@ -60,13 +60,14 @@ approved as release requirements.
 ## Acceptance and release status
 
 The final follow-up fixes are implemented in the `v0.5.0` build. They were independently
-reviewed in PR #167, merged to protected `main`, and deployed successfully. The customer
-explicitly agreed to send a short written acceptance confirmation after receiving and
-checking the final release link. The
-[v0.5.0 release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0) now exists
-and is ready to send. Until the written reply is received, the handover level remains
-**Ready for independent use** and the confirmation status remains **Accepted with follow-up
-items**.
+reviewed in PR #167, merged to protected `main`, and deployed successfully. After receiving
+and checking the final
+[v0.5.0 release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0) and live
+product links, the customer confirmed acceptance in writing on 2026-07-17 ("MVP v3 v0.5.0 is
+accepted and the handover is completed"). The handover level reached is **Ready for independent
+use** and the confirmation status is **Accepted**. No customer-side deployment was performed,
+so the handover level is not claimed higher. The private written confirmation is kept in the
+Week 7 Moodle submission.
 
 The [public sanitized MVP3 gameplay demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA) was
 published after the session. It demonstrates the final release build but is not customer
