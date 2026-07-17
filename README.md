@@ -8,6 +8,8 @@ voice is the only controller**. No login, no install, and no accounts.
 
 **Live product (public, HTTPS):** https://scaredofthesix.github.io/voice-games/
 
+**Public MVP3 demo:** [watch the final v0.5.0 gameplay video](https://disk.yandex.ru/i/xfaSgCVd2CijnA)
+
 Open it in **Google Chrome** (desktop or Android). The browser asks for microphone access
 the first time a game starts listening - choose **Allow**. The hub below lists all ten
 games; tap **Play** on any card to start.

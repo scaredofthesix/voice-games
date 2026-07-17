@@ -156,6 +156,7 @@ summary of what the customer needs to be able to do.
 | [Hosted documentation](https://scaredofthesix.github.io/voice-games/docs/) | The MkDocs version of the maintained architecture and process documentation. |
 | [Repository documentation](https://github.com/scaredofthesix/voice-games/tree/main/docs) | The documentation source, browsable without cloning the repo. |
 | [Current Sprint Backlog](https://github.com/scaredofthesix/voice-games/milestone/5) | Issues selected for Sprint 5 and the final MVP v3 transition. |
+| [Public MVP3 demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA) | Sanitized v0.5.0 candidate gameplay demonstration; no login required. |
 
 ## Is the current documentation set sufficient, and what support remains
 
@@ -174,7 +175,8 @@ pinned TypeScript version were completed during Week 6 finalization
 This remains the team's technical sufficiency assessment, not a claim that the customer used
 the product independently outside a guided trial or deployed it on their side. During the
 2026-07-17 review, the customer agreed to provide final written acceptance after receiving
-the `v0.5.0` release link. That confirmation is still pending.
+the `v0.5.0` release link. The public demo is available, but the SemVer release link and
+customer confirmation are still pending.
 
 **Known remaining gaps, honestly stated:**
 - The documentation is written for a developer/TA audience. There is no separate,

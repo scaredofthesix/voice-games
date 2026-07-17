@@ -59,3 +59,7 @@ agreed to send a short Telegram acceptance confirmation after receiving and chec
 release link. Until that release exists and the written reply is received, the handover level
 remains **Ready for independent use** and the confirmation status remains **Accepted with
 follow-up items**.
+
+The [public sanitized MVP3 gameplay demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA) was
+published after the session. It demonstrates the final candidate but is not customer
+acceptance evidence.

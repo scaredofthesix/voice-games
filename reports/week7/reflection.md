@@ -22,19 +22,17 @@ round.
 
 ## Customer usefulness feedback
 
-In the Sprint 5 review the customer approved nine of the ten games outright and accepted the
-tenth slot once it became a simple maze. The remaining questions were about polish and clarity
-(microphone-activation cues, first-generation UI consistency), not about whether the product is
-useful. The customer's own framing - "this is a normal working process, thank you for
-implementing all the games" - is the signal we care about: the product is something they are
-willing to keep. The final confirmation call will turn that into an explicit handover-level and
-acceptance statement.
+In the Sprint 5 review the customer approved nine of the ten games outright, then passed the
+revised maze, adaptive-selection, and bulk-paste UAT scenarios in the 2026-07-17 follow-up.
+The remaining requests were small release-polish items, not a new product direction. This
+supports the **Ready for independent use** handover level. Written acceptance still depends on
+sending the final `v0.5.0` release link, so the report keeps the separate confirmation status
+at **Accepted with follow-up items** until the reply exists.
 
 ## Final delivery of MVP v3
 
-MVP v3's code is complete and deployed; what remains is process and evidence, not product: the
-customer's final confirmation, the three UAT retests, the public demo video, and cutting the
-SemVer release that ties them together. We deliberately did not cut the release or claim
-acceptance early - a maintained product's final report is only worth what its evidence is, and
-inventing a confirmation we do not have would undermine exactly the trust the rest of the sprint
-was spent building.
+The three remaining UAT retests passed, the final review fixes are implemented in the
+`v0.5.0` candidate, and the public sanitized demo is available. The candidate still needs an
+independent PR review, protected-branch merge, deployment, and SemVer release before its link
+can be sent to the customer. We deliberately do not claim release or written acceptance early:
+a maintained product's final report is only worth what its evidence supports.
