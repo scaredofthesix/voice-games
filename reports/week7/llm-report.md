@@ -21,8 +21,9 @@
 - Reconciled the final-review branch with the already merged PR #166 so its real Sprint 5
   retrospective, reflection, and sanitized 2026-07-16 transcript were preserved instead of
   overwritten.
-- Verified the public Yandex Disk demo link through an anonymous HTTP request and the public
-  resource API before adding it to customer-facing documentation.
+- Verified the public Yandex Disk demo through an anonymous HTTP request, the public resource
+  API, video metadata, and five sampled frames across its 1:52.5 duration before adding it to
+  customer-facing documentation. The sampled frames showed product gameplay only.
 - Assisted with the release-candidate quality gate, including stabilization of two canvas
   frame simulations that were timing-sensitive only under coverage instrumentation. The final
   local run passed TypeScript checking, 172 tests across 23 files, coverage thresholds at

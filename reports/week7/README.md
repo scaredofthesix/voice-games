@@ -138,7 +138,7 @@ UAT document.
   after independent review, green CI, merge, and deployment._
 - [CHANGELOG.md](../../CHANGELOG.md)
 - **Public sanitized demo video:** [MVP3 v0.5.0 gameplay demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA)
-  (public view link verified on 2026-07-17).
+  (public view and product-only content verified on 2026-07-17; duration 1:52.5).
 
 ## Demo Day preparation
 
