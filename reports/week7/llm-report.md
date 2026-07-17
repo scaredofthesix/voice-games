@@ -15,7 +15,7 @@
   it across reopening and new floors, and keep larger wrapping route cards below the map.
 - Helped refine bulk custom-word paste so only a real tab or exactly four spaces split the two
   columns. Valid rows are saved while invalid and duplicate rows remain editable with a reason.
-- Updated the English and Russian interface guidance, README, changelog candidate, maintained
+- Updated the English and Russian interface guidance, README, dated changelog entry, maintained
   UAT history, roadmap, handover document, Week 7 report, and Sprint Review summary from the
   real 2026-07-17 customer feedback.
 - Reconciled the final-review branch with the already merged PR #166 so its real Sprint 5
@@ -24,21 +24,23 @@
 - Verified the public Yandex Disk demo through an anonymous HTTP request, the public resource
   API, video metadata, and five sampled frames across its 1:52.5 duration before adding it to
   customer-facing documentation. The sampled frames showed product gameplay only.
-- Assisted with the release-candidate quality gate, including stabilization of two canvas
+- Assisted with the release quality gate, including stabilization of two canvas
   frame simulations that were timing-sensitive only under coverage instrumentation. The final
   local run passed TypeScript checking, 172 tests across 23 files, coverage thresholds at
   71.73% statement coverage, and the production build.
-- Assisted with issue-linked branch preparation, PR description, and release evidence audit.
+- Assisted with issue-linked branch preparation, PR description, release evidence audit, and
+  capture of the public product and successful GitHub Pages deployment screenshots.
 
 ## Human oversight and original team work
 
 - Team members conducted the real customer meetings, interpreted product priorities, selected
-  the final scope, recorded the public demo, and remain responsible for the Moodle evidence,
-  Demo Day materials, independent PR review, merge, release, deployment, and Telegram request.
+  the final scope, and recorded the public demo. TeraloToxin independently reviewed and merged
+  PR #167, after which the repository workflow deployed the reviewed build. The team remains
+  responsible for the Moodle evidence, Demo Day materials, final release, and Telegram request.
 - Codex worked from repository evidence and the supplied cleaned transcript. It did not invent
   customer quotes, UAT results, rehearsal completion, deployment, or written acceptance.
-- A different human team member must review and merge the final PR. Codex neither approves its
-  own changes nor bypasses the protected-branch workflow.
+- A different human team member reviewed and merged the final implementation PR. Codex neither
+  approved its own changes nor bypassed the protected-branch workflow.
 
 ## Limitations observed
 

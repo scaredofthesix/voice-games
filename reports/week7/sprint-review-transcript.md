@@ -8,9 +8,11 @@ repeated in-game test phrases, not interview participants. No names, credentials
 access details appear here; those are kept in the Week 7 Moodle PDF per the assignment's
 public/private evidence split.
 
-> A second, short final MVP v3 confirmation call with the customer is scheduled separately;
-> its transcript and the customer-executed UAT-12/UAT-13/UAT-15 results are added after that
-> session.
+> A separate short final MVP v3 confirmation review was completed on 2026-07-17. Its
+> sanitized decisions and customer-executed UAT-12/UAT-13/UAT-15 results are recorded in
+> [the review summary](./sprint-review-summary.md) and
+> [the maintained UAT history](../../docs/user-acceptance-tests.md). The supplied full source
+> remains private unless separate publication permission is confirmed.
 
 ---
 

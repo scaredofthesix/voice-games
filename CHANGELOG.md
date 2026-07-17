@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-17
+
+Assignment 6 Sprint 5 final MVP v3 release. This release completes the customer-review
+follow-up, publishes the final ten-game product and maintained handover documentation, and
+links the public sanitized MVP3 demo.
+
 ### Added
 
 - Added one clear bulk custom-word flow for two-column rows pasted from Google Sheets or
@@ -270,7 +276,8 @@ Sprint 3 (MVP v2) release. Every Sprint 2 customer review finding from
 - This is the MVP v1 release for the Sprint 1 customer review.
 - Voice input requires Google Chrome (Web Speech API).
 
-[Unreleased]: https://github.com/scaredofthesix/voice-games/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/scaredofthesix/voice-games/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/scaredofthesix/voice-games/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/scaredofthesix/voice-games/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/scaredofthesix/voice-games/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/scaredofthesix/voice-games/compare/v0.2.1...v0.3.0

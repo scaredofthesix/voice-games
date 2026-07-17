@@ -54,12 +54,13 @@ approved as release requirements.
 
 ## Acceptance and release status
 
-The final follow-up fixes are implemented in the `v0.5.0` candidate. The customer explicitly
-agreed to send a short Telegram acceptance confirmation after receiving and checking the final
-release link. Until that release exists and the written reply is received, the handover level
-remains **Ready for independent use** and the confirmation status remains **Accepted with
-follow-up items**.
+The final follow-up fixes are implemented in the `v0.5.0` build. They were independently
+reviewed in PR #167, merged to protected `main`, and deployed successfully. The customer
+explicitly agreed to send a short Telegram acceptance confirmation after receiving and
+checking the final release link. Until that release exists and the written reply is received,
+the handover level remains **Ready for independent use** and the confirmation status remains
+**Accepted with follow-up items**.
 
 The [public sanitized MVP3 gameplay demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA) was
-published after the session. It demonstrates the final candidate but is not customer
+published after the session. It demonstrates the final reviewed build but is not customer
 acceptance evidence.

@@ -1,11 +1,10 @@
 # Week 7 report - Assignment 6, Sprint 5 (Team 40)
 
-> **Status: RELEASE CANDIDATE.** The 2026-07-17 customer review is complete: revised UAT-12,
-> UAT-13, and UAT-15 passed. The requested follow-up fixes are implemented and the public
-> sanitized demo is available. The local release gate is green. Independent PR review,
-> protected-branch merge, the final
-> `v0.5.0` release, and written customer confirmation remain pending and are not reported as
-> complete.
+> **Status: RELEASE PREPARATION.** The 2026-07-17 customer review is complete: revised
+> UAT-12, UAT-13, and UAT-15 passed. The requested follow-up fixes were independently
+> reviewed in PR #167, merged to protected `main`, and deployed successfully to GitHub Pages.
+> CI and the public demo are green. The `v0.5.0` tag/release and written customer
+> confirmation remain pending and are not reported as complete.
 
 **Week 6 report (full context, evidence, and process detail):** [reports/week6/README.md](../week6/README.md)
 
@@ -55,7 +54,7 @@ then addressed the customer's deeper gameplay-overlap concern before the Week 7 
 The second customer review passed Voice Maze Quest, adaptive word selection, and bulk custom
 vocabulary. It requested a short recognition-processing gate, 5x5 default maze selection,
 editable invalid rows, Google Sheets guidance, readable long route phrases, and a slow,
-clear speaking tip. These changes are included in the `v0.5.0` candidate.
+clear speaking tip. These changes are included in the reviewed and deployed `v0.5.0` build.
 
 CSV-columns export (#104) landed earlier and is retained in Sprint 5 traceability.
 
@@ -69,8 +68,9 @@ CSV-columns export (#104) landed earlier and is retained in Sprint 5 traceabilit
 - **Hosted documentation:** https://scaredofthesix.github.io/voice-games/docs/
 - **Current access and run instructions:** [README Play now and setup guidance](../../README.md#play-now)
 - **Final product access arrangement:** https://scaredofthesix.github.io/voice-games/
-  The same public URL updates through the protected `main` deployment workflow after the
-  final release PR is reviewed and merged.
+  The final reviewed build was published by the protected `main`
+  [deployment workflow](https://github.com/scaredofthesix/voice-games/actions/runs/29582025006)
+  on 2026-07-17.
 
 ## Final transition outcome
 
@@ -93,8 +93,8 @@ write access or customer-side hosting during the Week 7 review.
 
 - Voice input requires Google Chrome (Web Speech API); this is a documented product
   limitation, not a defect.
-- The final review fixes still require independent PR review and protected-branch merge.
-- The final `v0.5.0` SemVer release must be created from the merged commit on `main`.
+- The final `v0.5.0` SemVer release must be created from the resulting protected `main`
+  commit after the release-preparation PR is merged.
 - The final release link must be sent to the customer, followed by the agreed written
   acceptance confirmation.
 - Chrome's browser speech-to-text can be unreliable for words such as *owl*, *pig*, *hill*,
@@ -119,10 +119,10 @@ level therefore remains **Ready for independent use**.
 | Bulk custom-word input | [#144](https://github.com/scaredofthesix/voice-games/issues/144) | Tab and exactly-four-space paste passed UAT-15; invalid-row preservation and Google Sheets guidance added after review |
 | Stop audio on hub/game switch; internationalize preview; keep CSV English | [#145](https://github.com/scaredofthesix/voice-games/issues/145) | Merged (PR #156); localized previews and shared Hub accepted in the Sprint Review |
 | CSV export in readable columns | [#104](https://github.com/scaredofthesix/voice-games/issues/104) | Closed (PR #137, Week 6) |
-| Final review: duplicate recognition, 5x5 default, editable invalid rows, Google Sheets guidance, readable route phrases, slow-speaking tip | [#125](https://github.com/scaredofthesix/voice-games/issues/125) | Implemented in the final `v0.5.0` release candidate; automated and manual demo evidence ready for PR review |
+| Final review: duplicate recognition, 5x5 default, editable invalid rows, Google Sheets guidance, readable route phrases, slow-speaking tip | [#125](https://github.com/scaredofthesix/voice-games/issues/125) | Independently reviewed and merged in [PR #167](https://github.com/scaredofthesix/voice-games/pull/167); deployed-product and automated evidence are green |
 
 Additional 2026-07-17 feedback is recorded in
-[sprint-review-summary.md](./sprint-review-summary.md) and the `v0.5.0` changelog candidate.
+[sprint-review-summary.md](./sprint-review-summary.md) and the dated `v0.5.0` changelog entry.
 
 ## UAT / customer-trial results (Week 7)
 
@@ -134,8 +134,8 @@ UAT document.
 
 ## Release and demo video
 
-- **Final SemVer release (MVP v3):** _PENDING - `v0.5.0` must be cut from protected `main`
-  after independent review, green CI, merge, and deployment._
+- **Final SemVer release (MVP v3):** _PENDING - the reviewed build is deployed and the dated
+  changelog entry is prepared; `v0.5.0` must now be cut from protected `main`._
 - [CHANGELOG.md](../../CHANGELOG.md)
 - **Public sanitized demo video:** [MVP3 v0.5.0 gameplay demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA)
   (public view and product-only content verified on 2026-07-17; duration 1:52.5).
@@ -161,20 +161,20 @@ Assignment 6 evidence and are not committed to the public repository.
 
 Ten voice-controlled English games share one UI shell, adaptive per-word scheduling,
 bilingual EN/RU playback for built-in and custom words, and per-word practice reporting.
-The `v0.5.0` candidate contains the final review fixes and has a public sanitized demo.
-The local release gate passed TypeScript checking, 172 automated tests across 23 files,
-coverage thresholds (71.73% statement coverage), and the production build on 2026-07-17.
-The final SemVer release and written transition confirmation remain pending as described
-above.
+The reviewed `v0.5.0` build contains the final review fixes, is live on GitHub Pages, and has
+a public sanitized demo. The local and protected-branch gates passed TypeScript checking,
+172 automated tests across 23 files, coverage thresholds (71.73% statement coverage), the
+production build, link checking, deployment, and Lighthouse on 2026-07-17. The final SemVer
+release and written transition confirmation remain pending as described above.
 
 ## Contribution traceability
 
 | Team member | Issues / PRs authored | Review + merge | Testing | Docs / transition / release |
 |---|---|---|---|---|
-| scaredofthesix (Maksim Bodulev) | Sprint 5 fix PRs #153-#158, integration PR #160; issues #140-#145 and #125 follow-up implemented | Prepared the final review PR for independent review | Wrote adaptive/parser/game tests and ran the release-candidate quality gate | CHANGELOG, roadmap, Week 7 report, handover doc, public demo, git/release orchestration |
+| scaredofthesix (Maksim Bodulev) | Sprint 5 fix PRs #153-#158, integration PR #160; issues #140-#145 and #125 follow-up implemented in PR #167 | Prepared PR #167 for independent review | Wrote adaptive/parser/game tests and ran the release quality gate | CHANGELOG, roadmap, Week 7 report, handover doc, public demo, git/release orchestration |
 | Kotumbaa | - | Reviewed + merged #153 (Echo), #155 (adaptive) | Live-tested Echo memory mechanic and adaptive repeats | - |
 | flikspy | - | Reviewed + merged #154 (bulk import), #157 (Sentence Bird) | Live-tested import and mic push-to-talk | - |
-| TeraloToxin | - | Reviewed + merged #156 (cross-game audio) and #160 (integration) | Live-tested audio stop on navigation | - |
+| TeraloToxin | - | Reviewed + merged #156 (cross-game audio), #160 (integration), and #167 (final MVP3 review fixes) | Live-tested audio stop on navigation and independently reviewed the final release build | - |
 | MMavInno | - | Reviewed + merged #158 (Magic Wizard + Treasure Hunter) | Live-tested both canvas games | - |
 
 _Week 7 rehearsal completion remains unconfirmed and is not inferred from the public product
@@ -190,5 +190,12 @@ demo._
 
 ![Reviewed PR #160](./images/reviewed-pr-160.png)
 
-_The final `v0.5.0` release and deployed-product screenshots are added only after those
-public artifacts exist. They are not represented by local candidate screenshots._
+**Final reviewed build deployed publicly through GitHub Pages:**
+
+![Final product deployed on GitHub Pages](./images/final-product-v0.5.0.png)
+
+**Successful protected-branch production deployment for merged PR #167:**
+
+![Successful GitHub Pages deployment](./images/deployment-main-v0.5.0.png)
+
+_The final `v0.5.0` release screenshot is added only after that public release exists._
