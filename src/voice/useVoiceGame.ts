@@ -21,17 +21,21 @@ export interface UseSpeechRecognitionResult {
   stop: () => void;
 }
 
+export const SUCCESS_RECOGNITION_DELAY_MS = 650;
+
 function getSpeechRecognitionCtor(): any {
   if (typeof window === 'undefined') return undefined;
   return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 }
 
 export function useSpeechRecognition(
-  onTranscript: (text: string) => void,
+  onTranscript: (text: string) => boolean | void,
 ): UseSpeechRecognitionResult {
   const recognitionRef = useRef<any>(null);
   const wantActiveRef = useRef(false);
   const callbackRef = useRef(onTranscript);
+  const restartRef = useRef<() => void>(() => undefined);
+  const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { t } = useUiLanguage();
   const translationRef = useRef(t);
   const [lastTranscript, setLastTranscript] = useState('');
@@ -52,6 +56,10 @@ export function useSpeechRecognition(
 
   const stop = useCallback(() => {
     wantActiveRef.current = false;
+    if (restartTimerRef.current) {
+      clearTimeout(restartTimerRef.current);
+      restartTimerRef.current = null;
+    }
     const rec = recognitionRef.current;
     if (rec) {
       rec.onend = null;
@@ -62,10 +70,14 @@ export function useSpeechRecognition(
       }
       recognitionRef.current = null;
     }
+    setLastTranscript('');
     setStatus({ status: 'idle', message: translationRef.current('shared.voiceStopped') });
   }, []);
 
   const start = useCallback(() => {
+    wantActiveRef.current = true;
+    if (restartTimerRef.current || recognitionRef.current) return;
+
     const Ctor = getSpeechRecognitionCtor();
     if (!Ctor) {
       setStatus({
@@ -73,15 +85,6 @@ export function useSpeechRecognition(
         message: translationRef.current('shared.voiceUnsupported'),
       });
       return;
-    }
-
-    if (recognitionRef.current) {
-      recognitionRef.current.onend = null;
-      try {
-        recognitionRef.current.abort();
-      } catch {
-        // ignore
-      }
     }
 
     const rec = new Ctor();
@@ -98,6 +101,7 @@ export function useSpeechRecognition(
 
     rec.onerror = (event: any) => {
       if (event?.error === 'not-allowed') {
+        wantActiveRef.current = false;
         setStatus({
           status: 'error',
           message: translationRef.current('shared.micAccessBlocked'),
@@ -129,18 +133,44 @@ export function useSpeechRecognition(
       }
       if (text) {
         setLastTranscript(text);
-        callbackRef.current(text);
+        const accepted = callbackRef.current(text) === true;
+        if (!accepted) return;
+
+        // A successful utterance belongs only to the current prompt. Retire the
+        // recognizer that heard it, clear its buffered transcript, and create a
+        // fresh recognizer after a short processing pause. This prevents the
+        // final event for one utterance from reaching the next prompt.
+        rec.onend = null;
+        rec.onresult = null;
+        try {
+          rec.abort();
+        } catch {
+          // ignore abort races
+        }
+        if (recognitionRef.current === rec) recognitionRef.current = null;
+        setLastTranscript('');
+        setStatus({
+          status: 'idle',
+          message: translationRef.current('shared.processingNextWord'),
+        });
+        restartTimerRef.current = setTimeout(() => {
+          restartTimerRef.current = null;
+          if (wantActiveRef.current) restartRef.current();
+        }, SUCCESS_RECOGNITION_DELAY_MS);
       }
     };
 
     recognitionRef.current = rec;
-    wantActiveRef.current = true;
     try {
       rec.start();
     } catch {
       // start() can throw if called twice in quick succession; ignore.
     }
   }, []);
+
+  useEffect(() => {
+    restartRef.current = start;
+  }, [start]);
 
   useEffect(() => stop, [stop]);
 

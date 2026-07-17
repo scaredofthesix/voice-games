@@ -512,6 +512,7 @@ export default function EchoRecorderGame({
         return next;
       });
       advanceToNextWord(localProgressIdx);
+      return true;
     } else {
       // A first imperfect/interim result is not a lost life. Keep listening for
       // a full retry window and cancel this timer as soon as the phrase matches.
@@ -566,6 +567,7 @@ export default function EchoRecorderGame({
         }
       }, RETRY_GRACE_MS);
     }
+    return undefined;
   }, [advanceToNextWord]);
 
   const { status, start, stop } = useSpeechRecognition(handleTranscript);

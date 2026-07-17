@@ -1,4 +1,4 @@
-export { useSpeechRecognition } from './voice/useVoiceGame';
+export { SUCCESS_RECOGNITION_DELAY_MS, useSpeechRecognition } from './voice/useVoiceGame';
 export type {
   SpeechRecognitionStatus,
   SpeechStatus,

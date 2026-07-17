@@ -64,6 +64,27 @@ describe('Voice Maze Quest', () => {
     expect(screen.queryByText('🎁')).not.toBeInTheDocument();
     expect(screen.getByText(/endless floors/i)).toBeInTheDocument();
     expect(screen.getByText(/collect crystals and unlock the portal/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /trail 5x5/i })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('passes the selected size to the generator and remembers it after reopening', () => {
+    const firstRender = render(
+      <UiLanguageProvider>
+        <MagicWizardGame onBackToHub={() => {}} customWords={[]} />
+      </UiLanguageProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /quest 7x7/i }));
+    fireEvent.click(screen.getByRole('button', { name: /start maze quest/i }));
+    expect(screen.getByTestId('voice-maze')).toHaveAttribute('data-maze-size', '7');
+
+    firstRender.unmount();
+    render(
+      <UiLanguageProvider>
+        <MagicWizardGame onBackToHub={() => {}} customWords={[]} />
+      </UiLanguageProvider>,
+    );
+    expect(screen.getByRole('button', { name: /quest 7x7/i })).toHaveAttribute('aria-pressed', 'true');
   });
 
   test('clicking back to hub calls the shared callback', () => {
@@ -132,6 +153,9 @@ describe('Voice Maze Quest', () => {
       'bg-slate-950/95',
       'text-yellow-200',
     );
+    expect(screen.getByTestId('available-routes').compareDocumentPosition(screen.getByTestId('voice-maze')))
+      .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(screen.getAllByTestId('door-word')[0]).toHaveClass('text-base', 'break-words');
 
     const positionBefore = screen.getByLabelText('Maze explorer').parentElement?.getAttribute('aria-label');
     const target = screen.getAllByTestId('door-word')[0].textContent || '';
@@ -188,7 +212,7 @@ describe('Voice Maze Quest', () => {
 
   test('collecting every crystal unlocks the portal and starts another generated floor', () => {
     vi.useFakeTimers();
-    const generated = createVoiceMaze(7, 3, () => 0.42);
+    const generated = createVoiceMaze(5, 2, () => 0.42);
     render(
       <UiLanguageProvider>
         <MagicWizardGame onBackToHub={() => {}} customWords={[]} />
@@ -210,7 +234,7 @@ describe('Voice Maze Quest', () => {
         expect(card).toBeDefined();
         const word = within(card as HTMLElement).getByTestId('door-word').textContent || '';
         act(() => MockSpeechRecognition.latest().emit(word));
-        act(() => vi.advanceTimersByTime(500));
+        act(() => vi.advanceTimersByTime(700));
         position = destinationForDirection(position, direction);
       }
     }
@@ -223,7 +247,7 @@ describe('Voice Maze Quest', () => {
 
   test('reaching the locked portal clearly says how many crystals are still needed', () => {
     vi.useFakeTimers();
-    const generated = createVoiceMaze(7, 3, () => 0.42);
+    const generated = createVoiceMaze(5, 2, () => 0.42);
     render(
       <UiLanguageProvider>
         <MagicWizardGame onBackToHub={() => {}} customWords={[]} />
@@ -240,7 +264,7 @@ describe('Voice Maze Quest', () => {
       expect(card).toBeDefined();
       const word = within(card as HTMLElement).getByTestId('door-word').textContent || '';
       act(() => MockSpeechRecognition.latest().emit(word));
-      act(() => vi.advanceTimersByTime(500));
+      act(() => vi.advanceTimersByTime(700));
       position = destinationForDirection(position, direction);
     }
 

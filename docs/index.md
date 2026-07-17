@@ -14,10 +14,11 @@ characters, solve voice puzzles, and complete ten different games.
 
 1. Open the Hub and choose a game.
 2. Choose a built-in word set, or add your own English words/phrases and translations.
-   Multiple rows copied from Excel or LibreOffice Calc can be pasted at once: English in
-   column 1 and translation in column 2. Separate them with a tab or at least four
-   consecutive ordinary spaces. One to three spaces do not split columns, so phrases such
-   as *Nice to meet you* remain intact. CSV import is not used.
+   Multiple rows copied from Google Sheets can be pasted at once: English in column 1 and
+   translation in column 2. Separate them with a tab or exactly four ordinary spaces.
+   Three or five spaces do not split columns, so phrases such as *Nice to meet you* remain
+   intact. Invalid and duplicate rows remain visible for correction. CSV import is not
+   used.
 3. Choose the difficulty, run length, or mode offered by the game.
 4. Press Start and play with your voice.
 5. Review the result for that run, then open overall progress. Press **Back to hub** to

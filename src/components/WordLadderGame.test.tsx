@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { WordLadderGame } from './WordLadderGame';
 import { UiLanguageProvider } from '../uiLanguage';
@@ -7,6 +7,7 @@ import {
   installMockSpeechRecognition,
   MockSpeechRecognition,
 } from '../test/mockSpeechRecognition';
+import { SUCCESS_RECOGNITION_DELAY_MS } from '../useSpeechRecognition';
 
 // Integration test: WordLadderGame wired together with the shared speech hook
 // and the gameLogic climb reducer, driven through a fake SpeechRecognition.
@@ -24,6 +25,7 @@ describe('WordLadderGame (integration)', () => {
 
   afterEach(() => {
     cleanup?.();
+    vi.useRealTimers();
   });
 
   test('start screen shows accessible title and start control', () => {
@@ -46,6 +48,7 @@ describe('WordLadderGame (integration)', () => {
   });
 
   test('speaking each shown word climbs the rocket to the top', () => {
+    vi.useFakeTimers();
     cleanup = installMockSpeechRecognition();
     render(
       <UiLanguageProvider>
@@ -57,8 +60,7 @@ describe('WordLadderGame (integration)', () => {
       screen.getByRole('button', { name: /start launch/i }),
     );
 
-    const rec = MockSpeechRecognition.latest();
-    expect(rec).toBeTruthy();
+    expect(MockSpeechRecognition.latest()).toBeTruthy();
 
     // Read the word currently on screen and speak it; repeat until the win
     // screen replaces the target word. Capped well above the 20 steps needed.
@@ -66,7 +68,8 @@ describe('WordLadderGame (integration)', () => {
       const targetEl = screen.queryByTestId('target-word');
       if (!targetEl) break;
       const word = targetEl.textContent ?? '';
-      act(() => rec.emit(word));
+      act(() => MockSpeechRecognition.latest().emit(word));
+      act(() => vi.advanceTimersByTime(SUCCESS_RECOGNITION_DELAY_MS));
     }
 
     // The win banner renders the title as layered (outlined) copies, so match all.
@@ -84,6 +87,7 @@ describe('WordLadderGame (integration)', () => {
   });
 
   test('the win screen shows a friendly alien encounter', () => {
+    vi.useFakeTimers();
     cleanup = installMockSpeechRecognition();
     render(
       <UiLanguageProvider>
@@ -95,12 +99,12 @@ describe('WordLadderGame (integration)', () => {
       screen.getByRole('button', { name: /start launch/i }),
     );
 
-    const rec = MockSpeechRecognition.latest();
     for (let i = 0; i < 40; i++) {
       const targetEl = screen.queryByTestId('target-word');
       if (!targetEl) break;
       const word = targetEl.textContent ?? '';
-      act(() => rec.emit(word));
+      act(() => MockSpeechRecognition.latest().emit(word));
+      act(() => vi.advanceTimersByTime(SUCCESS_RECOGNITION_DELAY_MS));
     }
 
     fireEvent.click(

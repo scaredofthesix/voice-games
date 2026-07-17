@@ -229,7 +229,7 @@ export function BossFightGame({
             localStorage.setItem('boss_fight_infinite_unlocked', 'true');
             setIsInfiniteUnlocked(true);
           } catch {}
-          return;
+          return true;
         }
 
         // Advance to the next, tougher boss; carry player HP and max HP.
@@ -248,13 +248,14 @@ export function BossFightGame({
         fightRef.current = fresh;
         setFight(fresh);
         nextWord();
-        return;
+        return true;
       }
 
       speakSound.playCorrect();
       fightRef.current = hit;
       setFight(hit);
       nextWord();
+      return true;
     },
     [nextWord],
   );

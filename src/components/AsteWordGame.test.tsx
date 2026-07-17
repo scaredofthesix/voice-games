@@ -121,7 +121,10 @@ describe('AsteWordGame shared interface', () => {
     fireEvent.click(screen.getByRole('button', { name: /start defense/i }));
     act(() => animation.runFrames(1));
     act(() => MockSpeechRecognition.latest().emit('Ocean'));
-    act(() => animation.runFrames(850));
+    // After the accepted word is removed, allow enough deterministic frames
+    // for three separately spawned asteroids to reach the shield. The previous
+    // budget could stop after only two misses under coverage instrumentation.
+    act(() => animation.runFrames(1_800));
 
     await waitFor(() => expect(screen.getByRole('heading', { name: /game over/i })).toBeInTheDocument());
     const resultHeading = screen.getByRole('heading', { name: /game over/i });

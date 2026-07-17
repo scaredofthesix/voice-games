@@ -5,8 +5,31 @@ import { Plus, Trash2, Volume2, AlertCircle, ListPlus } from 'lucide-react';
 import { useUiLanguage } from '../uiLanguage';
 
 const WORD_PATTERN = /^[a-zA-Z0-9\s\-\?\!\,\.\'\"’]+$/;
+type WordPairIssueReason =
+  | 'separator'
+  | 'missingWord'
+  | 'missingTranslation'
+  | 'extraColumns'
+  | 'invalidCharacters'
+  | 'duplicate';
+
+interface WordPairIssue {
+  line: string;
+  reason: WordPairIssueReason;
+  rowIndex: number;
+}
+
+interface ParsedWordPair {
+  line: string;
+  word: string;
+  translation: string;
+  rowIndex: number;
+}
+
 interface WordPairParseResult {
   pairs: { word: string; translation: string }[];
+  validRows: ParsedWordPair[];
+  issues: WordPairIssue[];
   skipped: number;
 }
 
@@ -21,42 +44,62 @@ function splitWordPairRow(line: string): string[] {
   const tabColumns = line.split('\t');
   if (tabColumns.length > 1) return tabColumns;
 
-  const fourSpaceSeparator = / {4,}/.exec(line);
-  if (!fourSpaceSeparator) return [line];
+  const fourSpaceSeparators = Array.from(line.matchAll(/ +/g))
+    .filter((match) => match[0].length === 4);
+  if (fourSpaceSeparators.length !== 1) return [line];
+  const fourSpaceSeparator = fourSpaceSeparators[0];
 
   return [
     line.slice(0, fourSpaceSeparator.index),
-    line.slice(fourSpaceSeparator.index + fourSpaceSeparator[0].length),
+    line.slice((fourSpaceSeparator.index || 0) + fourSpaceSeparator[0].length),
   ];
 }
 
 /**
- * Parse text copied from two spreadsheet columns or typed with four spaces
+ * Parse text copied from two spreadsheet columns or typed with exactly four spaces
  * between the columns. Single spaces inside multi-word phrases remain part of
  * the word; ambiguous comma/semicolon/one-to-three-space formats are rejected.
  */
 export function parseWordPairs(raw: string): WordPairParseResult {
   const pairs: { word: string; translation: string }[] = [];
-  let skipped = 0;
+  const validRows: ParsedWordPair[] = [];
+  const issues: WordPairIssue[] = [];
   const rows = raw
     .replace(/^\uFEFF/, '')
     .split(/\r\n|\n|\r/)
     .filter((line) => line.trim().length > 0)
-    .map(splitWordPairRow);
-  const dataRows = rows.slice(isHeaderRow(rows[0] || []) ? 1 : 0);
+    .map((line, rowIndex) => ({ line, rowIndex, columns: splitWordPairRow(line) }));
+  const dataRows = rows.slice(isHeaderRow(rows[0]?.columns || []) ? 1 : 0);
 
-  for (const row of dataRows) {
+  for (const { line, rowIndex, columns: row } of dataRows) {
     const word = (row[0] || '').trim();
     const translation = (row[1] || '').trim();
-    if (row.length !== 2 || !word || !translation || !WORD_PATTERN.test(word)) {
-      skipped++;
+    if (row.length === 1) {
+      issues.push({ line, reason: 'separator', rowIndex });
+      continue;
+    }
+    if (row.length > 2) {
+      issues.push({ line, reason: 'extraColumns', rowIndex });
+      continue;
+    }
+    if (!word) {
+      issues.push({ line, reason: 'missingWord', rowIndex });
+      continue;
+    }
+    if (!translation) {
+      issues.push({ line, reason: 'missingTranslation', rowIndex });
+      continue;
+    }
+    if (!WORD_PATTERN.test(word)) {
+      issues.push({ line, reason: 'invalidCharacters', rowIndex });
       continue;
     }
 
     pairs.push({ word, translation });
+    validRows.push({ line, word, translation, rowIndex });
   }
 
-  return { pairs, skipped };
+  return { pairs, validRows, issues, skipped: issues.length };
 }
 
 interface CustomWordsManagerProps {
@@ -77,37 +120,40 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
   const [newTranslation, setNewTranslation] = useState('');
   const [error, setError] = useState('');
   const [bulkFeedback, setBulkFeedback] = useState('');
+  const [bulkIssues, setBulkIssues] = useState<WordPairIssue[]>([]);
   const [pasteText, setPasteText] = useState('');
 
   /** Import parsed pairs and report how many rows landed. Returns false if nothing was valid. */
   const importPairs = (raw: string): boolean => {
     const parsed = parseWordPairs(raw);
     const seen = new Set(customWords.map((item) => item.word.trim().toLocaleLowerCase()));
-    const accepted = parsed.pairs.filter((pair) => {
+    const issues = [...parsed.issues];
+    const accepted = parsed.validRows.filter((pair) => {
       const key = pair.word.toLocaleLowerCase();
-      if (seen.has(key)) return false;
+      if (seen.has(key)) {
+        issues.push({ line: pair.line, reason: 'duplicate', rowIndex: pair.rowIndex });
+        return false;
+      }
       seen.add(key);
       return true;
     });
-    const skipped = parsed.skipped + (parsed.pairs.length - accepted.length);
-    if (accepted.length === 0) {
-      setBulkFeedback(t('customWords.bulkEmpty'));
-      return false;
-    }
 
     for (const pair of accepted) {
       onAddWord(pair.word, pair.translation);
     }
-    setBulkFeedback(
-      t('customWords.bulkResult')
+    issues.sort((a, b) => a.rowIndex - b.rowIndex);
+    setPasteText(issues.map((issue) => issue.line).join('\n'));
+    setBulkIssues(issues);
+    setBulkFeedback(accepted.length > 0
+      ? t('customWords.bulkResult')
         .replace('{added}', String(accepted.length))
-        .replace('{skipped}', String(skipped)),
-    );
-    return true;
+        .replace('{skipped}', String(issues.length))
+      : t('customWords.bulkEmpty'));
+    return accepted.length > 0;
   };
 
   const handlePasteImport = () => {
-    if (importPairs(pasteText)) setPasteText('');
+    importPairs(pasteText);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -129,6 +175,13 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
 
     if (!WORD_PATTERN.test(trimmedWord)) {
       setError(t('customWords.invalidCharacters'));
+      return;
+    }
+
+    if (customWords.some((item) => (
+      item.word.trim().toLocaleLowerCase() === trimmedWord.toLocaleLowerCase()
+    ))) {
+      setError(t('customWords.duplicate'));
       return;
     }
 
@@ -187,7 +240,7 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
         </button>
       </form>
 
-      {/* Paste two columns copied from Excel or LibreOffice Calc. */}
+      {/* Paste two columns copied from Google Sheets. */}
       <div className="space-y-2 border-t-4 border-dashed border-slate-200 pt-4" id="custom-words-bulk">
         <label className="block text-[11px] font-black text-rose-500 uppercase tracking-widest ml-1">
           {t('customWords.bulkTitle')}
@@ -206,7 +259,11 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
           rows={4}
           placeholder={t('customWords.pastePlaceholder')}
           value={pasteText}
-          onChange={(event) => { setPasteText(event.target.value); setBulkFeedback(''); }}
+          onChange={(event) => {
+            setPasteText(event.target.value);
+            setBulkFeedback('');
+            setBulkIssues([]);
+          }}
           className="w-full bg-white border-4 border-slate-900 text-slate-800 text-xs px-4 py-3 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-200 placeholder:text-slate-400 transition-all font-bold resize-y"
           id="input-custom-bulk-words"
         />
@@ -224,6 +281,19 @@ export const CustomWordsManager: React.FC<CustomWordsManagerProps> = ({
           <p className="text-xs text-slate-700 bg-amber-100 border-4 border-amber-400 p-3 rounded-2xl font-black" id="custom-words-bulk-feedback">
             {bulkFeedback}
           </p>
+        )}
+        {bulkIssues.length > 0 && (
+          <ul className="space-y-2" aria-label={t('customWords.issueList')}>
+            {bulkIssues.map((issue, index) => (
+              <li
+                key={`${issue.line}-${index}`}
+                className="rounded-2xl border-4 border-rose-400 bg-rose-50 p-3 text-xs font-bold text-rose-900"
+              >
+                <code className="block whitespace-pre-wrap break-words font-black">{issue.line}</code>
+                <span className="mt-1 block">{t(`customWords.issues.${issue.reason}`)}</span>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 

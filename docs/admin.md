@@ -33,11 +33,11 @@ flow and [customer-handover.md](./customer-handover.md) for recovery instruction
 
 - Built-in learning sets are maintained in `src/data.ts` and released with the application.
 - A parent can add personal words inside a game, one pair at a time or by pasting two
-  columns from Excel or LibreOffice Calc. Column 1 is the English word or phrase, column 2
-  is the translation. A tab or at least four consecutive ordinary spaces separates the
-  columns. Runs of one to three spaces are not separators, so English phrases such as
-  *Nice to meet you* remain one item. Multiple rows and Unicode translations are supported;
-  CSV file upload is not.
+  columns from Google Sheets. Column 1 is the English word or phrase, column 2 is the
+  translation. A tab or exactly four ordinary spaces separates the columns. Three or five
+  spaces are not separators, so English phrases such as *Nice to meet you* remain one item.
+  Valid rows are saved while invalid and duplicate rows remain visible with a correction
+  reason. Multiple rows and Unicode translations are supported; CSV file upload is not.
 - Custom words, scores, per-word adaptation, and combined Progress data stay in that
   browser's `localStorage`. They are not synchronized between devices and are not visible
   to the repository maintainer.
