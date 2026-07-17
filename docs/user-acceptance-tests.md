@@ -242,13 +242,14 @@ https://scaredofthesix.github.io/voice-games/.
 The 2026-07-17 customer review passed the revised UAT-12, UAT-13, and UAT-15. The customer
 accepted the browser speech-to-text limitations for the MVP3 release and did not approve
 Skip, Report, Reroll, or manual-play controls. The small follow-up fixes recorded above are
-implemented and the public demo video is available. Independent PR review, final verification
-on protected `main`, the SemVer release, and the customer's written confirmation after
-receiving the release link remain.
+implemented and the public demo video is available. They were independently reviewed and
+verified on protected `main`; the GitHub Pages workflow deployed them after PR #167 was
+merged. The SemVer release and the customer's written confirmation after receiving the
+release link remain.
 
-**Scheduled for the final MVP v3 confirmation session:** the three retests below are the
-customer-facing agenda for that call. Their execution-history rows and pass/fail are added
-after the session.
+**Final MVP v3 confirmation scenarios:** the three retests below were the customer-facing
+agenda for the 2026-07-17 review. Their Pass results are recorded in the execution-history
+rows above.
 
 | UAT | Scenario | What to confirm |
 |-----|----------|-----------------|

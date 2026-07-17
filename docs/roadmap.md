@@ -119,10 +119,11 @@ planned beyond it.
   `docs/customer-handover.md` - issue #125.
 - Final SemVer release mapped to **MVP v3**, the last course version, plus a public
   sanitized demo video and Demo Day preparation.
-- Final 2026-07-17 review follow-up implemented in the `v0.5.0` candidate: one-event speech
+- Final 2026-07-17 review follow-up implemented in the `v0.5.0` build: one-event speech
   consumption, 5x5 maze default with persistent size selection, editable invalid and duplicate
   bulk rows, Google Sheets guidance, readable route phrases below the maze, and a slow-speaking
-  tip. The public sanitized demo is available; independent PR review, protected merge, the
-  SemVer release, and written customer confirmation remain.
+  tip. PR #167 received independent review, merged to protected `main`, and deployed
+  successfully. The public sanitized demo is available; the SemVer release and written
+  customer confirmation remain.
 - US-20 phrase-assembly mode (issue #53) and the accessibility pass (keyboard fallback,
   captions) are stretch scope for Sprint 5 if time allows; not committed.

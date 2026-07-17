@@ -32,7 +32,9 @@ at **Accepted with follow-up items** until the reply exists.
 ## Final delivery of MVP v3
 
 The three remaining UAT retests passed, the final review fixes are implemented in the
-`v0.5.0` candidate, and the public sanitized demo is available. The candidate still needs an
-independent PR review, protected-branch merge, deployment, and SemVer release before its link
-can be sent to the customer. We deliberately do not claim release or written acceptance early:
-a maintained product's final report is only worth what its evidence supports.
+`v0.5.0` build, and the public sanitized demo is available. PR #167 then received independent
+review, merged to protected `main`, and deployed successfully. The SemVer release still needs
+to be cut from the resulting protected `main` commit after the release-preparation PR is
+merged, before its link can be sent to the customer. We deliberately do not claim release or
+written acceptance early: a maintained product's final report is only worth what its evidence
+supports.
