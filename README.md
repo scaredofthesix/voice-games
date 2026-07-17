@@ -8,6 +8,9 @@ voice is the only controller**. No login, no install, and no accounts.
 
 **Live product (public, HTTPS):** https://scaredofthesix.github.io/voice-games/
 
+**Final MVP3 release:**
+[v0.5.0 - MVP v3 Final Course Release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0)
+
 **Public MVP3 demo:** [watch the final v0.5.0 gameplay video](https://disk.yandex.ru/i/xfaSgCVd2CijnA)
 
 Open it in **Google Chrome** (desktop or Android). The browser asks for microphone access

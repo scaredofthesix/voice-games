@@ -10,7 +10,7 @@ updated whenever access, deployment, limitations, or transition status change.
 | | |
 |---|---|
 | **Handover level reached** | **Ready for independent use.** The product is reachable by anyone with a link and a Chrome browser, with no account, install, or team involvement required. The customer used the public product during the guided 2026-07-17 review, but independent use outside the session and customer-side deployment were not confirmed. |
-| **Customer-confirmation status** | **Accepted with follow-up items.** The customer passed revised UAT-12, UAT-13, and UAT-15, requested the small final-release fixes recorded in the Week 7 report, and agreed to provide short written acceptance after receiving the final release link. That link and reply do not exist yet, so final acceptance must remain pending. |
+| **Customer-confirmation status** | **Accepted with follow-up items.** The customer passed revised UAT-12, UAT-13, and UAT-15, requested the small final-release fixes recorded in the Week 7 report, and agreed to provide short written acceptance after receiving the final release link. The release now exists; the written reply has not yet been received, so final acceptance remains pending. |
 
 This table is authoritative for the three levels defined in Assignment 6 Part 8
 (`Ready for independent use`, `Independently used by customer`, `Deployed or operated on
@@ -156,6 +156,7 @@ summary of what the customer needs to be able to do.
 | [Hosted documentation](https://scaredofthesix.github.io/voice-games/docs/) | The MkDocs version of the maintained architecture and process documentation. |
 | [Repository documentation](https://github.com/scaredofthesix/voice-games/tree/main/docs) | The documentation source, browsable without cloning the repo. |
 | [Current Sprint Backlog](https://github.com/scaredofthesix/voice-games/milestone/5) | Issues selected for Sprint 5 and the final MVP v3 transition. |
+| [Final MVP3 release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0) | Published v0.5.0 SemVer release from protected `main`, with product, report, handover, milestone, and demo links. |
 | [Public MVP3 demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA) | Sanitized gameplay demonstration of the final reviewed v0.5.0 build; no login required. |
 
 ## Is the current documentation set sufficient, and what support remains
@@ -177,7 +178,8 @@ the product independently outside a guided trial or deployed it on their side. D
 2026-07-17 review, the customer agreed to provide final written acceptance after receiving
 the `v0.5.0` release link. The final fixes were independently reviewed in PR #167, merged to
 protected `main`, and deployed successfully to the public product URL. The public demo is
-available, but the SemVer release link and customer confirmation are still pending.
+available and the final SemVer release is published. Only the written customer confirmation
+is still pending.
 
 **Known remaining gaps, honestly stated:**
 - The documentation is written for a developer/TA audience. There is no separate,
@@ -196,5 +198,5 @@ available, but the SemVer release link and customer confirmation are still pendi
 
 This section and the status table were updated after the Week 6 transition-readiness meeting
 on 2026-07-11, the guided final-product review on 2026-07-17, and the independently reviewed
-deployment later that day. They will be updated again after the final release link and
-written customer confirmation exist.
+deployment and final v0.5.0 release later that day. They will be updated again after written
+customer confirmation is received.

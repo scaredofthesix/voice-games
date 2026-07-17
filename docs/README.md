@@ -6,6 +6,8 @@ source in the [public GitHub repository](https://github.com/scaredofthesix/voice
 
 New here? Start with the [customer handover](./customer-handover.md) for the current
 transition status, or the [root README](../README.md) to play the product.
+The final course version is the
+[MVP3 v0.5.0 release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0).
 
 Planning is tracked in the [GitHub Project board](https://github.com/users/scaredofthesix/projects/1).
 The selected current Sprint Backlog is the

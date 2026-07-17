@@ -6,6 +6,8 @@ characters, solve voice puzzles, and complete ten different games.
 
 - **Play it:** <https://scaredofthesix.github.io/voice-games/> (Google Chrome,
   microphone required)
+- **Final MVP3 release:**
+  [v0.5.0](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0)
 - **Source:** <https://github.com/scaredofthesix/voice-games>
 - **Current Sprint Backlog:** [Sprint 5 milestone](https://github.com/scaredofthesix/voice-games/milestone/5)
 - **Project board:** <https://github.com/users/scaredofthesix/projects/1>
@@ -67,5 +69,6 @@ after a failed retry, the game reads the same chain again before the next attemp
   [ADR-003](architecture/adr/ADR-003-static-spa-github-pages.md).
 - **Deployment:** every push to `main` is verified and published by
   `.github/workflows/deploy-pages.yml`; manual publishing is the documented recovery path.
-- **Releases:** Semantic Versioning; MVP v1 = v0.1.0, MVP v2 = v0.3.0.
+- **Releases:** Semantic Versioning; MVP v1 = v0.1.0, MVP v2 = v0.3.0,
+  final MVP v3 = [v0.5.0](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0).
   Notable changes tracked in the repository `CHANGELOG.md`.

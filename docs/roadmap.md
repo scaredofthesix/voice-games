@@ -83,11 +83,15 @@ for transition, ahead of the Week 6 trial/transition-readiness meeting.
 - Corrective SemVer release `v0.4.1`, the canonical Week 6 trial release after the original
   `v0.4.0` tag was found to precede its package-version and final code commits.
 
-## Sprint 5 (Week 7, 2026-07-13 to 2026-07-19) - final MVP v3 and transition
+## Done - Sprint 5 (Week 7, 2026-07-13 to 2026-07-19) - release v0.5.0, final MVP v3
 
 Assignment 6 Sprint 5. Selected Sprint Backlog = [milestone #5](https://github.com/scaredofthesix/voice-games/milestone/5).
 This is the state the product reaches by the end of the course; no post-course versions are
 planned beyond it.
+
+MVP v3 shipped as the
+[final v0.5.0 course release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0)
+on 2026-07-17.
 
 - CSV export in readable columns - issue #104 (relates to US-19, issue #52), completed early
   during Week 6 and retained in Sprint 5 traceability.
@@ -117,13 +121,13 @@ planned beyond it.
 - README and documentation restructuring #146, completed during Week 6 finalization.
 - Confirm the final transition outcome and handover level with the customer against
   `docs/customer-handover.md` - issue #125.
-- Final SemVer release mapped to **MVP v3**, the last course version, plus a public
-  sanitized demo video and Demo Day preparation.
+- Final SemVer release `v0.5.0` mapped to **MVP v3**, the last course version, plus a public
+  sanitized demo video.
 - Final 2026-07-17 review follow-up implemented in the `v0.5.0` build: one-event speech
   consumption, 5x5 maze default with persistent size selection, editable invalid and duplicate
   bulk rows, Google Sheets guidance, readable route phrases below the maze, and a slow-speaking
   tip. PR #167 received independent review, merged to protected `main`, and deployed
-  successfully. The public sanitized demo is available; the SemVer release and written
-  customer confirmation remain.
+  successfully. The public sanitized demo and `v0.5.0` release are available; written
+  customer confirmation remains.
 - US-20 phrase-assembly mode (issue #53) and the accessibility pass (keyboard fallback,
   captions) are stretch scope for Sprint 5 if time allows; not committed.

@@ -80,10 +80,10 @@ gitGraph
 ## Configuration management
 
 - **Versioning:** Semantic Versioning. MVP v1 = `v0.1.0`, Sprint 2 increments
-  `v0.2.0`/`v0.2.1`, MVP v2 = `v0.3.0`. Tags are created on `main` after the
-  sprint's PRs are merged, with a GitHub Release whose notes come from
-  `CHANGELOG.md` ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
-  format).
+  `v0.2.0`/`v0.2.1`, MVP v2 = `v0.3.0`, Week 6 trial = `v0.4.1`, and final MVP v3 =
+  [`v0.5.0`](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0). Tags are
+  created on `main` after the sprint's PRs are merged, with a GitHub Release whose notes come
+  from `CHANGELOG.md` ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format).
 - **Dependency configuration:** locked by `package-lock.json`; CI installs
   with `npm ci` so builds are reproducible. TypeScript is pinned to the exact version
   **5.8.3** in both the manifest and lockfile.

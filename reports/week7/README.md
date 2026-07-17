@@ -1,10 +1,13 @@
 # Week 7 report - Assignment 6, Sprint 5 (Team 40)
 
-> **Status: RELEASE PREPARATION.** The 2026-07-17 customer review is complete: revised
+> **Status: MVP V3 RELEASED, CUSTOMER CONFIRMATION PENDING.**
+> The 2026-07-17 customer review is complete: revised
 > UAT-12, UAT-13, and UAT-15 passed. The requested follow-up fixes were independently
 > reviewed in PR #167, merged to protected `main`, and deployed successfully to GitHub Pages.
-> CI and the public demo are green. The `v0.5.0` tag/release and written customer
-> confirmation remain pending and are not reported as complete.
+> CI and the public demo are green. The final
+> [`v0.5.0` release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0)
+> is published from protected `main`. Written customer confirmation remains pending and is
+> not reported as complete.
 
 **Week 6 report (full context, evidence, and process detail):** [reports/week6/README.md](../week6/README.md)
 
@@ -13,6 +16,7 @@
 - **Product Backlog board:** https://github.com/users/scaredofthesix/projects/1
 - **Sprint 5 Backlog board (Project view):** https://github.com/users/scaredofthesix/projects/1 (filter `Sprint = Sprint 5`)
 - **Sprint 5 milestone:** https://github.com/scaredofthesix/voice-games/milestone/5
+- **Milestone status:** Closed at 100% completion (12 closed issues, 0 open).
 - **Sprint Goal:** Complete follow-up maintenance from the Week 6 customer trial, finish the
   customer's remaining Sprint-3-review asks, confirm the final transition outcome and
   handover level against `docs/customer-handover.md`, and deliver the final course version
@@ -69,16 +73,16 @@ CSV-columns export (#104) landed earlier and is retained in Sprint 5 traceabilit
 - **Current access and run instructions:** [README Play now and setup guidance](../../README.md#play-now)
 - **Final product access arrangement:** https://scaredofthesix.github.io/voice-games/
   The final reviewed build was published by the protected `main`
-  [deployment workflow](https://github.com/scaredofthesix/voice-games/actions/runs/29582025006)
+  [deployment workflow](https://github.com/scaredofthesix/voice-games/actions/runs/29583496693)
   on 2026-07-17.
 
 ## Final transition outcome
 
 The customer completed the guided Week 7 review and agreed to provide a short written
-acceptance confirmation after receiving the final release link. Until that link is sent and
-the reply is received, the handover level remains **Ready for independent use** and the
-confirmation status remains **Accepted with follow-up items**. No customer-side deployment
-or operation was demonstrated.
+acceptance confirmation after receiving the final release link. The release now exists and is
+ready to send. Until the reply is received, the handover level remains **Ready for independent
+use** and the confirmation status remains **Accepted with follow-up items**. No customer-side
+deployment or operation was demonstrated.
 
 ## What was transferred, delegated, or retained
 
@@ -93,8 +97,6 @@ write access or customer-side hosting during the Week 7 review.
 
 - Voice input requires Google Chrome (Web Speech API); this is a documented product
   limitation, not a defect.
-- The final `v0.5.0` SemVer release must be created from the resulting protected `main`
-  commit after the release-preparation PR is merged.
 - The final release link must be sent to the customer, followed by the agreed written
   acceptance confirmation.
 - Chrome's browser speech-to-text can be unreliable for words such as *owl*, *pig*, *hill*,
@@ -119,7 +121,7 @@ level therefore remains **Ready for independent use**.
 | Bulk custom-word input | [#144](https://github.com/scaredofthesix/voice-games/issues/144) | Tab and exactly-four-space paste passed UAT-15; invalid-row preservation and Google Sheets guidance added after review |
 | Stop audio on hub/game switch; internationalize preview; keep CSV English | [#145](https://github.com/scaredofthesix/voice-games/issues/145) | Merged (PR #156); localized previews and shared Hub accepted in the Sprint Review |
 | CSV export in readable columns | [#104](https://github.com/scaredofthesix/voice-games/issues/104) | Closed (PR #137, Week 6) |
-| Final review: duplicate recognition, 5x5 default, editable invalid rows, Google Sheets guidance, readable route phrases, slow-speaking tip | [#125](https://github.com/scaredofthesix/voice-games/issues/125) | Independently reviewed and merged in [PR #167](https://github.com/scaredofthesix/voice-games/pull/167); deployed-product and automated evidence are green |
+| Final review: duplicate recognition, 5x5 default, editable invalid rows, Google Sheets guidance, readable route phrases, slow-speaking tip | [#125](https://github.com/scaredofthesix/voice-games/issues/125) | Independently reviewed and merged in [PR #167](https://github.com/scaredofthesix/voice-games/pull/167); shipped in [v0.5.0](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0) with green deployed-product and automated evidence |
 
 Additional 2026-07-17 feedback is recorded in
 [sprint-review-summary.md](./sprint-review-summary.md) and the dated `v0.5.0` changelog entry.
@@ -134,22 +136,30 @@ UAT document.
 
 ## Release and demo video
 
-- **Final SemVer release (MVP v3):** _PENDING - the reviewed build is deployed and the dated
-  changelog entry is prepared; `v0.5.0` must now be cut from protected `main`._
+- **Final SemVer release (MVP v3):**
+  [v0.5.0 - MVP v3 Final Course Release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0)
+  (published from protected `main` commit `fe12181` on 2026-07-17).
 - [CHANGELOG.md](../../CHANGELOG.md)
 - **Public sanitized demo video:** [MVP3 v0.5.0 gameplay demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA)
   (public view and product-only content verified on 2026-07-17; duration 1:52.5).
 
 ## Demo Day preparation
 
-_PENDING - confirmation that the required Week 7 lab rehearsal preparation and Moodle slide
-submission were completed._ Presentation slides and rehearsal recordings are private
-Assignment 6 evidence and are not committed to the public repository.
+The final Demo Day deck, speaker timing plan, and the 1:52.5 public product demo are prepared.
+The deck includes the MVP roadmap, exact 71.73% statement coverage, final handover status,
+team contribution, known limitations, and the required public links. Speaker notes keep the
+full sequence within seven minutes and include the Week 6 feedback to face the audience
+instead of the screen. The live Week 7 rehearsal and Moodle upload are private submission
+actions and are not claimed as completed until the team performs them. Presentation slides
+and rehearsal recordings are not committed to the public repository.
 
 ## Sprint Review
 
 - [Sanitized Sprint Review transcript, 2026-07-16](./sprint-review-transcript.md)
-- [Sprint Review and final-candidate summary, 2026-07-16 and 2026-07-17](./sprint-review-summary.md)
+- [Sprint Review and final MVP3 summary, 2026-07-16 and 2026-07-17](./sprint-review-summary.md)
+
+The full 2026-07-17 source transcript and recording remain private Week 7 Moodle evidence
+because separate permission for public publication was not recorded.
 
 ## Retrospective, reflection, LLM usage
 
@@ -165,24 +175,25 @@ The reviewed `v0.5.0` build contains the final review fixes, is live on GitHub P
 a public sanitized demo. The local and protected-branch gates passed TypeScript checking,
 172 automated tests across 23 files, coverage thresholds (71.73% statement coverage), the
 production build, link checking, deployment, and Lighthouse on 2026-07-17. The final SemVer
-release and written transition confirmation remain pending as described above.
+release is published. Only written transition confirmation remains pending as described
+above.
 
 ## Contribution traceability
 
 | Team member | Issues / PRs authored | Review + merge | Testing | Docs / transition / release |
 |---|---|---|---|---|
-| scaredofthesix (Maksim Bodulev) | Sprint 5 fix PRs #153-#158, integration PR #160; issues #140-#145 and #125 follow-up implemented in PR #167 | Prepared PR #167 for independent review | Wrote adaptive/parser/game tests and ran the release quality gate | CHANGELOG, roadmap, Week 7 report, handover doc, public demo, git/release orchestration |
+| scaredofthesix (Maksim Bodulev) | Sprint 5 fix PRs #153-#158, integration PR #160; issues #140-#145 and #125 follow-up implemented in PR #167; release preparation PR #168 | Prepared #167 and #168 for independent review; merged #168 after approval | Wrote adaptive/parser/game tests and ran the release quality gate | CHANGELOG, roadmap, Week 7 report, handover doc, public demo, v0.5.0 release orchestration |
 | Kotumbaa | - | Reviewed + merged #153 (Echo), #155 (adaptive) | Live-tested Echo memory mechanic and adaptive repeats | - |
 | flikspy | - | Reviewed + merged #154 (bulk import), #157 (Sentence Bird) | Live-tested import and mic push-to-talk | - |
-| TeraloToxin | - | Reviewed + merged #156 (cross-game audio), #160 (integration), and #167 (final MVP3 review fixes) | Live-tested audio stop on navigation and independently reviewed the final release build | - |
+| TeraloToxin | - | Reviewed + merged #156 (cross-game audio), #160 (integration), and #167 (final MVP3 review fixes); approved #168 (release preparation) | Live-tested audio stop on navigation and independently reviewed the final release build | - |
 | MMavInno | - | Reviewed + merged #158 (Magic Wizard + Treasure Hunter) | Live-tested both canvas games | - |
 
-_Week 7 rehearsal completion remains unconfirmed and is not inferred from the public product
-demo._
+_Demo Day materials and timing preparation are complete. Week 7 live rehearsal completion
+remains unconfirmed and is not inferred from the public product demo._
 
 ## Evidence screenshots
 
-**Sprint 5 milestone with issue #125 as the remaining release item:**
+**Closed Sprint 5 milestone (12 closed, 0 open, 100% complete):**
 
 ![Sprint 5 milestone](./images/milestone-sprint5.png)
 
@@ -198,4 +209,6 @@ demo._
 
 ![Successful GitHub Pages deployment](./images/deployment-main-v0.5.0.png)
 
-_The final `v0.5.0` release screenshot is added only after that public release exists._
+**Published final SemVer release mapped to MVP v3:**
+
+![Final v0.5.0 GitHub Release](./images/release-v0.5.0.png)
