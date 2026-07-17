@@ -153,7 +153,7 @@ describe('Voice Maze Quest', () => {
       'bg-slate-950/95',
       'text-yellow-200',
     );
-    expect(screen.getByTestId('available-routes').compareDocumentPosition(screen.getByTestId('voice-maze')))
+    expect(screen.getByTestId('voice-maze').compareDocumentPosition(screen.getByTestId('available-routes')))
       .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(screen.getAllByTestId('door-word')[0]).toHaveClass('text-base', 'break-words');
 

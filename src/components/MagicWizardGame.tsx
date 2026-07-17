@@ -791,7 +791,32 @@ export function MagicWizardGame({
           </p>
         </div>
 
-        <div className="mx-auto mb-3 w-full max-w-4xl rounded-3xl border-4 border-slate-900 bg-white/95 p-3 sm:p-4" data-testid="available-routes">
+        {hazardNearby && feedback !== 'locked' && (
+          <div
+            className="mb-3 rounded-2xl border-4 border-red-300 bg-red-950/90 px-4 py-3 text-center text-xs font-black text-white shadow-lg"
+            role="status"
+            aria-live="polite"
+          >
+            ⛔ {strings.hazardHint}
+          </div>
+        )}
+
+        {feedback === 'locked' && maze && (
+          <div
+            className="mb-3 rounded-2xl border-4 border-yellow-200 bg-amber-500 px-4 py-3 text-center text-sm font-black text-slate-950 shadow-[4px_4px_0_0_rgba(15,23,42,1)]"
+            role="alert"
+            data-testid="portal-locked-notice"
+          >
+            <span className="block text-lg">🚪🔒 {strings.portalLocked}</span>
+            <span className="mt-1 block text-xs uppercase tracking-wider">
+              💎 {strings.crystalsMissing}: {Math.max(0, maze.crystalCount - crystals)}
+            </span>
+          </div>
+        )}
+
+        {maze && renderMaze(maze)}
+
+        <div className="mx-auto mt-4 w-full max-w-4xl rounded-3xl border-4 border-slate-900 bg-white/95 p-3 sm:p-4" data-testid="available-routes">
           <div className="mb-3 flex items-center justify-center gap-2 text-center">
             <Sparkles className="h-5 w-5 text-violet-600" />
             <h3 className="text-sm font-black uppercase text-slate-900">{strings.sayDoor}</h3>
@@ -831,31 +856,6 @@ export function MagicWizardGame({
             ))}
           </div>
         </div>
-
-        {hazardNearby && feedback !== 'locked' && (
-          <div
-            className="mb-3 rounded-2xl border-4 border-red-300 bg-red-950/90 px-4 py-3 text-center text-xs font-black text-white shadow-lg"
-            role="status"
-            aria-live="polite"
-          >
-            ⛔ {strings.hazardHint}
-          </div>
-        )}
-
-        {feedback === 'locked' && maze && (
-          <div
-            className="mb-3 rounded-2xl border-4 border-yellow-200 bg-amber-500 px-4 py-3 text-center text-sm font-black text-slate-950 shadow-[4px_4px_0_0_rgba(15,23,42,1)]"
-            role="alert"
-            data-testid="portal-locked-notice"
-          >
-            <span className="block text-lg">🚪🔒 {strings.portalLocked}</span>
-            <span className="mt-1 block text-xs uppercase tracking-wider">
-              💎 {strings.crystalsMissing}: {Math.max(0, maze.crystalCount - crystals)}
-            </span>
-          </div>
-        )}
-
-        {maze && renderMaze(maze)}
 
         <div className="mx-auto mt-4 max-w-3xl rounded-3xl border-4 border-slate-900 bg-white/95 p-3 sm:p-4">
           <div

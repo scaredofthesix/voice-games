@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Voice Maze Quest now starts at 5x5, remembers the selected maze size, keeps that size for
-  every newly generated floor, and shows the available route words above the map in larger,
+  every newly generated floor, and shows the available route words below the map in larger,
   wrapping cards so long phrases remain readable without zooming.
 - Custom vocabulary guidance now recommends Google Sheets and documents the two exact
   supported separators: a real tab character or exactly four ordinary spaces.
