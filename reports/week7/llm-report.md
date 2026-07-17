@@ -34,6 +34,10 @@
 - Assisted with creating and verifying the final `v0.5.0` GitHub Release from the exact
   protected `main` commit, including the required milestone, product, handover, report, demo,
   run-instruction, and changelog links.
+- After publication permission was confirmed, helped turn the supplied 2026-07-17 source
+  transcript into Part 2 of the public Sprint Review transcript. Personal names, private
+  communication channels, and internal access details were removed while the customer
+  feedback, UAT outcomes, accepted limitations, and release decisions were preserved.
 
 ## Human oversight and original team work
 
@@ -41,7 +45,7 @@
   the final scope, and recorded the public demo. TeraloToxin independently reviewed and merged
   PR #167 and approved release-preparation PR #168, after which the repository workflow
   deployed the reviewed build. The team remains responsible for the Moodle evidence, Demo Day
-  materials, and Telegram request.
+  materials, and written acceptance request.
 - Codex worked from repository evidence and the supplied cleaned transcript. It did not invent
   customer quotes, UAT results, rehearsal completion, deployment, or written acceptance.
 - A different human team member reviewed and merged the final implementation PR. Codex neither
@@ -54,5 +58,5 @@
   speech-to-text service.
 - The public gameplay demo shows the final release build, but it is not evidence of customer
   acceptance or customer-side deployment.
-- Week 7 rehearsal completion and the customer's final written Telegram confirmation remain
+- Week 7 rehearsal completion and the customer's final written confirmation remain
   separate human evidence and are not inferred from code, tests, or the demo video.

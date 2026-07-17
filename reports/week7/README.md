@@ -155,11 +155,13 @@ and rehearsal recordings are not committed to the public repository.
 
 ## Sprint Review
 
-- [Sanitized Sprint Review transcript, 2026-07-16](./sprint-review-transcript.md)
+- [Sanitized Sprint Review transcript, Parts 1 and 2, 2026-07-16 and 2026-07-17](./sprint-review-transcript.md)
 - [Sprint Review and final MVP3 summary, 2026-07-16 and 2026-07-17](./sprint-review-summary.md)
 
-The full 2026-07-17 source transcript and recording remain private Week 7 Moodle evidence
-because separate permission for public publication was not recorded.
+Publication permission for the sanitized second-session transcript was confirmed after the
+initial report was prepared. Personal names, private communication channels, and internal
+access details were removed. Attendance and recording evidence remain in the private Week 7
+Moodle submission.
 
 ## Retrospective, reflection, LLM usage
 
