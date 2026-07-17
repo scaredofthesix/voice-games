@@ -16,6 +16,7 @@
 - **Product Backlog board:** https://github.com/users/scaredofthesix/projects/1
 - **Sprint 5 Backlog board (Project view):** https://github.com/users/scaredofthesix/projects/1 (filter `Sprint = Sprint 5`)
 - **Sprint 5 milestone:** https://github.com/scaredofthesix/voice-games/milestone/5
+- **Milestone status:** Closed at 100% completion (12 closed issues, 0 open).
 - **Sprint Goal:** Complete follow-up maintenance from the Week 6 customer trial, finish the
   customer's remaining Sprint-3-review asks, confirm the final transition outcome and
   handover level against `docs/customer-handover.md`, and deliver the final course version
@@ -144,14 +145,21 @@ UAT document.
 
 ## Demo Day preparation
 
-_PENDING - confirmation that the required Week 7 lab rehearsal preparation and Moodle slide
-submission were completed._ Presentation slides and rehearsal recordings are private
-Assignment 6 evidence and are not committed to the public repository.
+The final Demo Day deck, speaker timing plan, and the 1:52.5 public product demo are prepared.
+The deck includes the MVP roadmap, exact 71.73% statement coverage, final handover status,
+team contribution, known limitations, and the required public links. Speaker notes keep the
+full sequence within seven minutes and include the Week 6 feedback to face the audience
+instead of the screen. The live Week 7 rehearsal and Moodle upload are private submission
+actions and are not claimed as completed until the team performs them. Presentation slides
+and rehearsal recordings are not committed to the public repository.
 
 ## Sprint Review
 
 - [Sanitized Sprint Review transcript, 2026-07-16](./sprint-review-transcript.md)
 - [Sprint Review and final MVP3 summary, 2026-07-16 and 2026-07-17](./sprint-review-summary.md)
+
+The full 2026-07-17 source transcript and recording remain private Week 7 Moodle evidence
+because separate permission for public publication was not recorded.
 
 ## Retrospective, reflection, LLM usage
 
@@ -180,12 +188,12 @@ above.
 | TeraloToxin | - | Reviewed + merged #156 (cross-game audio), #160 (integration), and #167 (final MVP3 review fixes); approved #168 (release preparation) | Live-tested audio stop on navigation and independently reviewed the final release build | - |
 | MMavInno | - | Reviewed + merged #158 (Magic Wizard + Treasure Hunter) | Live-tested both canvas games | - |
 
-_Week 7 rehearsal completion remains unconfirmed and is not inferred from the public product
-demo._
+_Demo Day materials and timing preparation are complete. Week 7 live rehearsal completion
+remains unconfirmed and is not inferred from the public product demo._
 
 ## Evidence screenshots
 
-**Sprint 5 milestone with transition issue #125:**
+**Closed Sprint 5 milestone (12 closed, 0 open, 100% complete):**
 
 ![Sprint 5 milestone](./images/milestone-sprint5.png)
 
