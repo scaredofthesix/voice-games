@@ -246,6 +246,16 @@ reinforcement queue, and Echo memory/TTS phase separation. Customer execution of
 revised UAT-12, UAT-13, and new UAT-15 is still required; this repository does not claim
 those customer retests have happened.
 
+**Scheduled for the final MVP v3 confirmation session:** the three retests below are the
+customer-facing agenda for that call. Their execution-history rows and pass/fail are added
+after the session.
+
+| UAT | Scenario | What to confirm |
+|-----|----------|-----------------|
+| UAT-12 | Voice Maze Quest | Understandable from the first screen; voice opens routes/doors; hazard cell has no spoken entrance; a floor can be cleared and a new one continues; result screen shows per-word stats; no spell recipe or cursed rune remains. |
+| UAT-13 | Adaptive selection after one failure | Failing one word **once** makes it return within the next one to three prompts; every word stays reachable. |
+| UAT-15 | Bulk custom-word paste | Tab and four-space separators both import; three spaces do not split; *Nice to meet you* stays one phrase; Russian translations preserved. |
+
 Results were recorded during the recorded Sprint Review / UAT sessions of
 2026-06-27, 2026-07-03, and 2026-07-11, and are summarized (without private customer
 details) in
