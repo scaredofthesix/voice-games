@@ -25,9 +25,10 @@ round.
 In the Sprint 5 review the customer approved nine of the ten games outright, then passed the
 revised maze, adaptive-selection, and bulk-paste UAT scenarios in the 2026-07-17 follow-up.
 The remaining requests were small release-polish items, not a new product direction. This
-supports the **Ready for independent use** handover level. Written acceptance still depends on
-sending the final `v0.5.0` release link, so the report keeps the separate confirmation status
-at **Accepted with follow-up items** until the reply exists.
+supports the **Ready for independent use** handover level. After the final `v0.5.0` release
+and live product links were sent, the customer confirmed acceptance in writing on 2026-07-17,
+so the confirmation status is now **Accepted** while the handover level stays **Ready for
+independent use**, since no customer-side deployment was demonstrated.
 
 ## Final delivery of MVP v3
 
@@ -35,6 +36,7 @@ The three remaining UAT retests passed, the final review fixes are implemented i
 `v0.5.0` build, and the public sanitized demo is available. PR #167 then received independent
 review, merged to protected `main`, and deployed successfully. The release-preparation PR was
 approved, the resulting protected `main` commit was tagged, and the final `v0.5.0` SemVer
-release is now public. Its link is ready to send to the customer. We deliberately do not claim
-written acceptance early: a maintained product's final report is only worth what its evidence
-supports.
+release is now public. Its link was sent to the customer, who replied with written acceptance
+on 2026-07-17. We deliberately did not claim written acceptance before it existed: a maintained
+product's final report is only worth what its evidence supports, and the acceptance status was
+updated only once the customer's written reply was in hand.

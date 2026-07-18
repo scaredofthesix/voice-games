@@ -3,12 +3,15 @@
 Sprint 5 used two recorded customer sessions: the Sprint Review and trial on 2026-07-16,
 followed by the final-candidate review and remaining UAT retests on 2026-07-17. Customer
 identity and full attendance evidence remain in the private Week 7 Moodle submission.
+Publication permission for a sanitized transcript of both sessions was confirmed after the
+initial report was prepared. One session was not enough to identify, implement, and verify
+all remaining changes, so the final-candidate review continued in a separate session.
 
 ## Sprint Review and customer trial, 2026-07-16
 
 The session covered the Sprint 5 Goal, the Week 6 follow-up work, the ten-game roster,
 documentation and deployment readiness, and customer-executed UAT-10 through UAT-14. The
-[sanitized public transcript](./sprint-review-transcript.md) records this session.
+[sanitized public transcript](./sprint-review-transcript.md) records this session as Part 1.
 
 - **UAT-10, Sentence Bird:** Pass. The explicit push-to-talk flow addressed the Week 6 issue.
 - **UAT-11, Echo Microphone:** Pass with a browser speech-recognition limitation. The restored
@@ -28,7 +31,9 @@ README ordering. These requests were implemented before the follow-up review.
 
 The customer reviewed Voice Maze Quest, adaptive word selection, the shared Hub, custom
 vocabulary, Progress, Clear Progress, English and Russian playback, and the result screen in
-Google Chrome.
+Google Chrome. Part 2 of the
+[sanitized public transcript](./sprint-review-transcript.md#part-2---final-candidate-review-and-uat-retests-2026-07-17)
+records this follow-up session.
 
 - **UAT-12, Voice Maze Quest:** Pass. Route movement, visited rooms, the avoidable hazard,
   crystals, the portal, the next random floor, results, and Progress were exercised.
@@ -55,13 +60,14 @@ approved as release requirements.
 ## Acceptance and release status
 
 The final follow-up fixes are implemented in the `v0.5.0` build. They were independently
-reviewed in PR #167, merged to protected `main`, and deployed successfully. The customer
-explicitly agreed to send a short Telegram acceptance confirmation after receiving and
-checking the final release link. The
-[v0.5.0 release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0) now exists
-and is ready to send. Until the written reply is received, the handover level remains
-**Ready for independent use** and the confirmation status remains **Accepted with follow-up
-items**.
+reviewed in PR #167, merged to protected `main`, and deployed successfully. After receiving
+and checking the final
+[v0.5.0 release](https://github.com/scaredofthesix/voice-games/releases/tag/v0.5.0) and live
+product links, the customer confirmed acceptance in writing on 2026-07-17 ("MVP v3 v0.5.0 is
+accepted and the handover is completed"). The handover level reached is **Ready for independent
+use** and the confirmation status is **Accepted**. No customer-side deployment was performed,
+so the handover level is not claimed higher. The private written confirmation is kept in the
+Week 7 Moodle submission.
 
 The [public sanitized MVP3 gameplay demo](https://disk.yandex.ru/i/xfaSgCVd2CijnA) was
 published after the session. It demonstrates the final release build but is not customer

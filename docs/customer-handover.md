@@ -10,7 +10,7 @@ updated whenever access, deployment, limitations, or transition status change.
 | | |
 |---|---|
 | **Handover level reached** | **Ready for independent use.** The product is reachable by anyone with a link and a Chrome browser, with no account, install, or team involvement required. The customer used the public product during the guided 2026-07-17 review, but independent use outside the session and customer-side deployment were not confirmed. |
-| **Customer-confirmation status** | **Accepted with follow-up items.** The customer passed revised UAT-12, UAT-13, and UAT-15, requested the small final-release fixes recorded in the Week 7 report, and agreed to provide short written acceptance after receiving the final release link. The release now exists; the written reply has not yet been received, so final acceptance remains pending. |
+| **Customer-confirmation status** | **Accepted.** The customer passed revised UAT-12, UAT-13, and UAT-15, and the small final-release fixes recorded in the Week 7 report were shipped in `v0.5.0`. After receiving the final release and live product links, the customer confirmed acceptance in writing on 2026-07-17 ("MVP v3 v0.5.0 is accepted and the handover is completed"). The private written confirmation is retained in the Week 7 Moodle submission. |
 
 This table is authoritative for the three levels defined in Assignment 6 Part 8
 (`Ready for independent use`, `Independently used by customer`, `Deployed or operated on
@@ -178,8 +178,10 @@ the product independently outside a guided trial or deployed it on their side. D
 2026-07-17 review, the customer agreed to provide final written acceptance after receiving
 the `v0.5.0` release link. The final fixes were independently reviewed in PR #167, merged to
 protected `main`, and deployed successfully to the public product URL. The public demo is
-available and the final SemVer release is published. Only the written customer confirmation
-is still pending.
+available and the final SemVer release is published. The customer received the release and
+live product links and confirmed acceptance in writing on 2026-07-17, so the
+customer-confirmation status is now **Accepted** and the handover is complete at the
+**Ready for independent use** level.
 
 **Known remaining gaps, honestly stated:**
 - The documentation is written for a developer/TA audience. There is no separate,
@@ -197,6 +199,6 @@ is still pending.
   `Ready for independent use`.
 
 This section and the status table were updated after the Week 6 transition-readiness meeting
-on 2026-07-11, the guided final-product review on 2026-07-17, and the independently reviewed
-deployment and final v0.5.0 release later that day. They will be updated again after written
-customer confirmation is received.
+on 2026-07-11, the guided final-product review on 2026-07-17, the independently reviewed
+deployment and final v0.5.0 release later that day, and the customer's written acceptance
+received on 2026-07-17.
